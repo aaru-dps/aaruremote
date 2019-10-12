@@ -266,7 +266,7 @@ int main()
             {
                 case DICMOTE_PACKET_TYPE_HELLO: printf("Received hello packet out of order, skipping...\n"); continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES:
-                    printf("List devices not yet supported, skipping...\n");
+                    printf("List devices not yet implemented, skipping...\n");
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
                     printf("Received response packet?! You should certainly not do that...\n");
