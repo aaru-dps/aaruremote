@@ -29,19 +29,20 @@
 
 int main()
 {
-    struct ifaddrs*    ifa;
-    struct ifaddrs*    ifa_start;
-    int                ret;
-    char               ipv4Address[INET_ADDRSTRLEN];
-    int                sockfd, cli_sock;
-    struct sockaddr_in serv_addr, cli_addr;
-    socklen_t          cli_len;
-    struct utsname     utsname;
-    DicPacketHello *   pkt_server_hello, *pkt_client_hello;
-    DicPacketHeader*   pkt_hdr;
-    ssize_t            recv_size;
-    char*              dummy_buf;
-    int                skip_next_hdr;
+    struct ifaddrs*        ifa;
+    struct ifaddrs*        ifa_start;
+    int                    ret;
+    char                   ipv4Address[INET_ADDRSTRLEN];
+    int                    sockfd, cli_sock;
+    struct sockaddr_in     serv_addr, cli_addr;
+    socklen_t              cli_len;
+    struct utsname         utsname;
+    DicPacketHello *       pkt_server_hello, *pkt_client_hello;
+    DicPacketHeader*       pkt_hdr;
+    ssize_t                recv_size;
+    char*                  dummy_buf;
+    int                    skip_next_hdr;
+    struct DeviceInfoList* deviceInfoList;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -295,8 +296,29 @@ int main()
                     skip_next_hdr = 1;
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES:
+                    deviceInfoList = ListDevices();
+
+                    // Packet only contains header so, dummy
+                    dummy_buf = malloc(pkt_hdr->len);
+
+                    if(!dummy_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, dummy_buf, pkt_hdr->len, 0);
+                    free(dummy_buf);
+
+                    if(!deviceInfoList)
+                    {
+                        printf("Could not get device list, continuing...\n");
+                        continue;
+                    }
+
                     printf("List devices not yet implemented, skipping...\n");
-                    skip_next_hdr = 1;
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
                     printf("Received response packet?! You should certainly not do that...\n");

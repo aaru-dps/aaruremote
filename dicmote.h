@@ -81,4 +81,6 @@ typedef struct DeviceInfoList
 } DeviceInfoList;
 #pragma pack(pop)
 
+DeviceInfoList* ListDevices();
+
 #endif

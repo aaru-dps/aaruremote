@@ -3,4 +3,4 @@ project(dicremote C)
 
 set(CMAKE_C_STANDARD 90)
 
-add_executable(dicremote main.c)
+add_executable(dicremote main.c list_devices.c)
