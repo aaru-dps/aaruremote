@@ -25,6 +25,8 @@
 #define DICMOTE_PACKET_ID 0x6873678065677584 // "DICPACKT"
 #define DICMOTE_PACKET_VERSION 1
 #define DICMOTE_PACKET_TYPE_HELLO 1
+#define DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES 2
+#define DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES 3
 #define DICMOTE_PROTOCOL_MAX 1
 
 #pragma pack(push, 1)
@@ -50,6 +52,32 @@ typedef struct
     char            machine[256];
 } DicPacketHello;
 
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdListDevs;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    uint16_t        devices;
+} DicPacketResListDevs;
+
+typedef struct
+{
+    char    path[1024];
+    char    vendor;
+    char    model;
+    char    serial;
+    char    bus;
+    uint8_t supported;
+} DeviceInfo;
+
+typedef struct DeviceInfoList
+{
+    struct DeviceInfoList* next;
+    DeviceInfo this;
+} DeviceInfoList;
 #pragma pack(pop)
 
 #endif
