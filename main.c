@@ -38,6 +38,8 @@ int main()
     DicPacketHello *   pkt_server_hello, *pkt_client_hello;
     DicPacketHeader*   pkt_hdr;
     ssize_t            recv_size;
+    char*              dummy_buf;
+    int                skip_next_hdr;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -230,8 +232,27 @@ int main()
 
         free(pkt_client_hello);
 
+        skip_next_hdr = 0;
+
         for(;;)
         {
+            if(skip_next_hdr)
+            {
+                dummy_buf = malloc(pkt_hdr->len);
+
+                if(!dummy_buf)
+                {
+                    printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                    free(pkt_hdr);
+                    close(cli_sock);
+                    continue;
+                }
+
+                recv(cli_sock, dummy_buf, pkt_hdr->len, 0);
+                free(dummy_buf);
+                skip_next_hdr = 0;
+            }
+
             recv_size = recv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
 
             if(recv_size < 0)
@@ -252,27 +273,36 @@ int main()
 
             if(pkt_hdr->id != DICMOTE_PACKET_ID)
             {
-                printf("Received data is not a correct dicremote packet, skipping...\n");
-                continue;
+                printf("Received data is not a correct dicremote packet, closing connection...\n");
+                close(cli_sock);
+                free(pkt_hdr);
+                break;
             }
 
             if(pkt_hdr->version != DICMOTE_PACKET_VERSION)
             {
                 printf("Unrecognized packet version, skipping...\n");
+                skip_next_hdr = 1;
                 continue;
             }
 
             switch(pkt_hdr->packet_type)
             {
-                case DICMOTE_PACKET_TYPE_HELLO: printf("Received hello packet out of order, skipping...\n"); continue;
+                case DICMOTE_PACKET_TYPE_HELLO:
+                    printf("Received hello packet out of order, skipping...\n");
+                    skip_next_hdr = 1;
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES:
                     printf("List devices not yet implemented, skipping...\n");
+                    skip_next_hdr = 1;
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
                     printf("Received response packet?! You should certainly not do that...\n");
+                    skip_next_hdr = 1;
                     continue;
                 default:
                     printf("Received unrecognized packet with type %d, skipping...\n", pkt_hdr->packet_type);
+                    skip_next_hdr = 1;
                     continue;
             }
         }
