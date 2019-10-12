@@ -29,7 +29,6 @@ int main()
     struct ifaddrs*    ifa_start;
     int                ret;
     char               ipv4Address[INET_ADDRSTRLEN];
-    char               ipv6Address[INET6_ADDRSTRLEN];
     int                sockfd;
     struct sockaddr_in serv_addr;
 
@@ -68,19 +67,12 @@ int main()
     printf("Available addresses:\n");
     while(ifa != NULL)
     {
-        if(ifa->ifa_addr)
+        if(ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET)
         {
-            if(ifa->ifa_addr->sa_family == AF_INET)
-            {
-                inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ipv4Address, INET_ADDRSTRLEN);
-                printf("%s port %d\n", ipv4Address, DICMOTE_PORT);
-            }
-            else if(ifa->ifa_addr->sa_family == AF_INET6)
-            {
-                inet_ntop(AF_INET6, &((struct sockaddr_in6*)ifa->ifa_addr)->sin6_addr, ipv6Address, INET6_ADDRSTRLEN);
-                printf("%s port %d\n", ipv6Address, DICMOTE_PORT);
-            }
+            inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ipv4Address, INET_ADDRSTRLEN);
+            printf("%s port %d\n", ipv4Address, DICMOTE_PORT);
         }
+
         ifa = ifa->ifa_next;
     }
 
