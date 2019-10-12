@@ -22,6 +22,7 @@
 #include <libnet.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/utsname.h>
 
 int main()
@@ -34,6 +35,7 @@ int main()
     struct sockaddr_in serv_addr, cli_addr;
     socklen_t          cli_len;
     struct utsname     utsname;
+    DicPacketHello*    pkt_server_hello;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -116,8 +118,35 @@ int main()
     inet_ntop(AF_INET, &cli_addr.sin_addr, ipv4Address, INET_ADDRSTRLEN);
     printf("Client %s connected successfully.\n", ipv4Address);
 
+    pkt_server_hello = malloc(sizeof(DicPacketHello));
+
+    if(!pkt_server_hello)
+    {
+        printf("Fatal error %d allocating memory.\n", errno);
+        close(cli_sock);
+        close(sockfd);
+        return 1;
+    }
+
+    memset(pkt_server_hello, 0, sizeof(DicPacketHello));
+
+    strncpy(pkt_server_hello->hdr.id, DICMOTE_PACKET_ID, sizeof(DICMOTE_PACKET_ID));
+    pkt_server_hello->hdr.len         = sizeof(DicPacketHello);
+    pkt_server_hello->hdr.version     = DICMOTE_PACKET_VERSION;
+    pkt_server_hello->hdr.packet_type = DICMOTE_PACKET_TYPE_HELLO;
+    strncpy(pkt_server_hello->application, DICMOTE_NAME, sizeof(DICMOTE_NAME));
+    strncpy(pkt_server_hello->version, DICMOTE_VERSION, sizeof(DICMOTE_VERSION));
+    pkt_server_hello->max_protocol = DICMOTE_PROTOCOL_MAX;
+    strncpy(pkt_server_hello->sysname, utsname.sysname, 255);
+    strncpy(pkt_server_hello->release, utsname.release, 255);
+    strncpy(pkt_server_hello->machine, utsname.machine, 255);
+
+    write(cli_sock, pkt_server_hello, sizeof(DicPacketHello));
+
     printf("Closing socket.\n");
+    close(cli_sock);
     close(sockfd);
+    free(pkt_server_hello);
 
     return 0;
 }
