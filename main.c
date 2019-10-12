@@ -101,7 +101,8 @@ int main()
         return 1;
     }
 
-    printf("Client connected successfully.\n");
+    inet_ntop(AF_INET, &cli_addr.sin_addr, ipv4Address, INET_ADDRSTRLEN);
+    printf("Client %s connected successfully.\n", ipv4Address);
 
     printf("Closing socket.\n");
     close(sockfd);
