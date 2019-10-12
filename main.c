@@ -29,8 +29,9 @@ int main()
     struct ifaddrs*    ifa_start;
     int                ret;
     char               ipv4Address[INET_ADDRSTRLEN];
-    int                sockfd;
-    struct sockaddr_in serv_addr;
+    int                sockfd, cli_sock;
+    struct sockaddr_in serv_addr, cli_addr;
+    socklen_t          cli_len;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -78,7 +79,31 @@ int main()
 
     freeifaddrs(ifa_start);
 
-    printf("Closing socket");
+    ret = listen(sockfd, 1);
+
+    if(ret)
+    {
+        printf("Error %d listening.\n", errno);
+        close(sockfd);
+        return 1;
+    }
+
+    printf("\n");
+    printf("Waiting for a client...\n");
+
+    cli_len  = sizeof(cli_addr);
+    cli_sock = accept(sockfd, (struct sockaddr*)&cli_addr, &cli_len);
+
+    if(cli_sock < 0)
+    {
+        printf("Error %d accepting incoming connection.\n", errno);
+        close(sockfd);
+        return 1;
+    }
+
+    printf("Client connected successfully.\n");
+
+    printf("Closing socket.\n");
     close(sockfd);
 
     return 0;
