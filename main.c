@@ -132,7 +132,7 @@ int main()
 
     memset(pkt_server_hello, 0, sizeof(DicPacketHello));
 
-    strncpy(pkt_server_hello->hdr.id, DICMOTE_PACKET_ID, sizeof(DICMOTE_PACKET_ID));
+    pkt_server_hello->hdr.id          = DICMOTE_PACKET_ID;
     pkt_server_hello->hdr.len         = sizeof(DicPacketHello);
     pkt_server_hello->hdr.version     = DICMOTE_PACKET_VERSION;
     pkt_server_hello->hdr.packet_type = DICMOTE_PACKET_TYPE_HELLO;
@@ -178,7 +178,7 @@ int main()
         return 0;
     }
 
-    if(strncmp(pkt_hdr->id, DICMOTE_PACKET_ID, sizeof(DICMOTE_PACKET_ID)) != 0)
+    if(pkt_hdr->id != DICMOTE_PACKET_ID)
     {
         printf("Received data is not a correct dicremote packet, exiting...\n");
         close(cli_sock);
@@ -238,7 +238,7 @@ int main()
            pkt_client_hello->sysname,
            pkt_client_hello->release,
            pkt_client_hello->machine);
-    printf("Client maximum protocol: %d", pkt_client_hello->max_protocol);
+    printf("Client maximum protocol: %d\n", pkt_client_hello->max_protocol);
 
     printf("Closing socket.\n");
     close(cli_sock);
