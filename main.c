@@ -48,14 +48,6 @@ int main()
 
     printf("Running under %s %s (%s).\n", utsname.sysname, utsname.release, utsname.machine);
 
-    ret = getifaddrs(&ifa);
-
-    if(ret)
-    {
-        printf("Error %d enumerating interfaces\n", errno);
-        return 1;
-    }
-
     printf("Opening socket.\n");
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if(sockfd < 0)
@@ -72,6 +64,14 @@ int main()
     {
         printf("Error %d binding socket.\n", errno);
         close(sockfd);
+        return 1;
+    }
+
+    ret = getifaddrs(&ifa);
+
+    if(ret)
+    {
+        printf("Error %d enumerating interfaces\n", errno);
         return 1;
     }
 
