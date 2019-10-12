@@ -35,7 +35,9 @@ int main()
     struct sockaddr_in serv_addr, cli_addr;
     socklen_t          cli_len;
     struct utsname     utsname;
-    DicPacketHello*    pkt_server_hello;
+    DicPacketHello *   pkt_server_hello, *pkt_client_hello;
+    DicPacketHeader*   pkt_hdr;
+    ssize_t            recv_size;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -143,10 +145,107 @@ int main()
 
     write(cli_sock, pkt_server_hello, sizeof(DicPacketHello));
 
+    pkt_hdr = malloc(sizeof(DicPacketHeader));
+
+    if(!pkt_hdr)
+    {
+        printf("Fatal error %d allocating memory.\n", errno);
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        return 1;
+    }
+
+    recv_size = recv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
+
+    if(recv_size < 0)
+    {
+        printf("Error %d reading response from client.\n", errno);
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        free(pkt_hdr);
+        return 1;
+    }
+
+    if(recv_size == 0)
+    {
+        printf("Client closed connection.\n");
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        free(pkt_hdr);
+        return 0;
+    }
+
+    if(strncmp(pkt_hdr->id, DICMOTE_PACKET_ID, sizeof(DICMOTE_PACKET_ID)) != 0)
+    {
+        printf("Received data is not a correct dicremote packet, exiting...\n");
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        free(pkt_hdr);
+        return 1;
+    }
+
+    if(pkt_hdr->version != DICMOTE_PACKET_VERSION)
+    {
+        printf("Unrecognized packet version, exiting...\n");
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        free(pkt_hdr);
+        return 1;
+    }
+
+    if(pkt_hdr->packet_type != DICMOTE_PACKET_TYPE_HELLO)
+    {
+        printf("Expecting hello packet type, received type %d, exiting...\n", pkt_hdr->packet_type);
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        free(pkt_hdr);
+        return 1;
+    }
+
+    pkt_client_hello = malloc(pkt_hdr->len);
+
+    if(!pkt_client_hello)
+    {
+        printf("Error %d allocating memory for packet, exiting...\n", errno);
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        free(pkt_hdr);
+        return 1;
+    }
+
+    recv_size = recv(cli_sock, pkt_client_hello, pkt_hdr->len, 0);
+
+    if(recv_size != pkt_hdr->len)
+    {
+        printf("Expected %d bytes of packet, got %ld, exiting...\n", pkt_hdr->len, recv_size);
+        close(cli_sock);
+        close(sockfd);
+        free(pkt_server_hello);
+        free(pkt_hdr);
+        free(pkt_client_hello);
+        return 1;
+    }
+
+    printf("Client application: %s %s\n", pkt_client_hello->application, pkt_client_hello->version);
+    printf("Client operating system: %s %s (%s)\n",
+           pkt_client_hello->sysname,
+           pkt_client_hello->release,
+           pkt_client_hello->machine);
+    printf("Client maximum protocol: %d", pkt_client_hello->max_protocol);
+
     printf("Closing socket.\n");
     close(cli_sock);
     close(sockfd);
     free(pkt_server_hello);
+    free(pkt_hdr);
+    free(pkt_client_hello);
 
     return 0;
 }
