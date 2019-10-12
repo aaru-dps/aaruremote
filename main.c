@@ -114,7 +114,6 @@ int main()
     if(!pkt_server_hello)
     {
         printf("Fatal error %d allocating memory.\n", errno);
-        close(cli_sock);
         close(sockfd);
         return 1;
     }
