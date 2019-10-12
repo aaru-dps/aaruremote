@@ -15,17 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dicmote.h"
+#ifndef DICREMOTE_LINUX_H
+#define DICREMOTE_LINUX_H
 
-#if defined(__linux__) && !defined(__ANDROID__)
-#include "linux/linux.h"
-#endif
+#include "../dicmote.h"
 
-DeviceInfoList* ListDevices()
-{
-#if defined(__linux__) && !defined(__ANDROID__)
-    return linux_list_devices();
-#else
-    return 0;
-#endif
-}
+DeviceInfoList* linux_list_devices();
+
+#endif // DICREMOTE_LINUX_H
