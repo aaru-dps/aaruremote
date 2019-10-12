@@ -19,5 +19,6 @@
 #define DICMOTE_H
 
 #define DICMOTE_VERSION "0.99"
+#define DICMOTE_PORT 6666
 
 #endif

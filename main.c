@@ -25,12 +25,13 @@
 
 int main()
 {
-    struct ifaddrs* ifa;
-    struct ifaddrs* ifa_start;
-    int             ret;
-    char            ipv4Address[INET_ADDRSTRLEN];
-    char            ipv6Address[INET6_ADDRSTRLEN];
-    int sockfd;
+    struct ifaddrs*    ifa;
+    struct ifaddrs*    ifa_start;
+    int                ret;
+    char               ipv4Address[INET_ADDRSTRLEN];
+    char               ipv6Address[INET6_ADDRSTRLEN];
+    int                sockfd;
+    struct sockaddr_in serv_addr;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -51,7 +52,18 @@ int main()
         return 1;
     }
 
-    ifa_start=ifa;
+    serv_addr.sin_family      = AF_INET;
+    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_port        = htons(DICMOTE_PORT);
+
+    if(bind(sockfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    {
+        printf("Error %d binding socket.\n", errno);
+        close(sockfd);
+        return 1;
+    }
+
+    ifa_start = ifa;
 
     printf("Available addresses:\n");
     while(ifa != NULL)
@@ -61,12 +73,12 @@ int main()
             if(ifa->ifa_addr->sa_family == AF_INET)
             {
                 inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ipv4Address, INET_ADDRSTRLEN);
-                printf("%s port 6666\n", ipv4Address);
+                printf("%s port %d\n", ipv4Address, DICMOTE_PORT);
             }
             else if(ifa->ifa_addr->sa_family == AF_INET6)
             {
                 inet_ntop(AF_INET6, &((struct sockaddr_in6*)ifa->ifa_addr)->sin6_addr, ipv6Address, INET6_ADDRSTRLEN);
-                printf("%s port 6666\n", ipv6Address);
+                printf("%s port %d\n", ipv6Address, DICMOTE_PORT);
             }
         }
         ifa = ifa->ifa_next;
