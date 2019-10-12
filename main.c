@@ -29,6 +29,7 @@ int main()
     int             ret;
     char            ipv4Address[INET_ADDRSTRLEN];
     char            ipv6Address[INET6_ADDRSTRLEN];
+    int sockfd;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -38,6 +39,14 @@ int main()
     if(ret)
     {
         printf("Error %d enumerating interfaces\n", errno);
+        return 1;
+    }
+
+    printf("Opening socket.\n");
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if(sockfd < 0)
+    {
+        printf("Error %d opening socket.\n", errno);
         return 1;
     }
 
@@ -59,6 +68,9 @@ int main()
         }
         ifa = ifa->ifa_next;
     }
+
+    printf("Closing socket");
+    close(sockfd);
 
     return 0;
 }
