@@ -71,6 +71,7 @@ typedef struct
     char    serial[256];
     char    bus[256];
     uint8_t supported;
+    char    padding[3];
 } DeviceInfo;
 
 typedef struct DeviceInfoList
