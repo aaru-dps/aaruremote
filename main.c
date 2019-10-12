@@ -26,6 +26,7 @@
 int main()
 {
     struct ifaddrs* ifa;
+    struct ifaddrs* ifa_start;
     int             ret;
     char            ipv4Address[INET_ADDRSTRLEN];
     char            ipv6Address[INET6_ADDRSTRLEN];
@@ -50,6 +51,8 @@ int main()
         return 1;
     }
 
+    ifa_start=ifa;
+
     printf("Available addresses:\n");
     while(ifa != NULL)
     {
@@ -68,6 +71,8 @@ int main()
         }
         ifa = ifa->ifa_next;
     }
+
+    freeifaddrs(ifa_start);
 
     printf("Closing socket");
     close(sockfd);
