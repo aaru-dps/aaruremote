@@ -22,6 +22,7 @@
 #include <libnet.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <sys/utsname.h>
 
 int main()
 {
@@ -32,9 +33,20 @@ int main()
     int                sockfd, cli_sock;
     struct sockaddr_in serv_addr, cli_addr;
     socklen_t          cli_len;
+    struct utsname     utsname;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
+
+    ret = uname(&utsname);
+
+    if(ret)
+    {
+        printf("Error %d getting system version.\n", errno);
+        return 1;
+    }
+
+    printf("Running under %s %s (%s).\n", utsname.sysname, utsname.release, utsname.machine);
 
     ret = getifaddrs(&ifa);
 
