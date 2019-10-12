@@ -66,10 +66,10 @@ typedef struct
 typedef struct
 {
     char    path[1024];
-    char    vendor;
-    char    model;
-    char    serial;
-    char    bus;
+    char    vendor[256];
+    char    model[256];
+    char    serial[256];
+    char    bus[256];
     uint8_t supported;
 } DeviceInfo;
 
