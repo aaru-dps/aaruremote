@@ -25,6 +25,8 @@
 #include <stdlib.h>
 #include <sys/utsname.h>
 
+// TODO: Packet for NOP
+
 int main()
 {
     struct ifaddrs*    ifa;
