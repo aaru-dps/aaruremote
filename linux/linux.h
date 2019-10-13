@@ -20,6 +20,7 @@
 
 #include "../dicmote.h"
 
+#define PATH_SYS_DEVBLOCK "/sys/block"
 DeviceInfoList* linux_list_devices();
 
 #endif // DICREMOTE_LINUX_H
