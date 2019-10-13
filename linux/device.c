@@ -15,13 +15,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE_LINUX_H
-#define DICREMOTE_LINUX_H
+#include "linux.h"
 
-#include "../dicmote.h"
+#include <errno.h>
+#include <fcntl.h>
 
-#define PATH_SYS_DEVBLOCK "/sys/block"
-DeviceInfoList* linux_list_devices();
-int             linux_open_device(const char* device_path);
+int linux_open_device(const char* device_path)
+{
+    int fd;
 
-#endif // DICREMOTE_LINUX_H
+    fd = open(device_path, O_RDWR | O_NONBLOCK | O_CREAT);
+
+    if((fd < 0) && (errno == EACCES || errno == EROFS)) { fd = open(device_path, O_RDONLY | O_NONBLOCK); }
+
+    return fd;
+}

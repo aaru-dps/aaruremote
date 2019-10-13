@@ -15,4 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-int DeviceOpen(const char* devicePath) { return -1; }
+#if defined(__linux__) && !defined(__ANDROID__)
+#include "linux/linux.h"
+#endif
+
+int DeviceOpen(const char* devicePath)
+{
+#if defined(__linux__) && !defined(__ANDROID__)
+    return linux_open_device(devicePath);
+#else
+    return -1;
+#endif
+}

@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 90)
 set(MAIN_SOURCES main.c list_devices.c device.c)
 
 if("${CMAKE_SYSTEM}" MATCHES "Linux")
-    set(PLATFORM_SOURCES linux/list_devices.c linux/linux.h)
+    set(PLATFORM_SOURCES linux/list_devices.c linux/linux.h linux/device.c)
 endif()
 
 add_executable(dicremote ${MAIN_SOURCES} ${PLATFORM_SOURCES})
