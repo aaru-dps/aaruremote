@@ -46,6 +46,7 @@ int main()
     DicPacketResListDevs*  deviceInfoResponsePacket;
     int                    i;
     uint64_t               n;
+    DicPacketNop*          pkt_nop;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -133,6 +134,22 @@ int main()
     strncpy(pkt_server_hello->sysname, utsname.sysname, 255);
     strncpy(pkt_server_hello->release, utsname.release, 255);
     strncpy(pkt_server_hello->machine, utsname.machine, 255);
+
+    pkt_nop = malloc(sizeof(DicPacketNop));
+
+    if(!pkt_nop)
+    {
+        printf("Fatal error %d allocating memory.\n", errno);
+        close(sockfd);
+        return 1;
+    }
+
+    memset(pkt_nop, 0, sizeof(DicPacketNop));
+
+    pkt_nop->hdr.id          = DICMOTE_PACKET_ID;
+    pkt_nop->hdr.len         = sizeof(DicPacketNop);
+    pkt_nop->hdr.version     = DICMOTE_PACKET_VERSION;
+    pkt_nop->hdr.packet_type = DICMOTE_PACKET_TYPE_NOP;
 
     for(;;)
     {
@@ -294,7 +311,11 @@ int main()
             switch(pkt_hdr->packet_type)
             {
                 case DICMOTE_PACKET_TYPE_HELLO:
-                    printf("Received hello packet out of order, skipping...\n");
+                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
+                    memset(&pkt_nop->reason, 0, 256);
+                    strncpy(pkt_nop->reason, "Received hello packet out of order, skipping...", 256);
+                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES:
@@ -316,15 +337,19 @@ int main()
 
                     if(!deviceInfoList)
                     {
-                        printf("Could not get device list, continuing...\n");
+                        pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES;
+                        memset(&pkt_nop->reason, 0, 256);
+                        strncpy(pkt_nop->reason, "Could not get device list, continuing...", 256);
+                        write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                        printf("%s...\n", pkt_nop->reason);
                         continue;
                     }
 
                     deviceInfoResponsePacket          = malloc(sizeof(DicPacketResListDevs));
                     deviceInfoResponsePacket->devices = DeviceInfoListCount(deviceInfoList);
 
-                    n = sizeof(DicPacketResListDevs) + deviceInfoResponsePacket->devices * sizeof(DeviceInfo);
-                    dummy_buf                                   = malloc(n);
+                    n         = sizeof(DicPacketResListDevs) + deviceInfoResponsePacket->devices * sizeof(DeviceInfo);
+                    dummy_buf = malloc(n);
                     ((DicPacketResListDevs*)dummy_buf)->hdr.len = n;
                     ((DicPacketResListDevs*)dummy_buf)->devices = deviceInfoResponsePacket->devices;
                     free(deviceInfoResponsePacket);
@@ -337,7 +362,7 @@ int main()
 
                     // Save list start
                     dummy_buf = (char*)deviceInfoList;
-                    long off = sizeof(DicPacketResListDevs);
+                    long off  = sizeof(DicPacketResListDevs);
 
                     while(deviceInfoList)
                     {
@@ -355,11 +380,23 @@ int main()
                     printf("List devices not yet implemented, skipping...\n");
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
-                    printf("Received response packet?! You should certainly not do that...\n");
+                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
+                    memset(&pkt_nop->reason, 0, 256);
+                    strncpy(pkt_nop->reason, "Received response packet?! You should certainly not do that...", 256);
+                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
                 default:
-                    printf("Received unrecognized packet with type %d, skipping...\n", pkt_hdr->packet_type);
+                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
+                    memset(&pkt_nop->reason, 0, 256);
+                    snprintf(pkt_nop->reason,
+                             256,
+                             "Received unrecognized packet with type %d, skipping...",
+                             pkt_hdr->packet_type);
+                    strncpy(pkt_nop->reason, "Received unrecognized packet with type %d, skipping...", 256);
+                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
             }

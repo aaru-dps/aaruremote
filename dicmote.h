@@ -24,10 +24,15 @@
 #define DICMOTE_PORT 6666
 #define DICMOTE_PACKET_ID 0x6873678065677584 // "DICPACKT"
 #define DICMOTE_PACKET_VERSION 1
+#define DICMOTE_PACKET_TYPE_NOP -1
 #define DICMOTE_PACKET_TYPE_HELLO 1
 #define DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES 2
 #define DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES 3
 #define DICMOTE_PROTOCOL_MAX 1
+#define DICMOTE_PACKET_NOP_REASON_OOO 0
+#define DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
+#define DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED 2
+#define DICMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES 3
 
 #pragma pack(push, 1)
 
@@ -36,7 +41,7 @@ typedef struct
     uint64_t id;
     uint32_t len;
     uint8_t  version;
-    uint8_t  packet_type;
+    int8_t   packet_type;
     char     spare[2];
 } DicPacketHeader;
 
@@ -79,6 +84,15 @@ typedef struct DeviceInfoList
     struct DeviceInfoList* next;
     DeviceInfo this;
 } DeviceInfoList;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    uint8_t         reason_code;
+    char            spare[3];
+    char            reason[256];
+} DicPacketNop;
+
 #pragma pack(pop)
 
 DeviceInfoList* ListDevices();
