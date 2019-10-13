@@ -44,3 +44,18 @@ void FreeDeviceInfoList(DeviceInfoList* start)
         free(current);
     }
 }
+
+uint16_t DeviceInfoListCount(DeviceInfoList* start)
+{
+    uint16_t        count = 0;
+    DeviceInfoList* current;
+
+    while(start)
+    {
+        current = start;
+        start   = current->next;
+        count++;
+    }
+
+    return count;
+}

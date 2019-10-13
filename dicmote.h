@@ -83,5 +83,6 @@ typedef struct DeviceInfoList
 
 DeviceInfoList* ListDevices();
 void            FreeDeviceInfoList(DeviceInfoList* start);
+uint16_t        DeviceInfoListCount(DeviceInfoList* start);
 
 #endif

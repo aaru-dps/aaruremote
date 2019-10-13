@@ -43,6 +43,9 @@ int main()
     char*                  dummy_buf;
     int                    skip_next_hdr;
     struct DeviceInfoList* deviceInfoList;
+    DicPacketResListDevs*  deviceInfoResponsePacket;
+    int                    i;
+    uint64_t               n;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -317,7 +320,37 @@ int main()
                         continue;
                     }
 
+                    deviceInfoResponsePacket          = malloc(sizeof(DicPacketResListDevs));
+                    deviceInfoResponsePacket->devices = DeviceInfoListCount(deviceInfoList);
+
+                    n = sizeof(DicPacketResListDevs) + deviceInfoResponsePacket->devices * sizeof(DeviceInfo);
+                    dummy_buf                                   = malloc(n);
+                    ((DicPacketResListDevs*)dummy_buf)->hdr.len = n;
+                    ((DicPacketResListDevs*)dummy_buf)->devices = deviceInfoResponsePacket->devices;
+                    free(deviceInfoResponsePacket);
+                    deviceInfoResponsePacket = (DicPacketResListDevs*)dummy_buf;
+                    dummy_buf                = NULL;
+
+                    deviceInfoResponsePacket->hdr.id          = DICMOTE_PACKET_ID;
+                    deviceInfoResponsePacket->hdr.version     = DICMOTE_PACKET_VERSION;
+                    deviceInfoResponsePacket->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
+
+                    // Save list start
+                    dummy_buf = (char*)deviceInfoList;
+                    long off = sizeof(DicPacketResListDevs);
+
+                    while(deviceInfoList)
+                    {
+                        memcpy(((char*)deviceInfoResponsePacket) + off, &deviceInfoList->this, sizeof(DeviceInfo));
+                        deviceInfoList = deviceInfoList->next;
+                        off += sizeof(DeviceInfo);
+                    }
+
+                    deviceInfoList = (struct DeviceInfoList*)dummy_buf;
                     FreeDeviceInfoList(deviceInfoList);
+
+                    write(cli_sock, deviceInfoResponsePacket, deviceInfoResponsePacket->hdr.len);
+                    free(deviceInfoResponsePacket);
 
                     printf("List devices not yet implemented, skipping...\n");
                     continue;
