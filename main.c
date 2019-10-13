@@ -317,6 +317,8 @@ int main()
                         continue;
                     }
 
+                    FreeDeviceInfoList(deviceInfoList);
+
                     printf("List devices not yet implemented, skipping...\n");
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:

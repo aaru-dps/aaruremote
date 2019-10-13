@@ -21,11 +21,26 @@
 #include "linux/linux.h"
 #endif
 
+#include <stddef.h>
+#include <stdlib.h>
+
 DeviceInfoList* ListDevices()
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return linux_list_devices();
 #else
-    return 0;
+    return NULL;
 #endif
+}
+
+void FreeDeviceInfoList(DeviceInfoList* start)
+{
+    DeviceInfoList* current;
+
+    while(start)
+    {
+        current = start;
+        start   = current->next;
+        free(current);
+    }
 }
