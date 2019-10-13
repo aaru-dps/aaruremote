@@ -94,7 +94,7 @@ typedef struct
     uint8_t         reason_code;
     char            spare[3];
     char            reason[256];
-    int32_t         errno;
+    int32_t         errorNo;
 } DicPacketNop;
 
 typedef struct
@@ -108,5 +108,6 @@ typedef struct
 DeviceInfoList* ListDevices();
 void            FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t        DeviceInfoListCount(DeviceInfoList* start);
+int             DeviceOpen(const char* devicePath);
 
 #endif

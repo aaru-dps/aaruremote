@@ -47,6 +47,8 @@ int main()
     int                    i;
     uint64_t               n;
     DicPacketNop*          pkt_nop;
+    DicPacketCmdOpen*      pkt_dev_open;
+    int                    device_fd;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -388,12 +390,27 @@ int main()
                     skip_next_hdr = 1;
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_OPEN_DEVICE:
-                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED;
+                    pkt_dev_open = malloc(pkt_hdr->len);
+
+                    if(!pkt_dev_open)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, pkt_dev_open, pkt_hdr->len, 0);
+
+                    device_fd = DeviceOpen(pkt_dev_open->device_path);
+
+                    pkt_nop->reason_code =
+                        device_fd == -1 ? DICMOTE_PACKET_NOP_REASON_OPEN_ERROR : DICMOTE_PACKET_NOP_REASON_OPEN_OK;
+                    pkt_nop->errorNo = errno;
                     memset(&pkt_nop->reason, 0, 256);
-                    strncpy(pkt_nop->reason, "Opening devices not yet implemented...", 256);
                     write(cli_sock, pkt_nop, sizeof(DicPacketNop));
-                    printf("%s...\n", pkt_nop->reason);
-                    skip_next_hdr = 1;
+
+                    free(pkt_dev_open);
                     continue;
                 default:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
