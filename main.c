@@ -387,6 +387,14 @@ int main()
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_OPEN_DEVICE:
+                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED;
+                    memset(&pkt_nop->reason, 0, 256);
+                    strncpy(pkt_nop->reason, "Opening devices not yet implemented...", 256);
+                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    printf("%s...\n", pkt_nop->reason);
+                    skip_next_hdr = 1;
+                    continue;
                 default:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);

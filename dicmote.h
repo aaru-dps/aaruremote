@@ -28,6 +28,7 @@
 #define DICMOTE_PACKET_TYPE_HELLO 1
 #define DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES 2
 #define DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES 3
+#define DICMOTE_PACKET_TYPE_COMMAND_OPEN_DEVICE 4
 #define DICMOTE_PROTOCOL_MAX 1
 #define DICMOTE_PACKET_NOP_REASON_OOO 0
 #define DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -93,6 +94,12 @@ typedef struct
     char            reason[256];
     int32_t         errno;
 } DicPacketNop;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    char            device_path[1024];
+} DicPacketCmdOpen;
 
 #pragma pack(pop)
 
