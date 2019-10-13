@@ -91,6 +91,7 @@ typedef struct
     uint8_t         reason_code;
     char            spare[3];
     char            reason[256];
+    int32_t         errno;
 } DicPacketNop;
 
 #pragma pack(pop)
