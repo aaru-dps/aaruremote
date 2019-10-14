@@ -39,6 +39,8 @@
 #define DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA48 12
 #define DICMOTE_PACKET_TYPE_COMMAND_SDHCI 13
 #define DICMOTE_PACKET_TYPE_RESPONSE_SDHCI 14
+#define DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE 15
+#define DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE 16
 #define DICMOTE_PROTOCOL_MAX 1
 #define DICMOTE_PACKET_NOP_REASON_OOO 0
 #define DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -46,6 +48,13 @@
 #define DICMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES 3
 #define DICMOTE_PACKET_NOP_REASON_OPEN_OK 4
 #define DICMOTE_PACKET_NOP_REASON_OPEN_ERROR 5
+#define DICMOTE_DEVICE_TYPE_UNKNOWN -1
+#define DICMOTE_DEVICE_TYPE_ATA 1
+#define DICMOTE_DEVICE_TYPE_ATAPI 2
+#define DICMOTE_DEVICE_TYPE_SCSI 3
+#define DICMOTE_DEVICE_TYPE_SECURE_DIGITAL 4
+#define DICMOTE_DEVICE_TYPE_MMC 5
+#define DICMOTE_DEVICE_TYPE_NVME 6
 
 #pragma pack(push, 1)
 
@@ -287,6 +296,18 @@ typedef struct
     uint32_t        sense;
     uint32_t        errno;
 } DicPacketResSdhci;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdGetDeviceType;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    int32_t         device_type;
+} DicPacketResGetDeviceType;
+
 #pragma pack(pop)
 
 DeviceInfoList* ListDevices();
