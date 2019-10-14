@@ -41,6 +41,8 @@
 #define DICMOTE_PACKET_TYPE_RESPONSE_SDHCI 14
 #define DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE 15
 #define DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE 16
+#define DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS 17
+#define DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS 18
 #define DICMOTE_PROTOCOL_MAX 1
 #define DICMOTE_PACKET_NOP_REASON_OOO 0
 #define DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -307,6 +309,21 @@ typedef struct
     DicPacketHeader hdr;
     int32_t         device_type;
 } DicPacketResGetDeviceType;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdGetSdhciRegisters;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    uint8_t         isSdhci;
+    char            csd[16];
+    char            cid[16];
+    char            ocr[4];
+    char            scr[8];
+} DicPacketResGetSdhciRegisters;
 
 #pragma pack(pop)
 
