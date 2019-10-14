@@ -43,6 +43,12 @@
 #define DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE 16
 #define DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS 17
 #define DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS 18
+#define DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA 19
+#define DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA 20
+#define DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA 21
+#define DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA 22
+#define DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA 23
+#define DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA 24
 #define DICMOTE_PROTOCOL_MAX 1
 #define DICMOTE_PACKET_NOP_REASON_OOO 0
 #define DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -324,6 +330,53 @@ typedef struct
     char            ocr[4];
     char            scr[8];
 } DicPacketResGetSdhciRegisters;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdGetUsbData;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    uint8_t         isUsb;
+    uint16_t        descLen;
+    char            descriptors[65536];
+    uint16_t        idVendor;
+    uint16_t        idProduct;
+    char            manufacturer[256];
+    char            product[256];
+    char            serial[256];
+} DicPacketResGetUsbData;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdGetFireWireData;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    uint8_t         isFireWire;
+    uint32_t        idModel;
+    uint32_t        idVendor;
+    uint64_t        guid;
+    char            vendor[256];
+    char            model[256];
+} DicPacketResGetFireWireData;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdGetPcmciaData;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    uint8_t         isPcmcia;
+    uint16_t        cis_len;
+    char            cis[65536];
+} DicPacketResGetPcmciaData;
 
 #pragma pack(pop)
 
