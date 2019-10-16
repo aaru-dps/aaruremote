@@ -40,7 +40,7 @@ int main()
     DicPacketHello *           pkt_server_hello, *pkt_client_hello;
     DicPacketHeader*           pkt_hdr;
     ssize_t                    recv_size;
-    char*                      dummy_buf;
+    char*                      in_buf;
     int                        skip_next_hdr;
     struct DeviceInfoList*     deviceInfoList;
     DicPacketResListDevs*      deviceInfoResponsePacket;
@@ -48,9 +48,18 @@ int main()
     uint64_t                   n;
     DicPacketNop*              pkt_nop;
     DicPacketCmdOpen*          pkt_dev_open;
-    int                        device_fd;
+    int                        device_fd = -1;
     char                       device_path[1024];
     DicPacketResGetDeviceType* pkt_dev_type;
+    DicPacketCmdScsi*          pkt_cmd_scsi;
+    char*                      sense_buf;
+    char*                      buffer;
+    char*                      cdb_buf;
+    uint32_t                   duration;
+    uint32_t                   sense;
+    uint32_t                   sense_len;
+    char*                      out_buf;
+    DicPacketResScsi*          pkt_res_scsi;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -264,9 +273,9 @@ int main()
         {
             if(skip_next_hdr)
             {
-                dummy_buf = malloc(pkt_hdr->len);
+                in_buf = malloc(pkt_hdr->len);
 
-                if(!dummy_buf)
+                if(!in_buf)
                 {
                     printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                     free(pkt_hdr);
@@ -274,8 +283,8 @@ int main()
                     continue;
                 }
 
-                recv(cli_sock, dummy_buf, pkt_hdr->len, 0);
-                free(dummy_buf);
+                recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                free(in_buf);
                 skip_next_hdr = 0;
             }
 
@@ -326,9 +335,9 @@ int main()
                     deviceInfoList = ListDevices();
 
                     // Packet only contains header so, dummy
-                    dummy_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(pkt_hdr->len);
 
-                    if(!dummy_buf)
+                    if(!in_buf)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
@@ -336,8 +345,8 @@ int main()
                         continue;
                     }
 
-                    recv(cli_sock, dummy_buf, pkt_hdr->len, 0);
-                    free(dummy_buf);
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    free(in_buf);
 
                     if(!deviceInfoList)
                     {
@@ -353,19 +362,19 @@ int main()
                     deviceInfoResponsePacket->devices = DeviceInfoListCount(deviceInfoList);
 
                     n         = sizeof(DicPacketResListDevs) + deviceInfoResponsePacket->devices * sizeof(DeviceInfo);
-                    dummy_buf = malloc(n);
-                    ((DicPacketResListDevs*)dummy_buf)->hdr.len = n;
-                    ((DicPacketResListDevs*)dummy_buf)->devices = deviceInfoResponsePacket->devices;
+                    in_buf    = malloc(n);
+                    ((DicPacketResListDevs*)in_buf)->hdr.len = n;
+                    ((DicPacketResListDevs*)in_buf)->devices = deviceInfoResponsePacket->devices;
                     free(deviceInfoResponsePacket);
-                    deviceInfoResponsePacket = (DicPacketResListDevs*)dummy_buf;
-                    dummy_buf                = NULL;
+                    deviceInfoResponsePacket = (DicPacketResListDevs*)in_buf;
+                    in_buf                   = NULL;
 
                     deviceInfoResponsePacket->hdr.id          = DICMOTE_PACKET_ID;
                     deviceInfoResponsePacket->hdr.version     = DICMOTE_PACKET_VERSION;
                     deviceInfoResponsePacket->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
 
                     // Save list start
-                    dummy_buf = (char*)deviceInfoList;
+                    in_buf    = (char*)deviceInfoList;
                     long off  = sizeof(DicPacketResListDevs);
 
                     while(deviceInfoList)
@@ -375,7 +384,7 @@ int main()
                         off += sizeof(DeviceInfo);
                     }
 
-                    deviceInfoList = (struct DeviceInfoList*)dummy_buf;
+                    deviceInfoList = (struct DeviceInfoList*)in_buf;
                     FreeDeviceInfoList(deviceInfoList);
 
                     write(cli_sock, deviceInfoResponsePacket, deviceInfoResponsePacket->hdr.len);
@@ -427,9 +436,9 @@ int main()
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE:
                     // Packet only contains header so, dummy
-                    dummy_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(pkt_hdr->len);
 
-                    if(!dummy_buf)
+                    if(!in_buf)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
@@ -437,8 +446,8 @@ int main()
                         continue;
                     }
 
-                    recv(cli_sock, dummy_buf, pkt_hdr->len, 0);
-                    free(dummy_buf);
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    free(in_buf);
 
                     pkt_dev_type = malloc(sizeof(DicPacketResGetDeviceType));
 
@@ -462,6 +471,76 @@ int main()
                     free(pkt_dev_type);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SCSI:
+                    // Packet contains data after
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+
+                    pkt_cmd_scsi = (DicPacketCmdScsi*)in_buf;
+
+                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+
+                    if(pkt_cmd_scsi->cdb_len > 0)
+                        cdb_buf = in_buf + sizeof(DicPacketCmdScsi);
+                    else
+                        cdb_buf = NULL;
+
+                    if(pkt_cmd_scsi->buf_len > 0)
+                        buffer = in_buf + pkt_cmd_scsi->cdb_len + sizeof(DicPacketCmdScsi);
+                    else
+                        buffer = NULL;
+
+                    ret = SendScsiCommand(device_fd,
+                                          cdb_buf,
+                                          buffer,
+                                          &sense_buf,
+                                          pkt_cmd_scsi->timeout,
+                                          pkt_cmd_scsi->direction,
+                                          &duration,
+                                          &sense,
+                                          pkt_cmd_scsi->cdb_len,
+                                          &pkt_cmd_scsi->buf_len,
+                                          &sense_len);
+
+                    out_buf = malloc(sizeof(DicPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len);
+
+                    if(!out_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    pkt_res_scsi = (DicPacketResScsi*)out_buf;
+                    if(sense_buf) memcpy(out_buf + sizeof(DicPacketResScsi), sense_buf, sense_len);
+                    if(buffer) memcpy(out_buf + sizeof(DicPacketResScsi) + sense_len, buffer, pkt_cmd_scsi->buf_len);
+
+                    pkt_res_scsi->hdr.len         = sizeof(DicPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len;
+                    pkt_res_scsi->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SCSI;
+                    pkt_res_scsi->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_scsi->hdr.id          = DICMOTE_PACKET_ID;
+
+                    pkt_res_scsi->sense_len = sense_len;
+                    pkt_res_scsi->buf_len   = pkt_cmd_scsi->buf_len;
+                    pkt_res_scsi->duration  = duration;
+                    pkt_res_scsi->sense     = sense;
+                    pkt_res_scsi->error_no  = ret;
+
+                    write(cli_sock, pkt_res_scsi, pkt_res_scsi->hdr.len);
+                    free(pkt_cmd_scsi);
+                    free(pkt_res_scsi);
+                    if(sense_buf) free(sense_buf);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48:

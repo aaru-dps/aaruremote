@@ -151,7 +151,7 @@ typedef struct
     uint32_t        buf_len;
     uint32_t        duration;
     uint32_t        sense;
-    uint32_t        errno;
+    uint32_t        error_no;
 } DicPacketResScsi;
 
 typedef struct
@@ -195,7 +195,7 @@ typedef struct
     AtaErrorRegistersChs registers;
     uint32_t             duration;
     uint32_t             sense;
-    uint32_t             errno;
+    uint32_t             error_no;
 } DicPacketResAtaChs;
 
 typedef struct
@@ -239,7 +239,7 @@ typedef struct
     AtaErrorRegistersLba28 registers;
     uint32_t               duration;
     uint32_t               sense;
-    uint32_t               errno;
+    uint32_t               error_no;
 } DicPacketResAtaLba28;
 
 typedef struct
@@ -283,7 +283,7 @@ typedef struct
     AtaErrorRegistersLba48 registers;
     uint32_t               duration;
     uint32_t               sense;
-    uint32_t               errno;
+    uint32_t               error_no;
 } DicPacketResAtaLba48;
 
 typedef struct
@@ -307,7 +307,7 @@ typedef struct
     uint32_t        response[4];
     uint32_t        duration;
     uint32_t        sense;
-    uint32_t        errno;
+    uint32_t        error_no;
 } DicPacketResSdhci;
 
 typedef struct
