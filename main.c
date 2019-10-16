@@ -49,6 +49,7 @@ int main()
     DicPacketNop*          pkt_nop;
     DicPacketCmdOpen*      pkt_dev_open;
     int                    device_fd;
+    char device_path[1024];
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -417,6 +418,9 @@ int main()
                     pkt_nop->errorNo = errno;
                     memset(&pkt_nop->reason, 0, 256);
                     write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+
+                    if(pkt_nop->reason_code == DICMOTE_PACKET_NOP_REASON_OPEN_OK)
+                        strncpy(device_path, pkt_dev_open->device_path, 1024);
 
                     free(pkt_dev_open);
                     continue;
