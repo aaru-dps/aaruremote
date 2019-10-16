@@ -384,5 +384,6 @@ DeviceInfoList* ListDevices();
 void            FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t        DeviceInfoListCount(DeviceInfoList* start);
 int             DeviceOpen(const char* devicePath);
+int32_t         GetDeviceType(const char* devicePath);
 
 #endif

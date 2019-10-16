@@ -27,3 +27,12 @@ int DeviceOpen(const char* devicePath)
     return -1;
 #endif
 }
+
+int32_t GetDeviceType(const char* devicePath)
+{
+#if defined(__linux__) && !defined(__ANDROID__)
+    return linux_get_device_type(devicePath);
+#else
+    return DICMOTE_DEVICE_TYPE_UNKNOWN;
+#endif
+}

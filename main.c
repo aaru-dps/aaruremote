@@ -29,27 +29,28 @@
 
 int main()
 {
-    struct ifaddrs*        ifa;
-    struct ifaddrs*        ifa_start;
-    int                    ret;
-    char                   ipv4Address[INET_ADDRSTRLEN];
-    int                    sockfd, cli_sock;
-    struct sockaddr_in     serv_addr, cli_addr;
-    socklen_t              cli_len;
-    struct utsname         utsname;
-    DicPacketHello *       pkt_server_hello, *pkt_client_hello;
-    DicPacketHeader*       pkt_hdr;
-    ssize_t                recv_size;
-    char*                  dummy_buf;
-    int                    skip_next_hdr;
-    struct DeviceInfoList* deviceInfoList;
-    DicPacketResListDevs*  deviceInfoResponsePacket;
-    int                    i;
-    uint64_t               n;
-    DicPacketNop*          pkt_nop;
-    DicPacketCmdOpen*      pkt_dev_open;
-    int                    device_fd;
-    char device_path[1024];
+    struct ifaddrs*            ifa;
+    struct ifaddrs*            ifa_start;
+    int                        ret;
+    char                       ipv4Address[INET_ADDRSTRLEN];
+    int                        sockfd, cli_sock;
+    struct sockaddr_in         serv_addr, cli_addr;
+    socklen_t                  cli_len;
+    struct utsname             utsname;
+    DicPacketHello *           pkt_server_hello, *pkt_client_hello;
+    DicPacketHeader*           pkt_hdr;
+    ssize_t                    recv_size;
+    char*                      dummy_buf;
+    int                        skip_next_hdr;
+    struct DeviceInfoList*     deviceInfoList;
+    DicPacketResListDevs*      deviceInfoResponsePacket;
+    int                        i;
+    uint64_t                   n;
+    DicPacketNop*              pkt_nop;
+    DicPacketCmdOpen*          pkt_dev_open;
+    int                        device_fd;
+    char                       device_path[1024];
+    DicPacketResGetDeviceType* pkt_dev_type;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -424,12 +425,47 @@ int main()
 
                     free(pkt_dev_open);
                     continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE:
+                    // Packet only contains header so, dummy
+                    dummy_buf = malloc(pkt_hdr->len);
+
+                    if(!dummy_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, dummy_buf, pkt_hdr->len, 0);
+                    free(dummy_buf);
+
+                    pkt_dev_type = malloc(sizeof(DicPacketResGetDeviceType));
+
+                    if(!pkt_dev_type)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    memset(pkt_dev_type, 0, sizeof(DicPacketResGetDeviceType));
+
+                    pkt_dev_type->hdr.len         = sizeof(DicPacketResGetDeviceType);
+                    pkt_dev_type->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE;
+                    pkt_dev_type->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_dev_type->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_dev_type->device_type     = GetDeviceType(device_path);
+
+                    write(cli_sock, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
+                    free(pkt_dev_type);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SCSI:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48:
                 case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:

@@ -23,5 +23,6 @@
 #define PATH_SYS_DEVBLOCK "/sys/block"
 DeviceInfoList* linux_list_devices();
 int             linux_open_device(const char* device_path);
+int32_t         linux_get_device_type(const char* devicePath);
 
 #endif // DICREMOTE_LINUX_H
