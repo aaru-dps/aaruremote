@@ -382,6 +382,16 @@ int main()
                     printf("List devices not yet implemented, skipping...\n");
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
+                case DICMOTE_PACKET_TYPE_RESPONSE_SCSI:
+                case DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS:
+                case DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA28:
+                case DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA48:
+                case DICMOTE_PACKET_TYPE_RESPONSE_SDHCI:
+                case DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE:
+                case DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
+                case DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA:
+                case DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA:
+                case DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Received response packet?! You should certainly not do that...", 256);
@@ -412,6 +422,23 @@ int main()
 
                     free(pkt_dev_open);
                     continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_SCSI:
+                case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
+                case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28:
+                case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48:
+                case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE:
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
+                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED;
+                    memset(&pkt_nop->reason, 0, 256);
+                    strncpy(pkt_nop->reason, "Packet not yet implemented, skipping...", 256);
+                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    printf("%s...\n", pkt_nop->reason);
+                    skip_next_hdr = 1;
+                    continue;
                 default:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);
@@ -419,7 +446,6 @@ int main()
                              256,
                              "Received unrecognized packet with type %d, skipping...",
                              pkt_hdr->packet_type);
-                    strncpy(pkt_nop->reason, "Received unrecognized packet with type %d, skipping...", 256);
                     write(cli_sock, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
