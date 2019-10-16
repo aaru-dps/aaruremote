@@ -63,6 +63,11 @@
 #define DICMOTE_DEVICE_TYPE_SECURE_DIGITAL 4
 #define DICMOTE_DEVICE_TYPE_MMC 5
 #define DICMOTE_DEVICE_TYPE_NVME 6
+#define DICMOTE_SCSI_DIRECTION_UNSPECIFIED -1
+#define DICMOTE_SCSI_DIRECTION_NONE 0
+#define DICMOTE_SCSI_DIRECTION_OUT 1
+#define DICMOTE_SCSI_DIRECTION_IN 2
+#define DICMOTE_SCSI_DIRECTION_INOUT 3
 
 #pragma pack(push, 1)
 
@@ -385,5 +390,16 @@ void            FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t        DeviceInfoListCount(DeviceInfoList* start);
 int             DeviceOpen(const char* devicePath);
 int32_t         GetDeviceType(const char* devicePath);
+int32_t         SendScsiCommand(int       device_fd,
+                                char*     cdb,
+                                char*     buffer,
+                                char**    senseBuffer,
+                                uint32_t  timeout,
+                                int32_t   direction,
+                                uint32_t* duration,
+                                uint32_t* sense,
+                                uint32_t  cdb_len,
+                                uint32_t* buf_len,
+                                uint32_t* sense_len);
 
 #endif

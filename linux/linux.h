@@ -24,5 +24,15 @@
 DeviceInfoList* linux_list_devices();
 int             linux_open_device(const char* device_path);
 int32_t         linux_get_device_type(const char* devicePath);
-
+int32_t         linux_send_scsi_command(int       device_fd,
+                                        char*     cdb,
+                                        char*     buffer,
+                                        char**    senseBuffer,
+                                        uint32_t  timeout,
+                                        int32_t   direction,
+                                        uint32_t* duration,
+                                        uint32_t* sense,
+                                        uint32_t  cdb_len,
+                                        uint32_t* buf_len,
+                                        uint32_t* sense_len);
 #endif // DICREMOTE_LINUX_H
