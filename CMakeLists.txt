@@ -3,7 +3,7 @@ project(dicremote C)
 
 set(CMAKE_C_STANDARD 90)
 
-set(MAIN_SOURCES main.c list_devices.c device.c scsi.c)
+set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c)
 
 if("${CMAKE_SYSTEM}" MATCHES "Linux")
     set(PLATFORM_SOURCES linux/list_devices.c linux/linux.h linux/device.c linux/scsi.c)

@@ -18,7 +18,9 @@
 #ifndef DICMOTE_H
 #define DICMOTE_H
 
+#include <stddef.h>
 #include <stdint.h>
+
 #define DICMOTE_NAME "DiscImageChef Remote Server"
 #define DICMOTE_VERSION "0.99"
 #define DICMOTE_PORT 6666
@@ -401,5 +403,7 @@ int32_t         SendScsiCommand(int       device_fd,
                                 uint32_t  cdb_len,
                                 uint32_t* buf_len,
                                 uint32_t* sense_len);
+int             hexchr2bin(const char hex, char* out);
+size_t          hexs2bin(const char* hex, unsigned char** out);
 
 #endif
