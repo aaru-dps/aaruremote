@@ -67,7 +67,7 @@ int32_t linux_send_scsi_command(int       device_fd,
 
     ret = ioctl(device_fd, SG_IO, &hdr);
 
-    *sense |= (hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK;
+    *sense = (hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK;
     // TODO: Manual timing if duration is 0
     *duration  = hdr.duration;
     *sense_len = hdr.sb_len_wr;
