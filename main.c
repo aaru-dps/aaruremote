@@ -29,37 +29,42 @@
 
 int main()
 {
-    struct ifaddrs*            ifa;
-    struct ifaddrs*            ifa_start;
-    int                        ret;
-    char                       ipv4Address[INET_ADDRSTRLEN];
-    int                        sockfd, cli_sock;
-    struct sockaddr_in         serv_addr, cli_addr;
-    socklen_t                  cli_len;
-    struct utsname             utsname;
-    DicPacketHello *           pkt_server_hello, *pkt_client_hello;
-    DicPacketHeader*           pkt_hdr;
-    ssize_t                    recv_size;
-    char*                      in_buf;
-    int                        skip_next_hdr;
-    struct DeviceInfoList*     deviceInfoList;
-    DicPacketResListDevs*      deviceInfoResponsePacket;
-    int                        i;
-    uint64_t                   n;
-    DicPacketNop*              pkt_nop;
-    DicPacketCmdOpen*          pkt_dev_open;
-    int                        device_fd = -1;
-    char                       device_path[1024];
-    DicPacketResGetDeviceType* pkt_dev_type;
-    DicPacketCmdScsi*          pkt_cmd_scsi;
-    char*                      sense_buf;
-    char*                      buffer;
-    char*                      cdb_buf;
-    uint32_t                   duration;
-    uint32_t                   sense;
-    uint32_t                   sense_len;
-    char*                      out_buf;
-    DicPacketResScsi*          pkt_res_scsi;
+    struct ifaddrs*                ifa;
+    struct ifaddrs*                ifa_start;
+    int                            ret;
+    char                           ipv4Address[INET_ADDRSTRLEN];
+    int                            sockfd, cli_sock;
+    struct sockaddr_in             serv_addr, cli_addr;
+    socklen_t                      cli_len;
+    struct utsname                 utsname;
+    DicPacketHello *               pkt_server_hello, *pkt_client_hello;
+    DicPacketHeader*               pkt_hdr;
+    ssize_t                        recv_size;
+    char*                          in_buf;
+    int                            skip_next_hdr;
+    struct DeviceInfoList*         deviceInfoList;
+    DicPacketResListDevs*          deviceInfoResponsePacket;
+    int                            i;
+    uint64_t                       n;
+    DicPacketNop*                  pkt_nop;
+    DicPacketCmdOpen*              pkt_dev_open;
+    int                            device_fd = -1;
+    char                           device_path[1024];
+    DicPacketResGetDeviceType*     pkt_dev_type;
+    DicPacketCmdScsi*              pkt_cmd_scsi;
+    char*                          sense_buf;
+    char*                          buffer;
+    char*                          cdb_buf;
+    uint32_t                       duration;
+    uint32_t                       sense;
+    uint32_t                       sense_len;
+    char*                          out_buf;
+    DicPacketResScsi*              pkt_res_scsi;
+    DicPacketResGetSdhciRegisters* sdhciRegsResponsePacket;
+    char*                          csd;
+    char*                          cid;
+    char*                          ocr;
+    char*                          scr;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -361,8 +366,8 @@ int main()
                     deviceInfoResponsePacket          = malloc(sizeof(DicPacketResListDevs));
                     deviceInfoResponsePacket->devices = DeviceInfoListCount(deviceInfoList);
 
-                    n         = sizeof(DicPacketResListDevs) + deviceInfoResponsePacket->devices * sizeof(DeviceInfo);
-                    in_buf    = malloc(n);
+                    n      = sizeof(DicPacketResListDevs) + deviceInfoResponsePacket->devices * sizeof(DeviceInfo);
+                    in_buf = malloc(n);
                     ((DicPacketResListDevs*)in_buf)->hdr.len = n;
                     ((DicPacketResListDevs*)in_buf)->devices = deviceInfoResponsePacket->devices;
                     free(deviceInfoResponsePacket);
@@ -374,8 +379,8 @@ int main()
                     deviceInfoResponsePacket->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
 
                     // Save list start
-                    in_buf    = (char*)deviceInfoList;
-                    long off  = sizeof(DicPacketResListDevs);
+                    in_buf   = (char*)deviceInfoList;
+                    long off = sizeof(DicPacketResListDevs);
 
                     while(deviceInfoList)
                     {
@@ -390,6 +395,7 @@ int main()
                     write(cli_sock, deviceInfoResponsePacket, deviceInfoResponsePacket->hdr.len);
                     free(deviceInfoResponsePacket);
                     continue;
+                case DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
                 case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
                 case DICMOTE_PACKET_TYPE_RESPONSE_SCSI:
                 case DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS:
@@ -397,7 +403,6 @@ int main()
                 case DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA48:
                 case DICMOTE_PACKET_TYPE_RESPONSE_SDHCI:
                 case DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE:
-                case DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
                 case DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA:
                 case DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA:
                 case DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA:
@@ -541,11 +546,82 @@ int main()
                     free(pkt_res_scsi);
                     if(sense_buf) free(sense_buf);
                     continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
+                    // Packet only contains header so, dummy
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    free(in_buf);
+
+                    sdhciRegsResponsePacket = malloc(sizeof(DicPacketResGetSdhciRegisters));
+                    if(!sdhciRegsResponsePacket)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    memset(sdhciRegsResponsePacket, 0, sizeof(DicPacketResGetSdhciRegisters));
+                    sdhciRegsResponsePacket->hdr.id          = DICMOTE_PACKET_ID;
+                    sdhciRegsResponsePacket->hdr.version     = DICMOTE_PACKET_VERSION;
+                    sdhciRegsResponsePacket->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
+                    sdhciRegsResponsePacket->hdr.len         = sizeof(DicPacketResGetSdhciRegisters);
+                    sdhciRegsResponsePacket->isSdhci         = GetSdhciRegisters(device_path,
+                                                                         &csd,
+                                                                         &cid,
+                                                                         &ocr,
+                                                                         &scr,
+                                                                         &sdhciRegsResponsePacket->csd_len,
+                                                                         &sdhciRegsResponsePacket->cid_len,
+                                                                         &sdhciRegsResponsePacket->ocr_len,
+                                                                         &sdhciRegsResponsePacket->scr_len);
+
+                    if(sdhciRegsResponsePacket->csd_len > 0 && csd != NULL)
+                    {
+                        if(sdhciRegsResponsePacket->csd_len > 16) sdhciRegsResponsePacket->csd_len = 16;
+
+                        memcpy(sdhciRegsResponsePacket->csd, csd, sdhciRegsResponsePacket->csd_len);
+                    }
+                    if(sdhciRegsResponsePacket->cid_len > 0 && cid != NULL)
+                    {
+                        if(sdhciRegsResponsePacket->cid_len > 16) sdhciRegsResponsePacket->cid_len = 16;
+
+                        memcpy(sdhciRegsResponsePacket->cid, cid, sdhciRegsResponsePacket->cid_len);
+                    }
+                    if(sdhciRegsResponsePacket->ocr_len > 0 && ocr != NULL)
+                    {
+                        if(sdhciRegsResponsePacket->ocr_len > 4) sdhciRegsResponsePacket->ocr_len = 4;
+
+                        memcpy(sdhciRegsResponsePacket->ocr, ocr, sdhciRegsResponsePacket->ocr_len);
+                    }
+                    if(sdhciRegsResponsePacket->scr_len > 0 && scr != NULL)
+                    {
+                        if(sdhciRegsResponsePacket->scr_len > 8) sdhciRegsResponsePacket->scr_len = 8;
+
+                        memcpy(sdhciRegsResponsePacket->scr, scr, sdhciRegsResponsePacket->scr_len);
+                    }
+
+                    free(csd);
+                    free(cid);
+                    free(scr);
+                    free(ocr);
+
+                    write(cli_sock, sdhciRegsResponsePacket, sdhciRegsResponsePacket->hdr.len);
+                    free(sdhciRegsResponsePacket);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48:
                 case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:

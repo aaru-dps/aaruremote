@@ -336,6 +336,10 @@ typedef struct
     char            cid[16];
     char            ocr[4];
     char            scr[8];
+    uint32_t        csd_len;
+    uint32_t        cid_len;
+    uint32_t        ocr_len;
+    uint32_t        scr_len;
 } DicPacketResGetSdhciRegisters;
 
 typedef struct
@@ -410,9 +414,9 @@ int32_t         GetSdhciRegisters(const char* devicePath,
                                   char**      cid,
                                   char**      ocr,
                                   char**      scr,
-                                  int*        csd_len,
-                                  int*        cid_len,
-                                  int*        ocr_len,
-                                  int*        scr_len);
+                                  uint32_t*   csd_len,
+                                  uint32_t*   cid_len,
+                                  uint32_t*   ocr_len,
+                                  uint32_t*   scr_len);
 
 #endif
