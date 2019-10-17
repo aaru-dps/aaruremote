@@ -118,3 +118,158 @@ int32_t linux_get_device_type(const char* devicePath)
 
     return deviceType;
 }
+
+int32_t linux_get_sdhci_registers(const char* devicePath,
+                                  char**      csd,
+                                  char**      cid,
+                                  char**      ocr,
+                                  char**      scr,
+                                  int*        csd_len,
+                                  int*        cid_len,
+                                  int*        ocr_len,
+                                  int*        scr_len)
+{
+    char*  tmpString;
+    char*  sysfsPath_csd;
+    char*  sysfsPath_cid;
+    char*  sysfsPath_scr;
+    char*  sysfsPath_ocr;
+    size_t len;
+    FILE*  file;
+    *csd     = NULL;
+    *cid     = NULL;
+    *ocr     = NULL;
+    *scr     = NULL;
+    *csd_len = 0;
+    *cid_len = 0;
+    *ocr_len = 0;
+    *scr_len = 0;
+    size_t n = 1026;
+
+    if(strncmp(devicePath, "/dev/mmcblk", 11) != 0) return 0;
+
+    len           = strlen(devicePath) + 19;
+    sysfsPath_csd = malloc(len);
+    sysfsPath_cid = malloc(len);
+    sysfsPath_scr = malloc(len);
+    sysfsPath_ocr = malloc(len);
+    tmpString     = malloc(1024);
+
+    if(!sysfsPath_csd || !sysfsPath_cid || !sysfsPath_scr || !sysfsPath_ocr || !tmpString)
+    {
+        free(sysfsPath_csd);
+        free(sysfsPath_cid);
+        free(sysfsPath_scr);
+        free(sysfsPath_ocr);
+        free(tmpString);
+        return 0;
+    }
+
+    memset(sysfsPath_csd, 0, len);
+    memset(sysfsPath_cid, 0, len);
+    memset(sysfsPath_scr, 0, len);
+    memset(sysfsPath_ocr, 0, len);
+    memset(tmpString, 0, strlen(devicePath) - 5);
+
+    memcpy(tmpString, devicePath + 5, strlen(devicePath) - 5);
+    snprintf(sysfsPath_csd, len, "/sys/block/%s/device/csd", tmpString);
+    snprintf(sysfsPath_cid, len, "/sys/block/%s/device/cid", tmpString);
+    snprintf(sysfsPath_scr, len, "/sys/block/%s/device/scr", tmpString);
+    snprintf(sysfsPath_ocr, len, "/sys/block/%s/device/ocr", tmpString);
+
+    if(access(sysfsPath_csd, R_OK) == 0)
+    {
+        file = fopen(sysfsPath_csd, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmpString, &n, file);
+            if(len > 0)
+            {
+                *csd_len = hexs2bin(tmpString, (unsigned char**)csd);
+
+                if(*csd_len <= 0)
+                {
+                    *csd_len = 0;
+                    *csd     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    if(access(sysfsPath_cid, R_OK) == 0)
+    {
+        file = fopen(sysfsPath_cid, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmpString, &n, file);
+            if(len > 0)
+            {
+                *cid_len = hexs2bin(tmpString, (unsigned char**)cid);
+
+                if(*cid_len <= 0)
+                {
+                    *cid_len = 0;
+                    *cid     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    if(access(sysfsPath_scr, R_OK) == 0)
+    {
+        file = fopen(sysfsPath_scr, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmpString, &n, file);
+            if(len > 0)
+            {
+                *scr_len = hexs2bin(tmpString, (unsigned char**)scr);
+
+                if(*scr_len <= 0)
+                {
+                    *scr_len = 0;
+                    *scr     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    if(access(sysfsPath_ocr, R_OK) == 0)
+    {
+        file = fopen(sysfsPath_ocr, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmpString, &n, file);
+            if(len > 0)
+            {
+                *ocr_len = hexs2bin(tmpString, (unsigned char**)ocr);
+
+                if(*ocr_len <= 0)
+                {
+                    *ocr_len = 0;
+                    *ocr     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    free(sysfsPath_csd);
+    free(sysfsPath_cid);
+    free(sysfsPath_scr);
+    free(sysfsPath_ocr);
+    free(tmpString);
+
+    return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
+}

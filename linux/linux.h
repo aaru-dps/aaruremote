@@ -35,4 +35,13 @@ int32_t         linux_send_scsi_command(int       device_fd,
                                         uint32_t  cdb_len,
                                         uint32_t* buf_len,
                                         uint32_t* sense_len);
+int32_t         linux_get_sdhci_registers(const char* devicePath,
+                                          char**      csd,
+                                          char**      cid,
+                                          char**      ocr,
+                                          char**      scr,
+                                          int*        csd_len,
+                                          int*        cid_len,
+                                          int*        ocr_len,
+                                          int*        scr_len);
 #endif // DICREMOTE_LINUX_H

@@ -36,3 +36,20 @@ int32_t GetDeviceType(const char* devicePath)
     return DICMOTE_DEVICE_TYPE_UNKNOWN;
 #endif
 }
+
+int32_t GetSdhciRegisters(const char* devicePath,
+                          char**      csd,
+                          char**      cid,
+                          char**      ocr,
+                          char**      scr,
+                          int*        csd_len,
+                          int*        cid_len,
+                          int*        ocr_len,
+                          int*        scr_len)
+{
+#if defined(__linux__) && !defined(__ANDROID__)
+    return linux_get_sdhci_registers(devicePath, csd, cid, ocr, scr, csd_len, cid_len, ocr_len, scr_len);
+#else
+    return -1;
+#endif
+}

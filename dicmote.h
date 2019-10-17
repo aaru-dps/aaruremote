@@ -405,5 +405,14 @@ int32_t         SendScsiCommand(int       device_fd,
                                 uint32_t* sense_len);
 int             hexchr2bin(const char hex, char* out);
 size_t          hexs2bin(const char* hex, unsigned char** out);
+int32_t         GetSdhciRegisters(const char* devicePath,
+                                  char**      csd,
+                                  char**      cid,
+                                  char**      ocr,
+                                  char**      scr,
+                                  int*        csd_len,
+                                  int*        cid_len,
+                                  int*        ocr_len,
+                                  int*        scr_len);
 
 #endif
