@@ -65,6 +65,7 @@ int main()
     char*                          cid;
     char*                          ocr;
     char*                          scr;
+    DicPacketResGetUsbData*        pkt_res_usb;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -618,11 +619,51 @@ int main()
                     write(cli_sock, sdhciRegsResponsePacket, sdhciRegsResponsePacket->hdr.len);
                     free(sdhciRegsResponsePacket);
                     continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
+                    // Packet only contains header so, dummy
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    free(in_buf);
+
+                    pkt_res_usb = malloc(sizeof(DicPacketResGetUsbData));
+                    if(!pkt_res_usb)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    memset(pkt_res_usb, 0, sizeof(DicPacketResGetUsbData));
+                    pkt_res_usb->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_usb->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_usb->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
+                    pkt_res_usb->hdr.len         = sizeof(DicPacketResGetUsbData);
+                    pkt_res_usb->isUsb           = GetUsbData(device_path,
+                                                    &pkt_res_usb->descLen,
+                                                    pkt_res_usb->descriptors,
+                                                    &pkt_res_usb->idVendor,
+                                                    &pkt_res_usb->idProduct,
+                                                    pkt_res_usb->manufacturer,
+                                                    pkt_res_usb->product,
+                                                    pkt_res_usb->serial);
+
+                    write(cli_sock, pkt_res_usb, pkt_res_usb->hdr.len);
+                    free(pkt_res_usb);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48:
                 case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED;
