@@ -44,4 +44,12 @@ int32_t         linux_get_sdhci_registers(const char* devicePath,
                                           uint32_t*   cid_len,
                                           uint32_t*   ocr_len,
                                           uint32_t*   scr_len);
+uint8_t         linux_get_usb_data(const char* devicePath,
+                                   uint16_t*   descLen,
+                                   char*       descriptors,
+                                   uint16_t*   idVendor,
+                                   uint16_t*   idProduct,
+                                   char*       manufacturer,
+                                   char*       product,
+                                   char*       serial);
 #endif // DICREMOTE_LINUX_H

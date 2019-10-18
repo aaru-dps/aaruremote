@@ -418,5 +418,13 @@ int32_t         GetSdhciRegisters(const char* devicePath,
                                   uint32_t*   cid_len,
                                   uint32_t*   ocr_len,
                                   uint32_t*   scr_len);
+uint8_t         GetUsbData(const char* devicePath,
+                           uint16_t*   descLen,
+                           char*       descriptors,
+                           uint16_t*   idVendor,
+                           uint16_t*   idProduct,
+                           char*       manufacturer,
+                           char*       product,
+                           char*       serial);
 
 #endif
