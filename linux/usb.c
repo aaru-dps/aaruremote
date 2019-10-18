@@ -166,5 +166,5 @@ uint8_t linux_get_usb_data(const char* devicePath,
         break;
     }
 
-    return descLen != 0;
+    return *descLen != 0;
 }
