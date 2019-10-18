@@ -23,14 +23,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-uint8_t linux_get_usb_data(const char* devicePath,
-                           uint16_t*   descLen,
-                           char*       descriptors,
-                           uint16_t*   idVendor,
-                           uint16_t*   idProduct,
-                           char*       manufacturer,
-                           char*       product,
-                           char*       serial)
+uint8_t linux_get_ieee1394_data(const char* devicePath,
+                                uint32_t*   idModel,
+                                uint32_t*   idVendor,
+                                uint64_t*   guid,
+                                char*       vendor,
+                                char*       model)
 {
     char*       devPath;
     char        tmpPath[4096];
@@ -38,12 +36,12 @@ uint8_t linux_get_usb_data(const char* devicePath,
     struct stat sb;
     ssize_t     len;
     char*       rchr;
-    int         found = 1;
+    int         found;
     FILE*       file;
 
-    *descLen   = 0;
-    *idVendor  = 0;
-    *idProduct = 0;
+    *idModel  = 0;
+    *idVendor = 0;
+    *guid     = 0;
     memset(tmpPath, 0, 4096);
     memset(resolvedLink, 0, 4096);
 
@@ -65,7 +63,7 @@ uint8_t linux_get_usb_data(const char* devicePath,
     snprintf(tmpPath, 4096, "/sys%s", resolvedLink + 2);
     memcpy(resolvedLink, tmpPath, 4096);
 
-    while(strstr(resolvedLink, "usb") != NULL)
+    while(strstr(resolvedLink, "firewire") != NULL)
     {
         found = 1;
         rchr  = strrchr(resolvedLink, '/');
@@ -76,96 +74,87 @@ uint8_t linux_get_usb_data(const char* devicePath,
 
         if(strlen(resolvedLink) == 0) break;
 
-        snprintf(tmpPath, 4096, "%s/descriptors", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/model", resolvedLink);
         if(access(tmpPath, R_OK) != 0) found = 0;
         memset(tmpPath, 0, 4096);
 
-        snprintf(tmpPath, 4096, "%s/idProduct", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/vendor", resolvedLink);
         if(access(tmpPath, R_OK) != 0) found = 0;
         memset(tmpPath, 0, 4096);
 
-        snprintf(tmpPath, 4096, "%s/idVendor", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/guid", resolvedLink);
         if(access(tmpPath, R_OK) != 0) found = 0;
         memset(tmpPath, 0, 4096);
 
         if(!found) continue;
 
-        snprintf(tmpPath, 4096, "%s/descriptors", resolvedLink);
-        file = fopen(tmpPath, "r");
-
-        if(file == NULL) break;
-
-        *descLen = (uint16_t)fread(descriptors, 4096, 1, file);
-
-        fclose(file);
-
         memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/idProduct", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/model", resolvedLink);
 
         if(access(tmpPath, R_OK) == 0)
         {
             file = fopen(tmpPath, "r");
             if(file != NULL)
             {
-                fscanf(file, "%4hx", idProduct);
+                fscanf(file, "%8x", idModel);
                 fclose(file);
             }
         }
 
         memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/idVendor", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/vendor", resolvedLink);
 
         if(access(tmpPath, R_OK) == 0)
         {
             file = fopen(tmpPath, "r");
             if(file != NULL)
             {
-                fscanf(file, "%4hx", idVendor);
+                fscanf(file, "%8x", idVendor);
                 fclose(file);
             }
         }
 
         memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/manufacturer", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/guid", resolvedLink);
 
         if(access(tmpPath, R_OK) == 0)
         {
             file = fopen(tmpPath, "r");
             if(file != NULL)
             {
-                fread(manufacturer, 256, 1, file);
+                fscanf(file, "%16lx", guid);
                 fclose(file);
             }
         }
 
         memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/product", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/model_name", resolvedLink);
 
         if(access(tmpPath, R_OK) == 0)
         {
             file = fopen(tmpPath, "r");
             if(file != NULL)
             {
-                fread(product, 256, 1, file);
+                fread(model, 256, 1, file);
                 fclose(file);
             }
         }
 
         memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/serial", resolvedLink);
+        snprintf(tmpPath, 4096, "%s/vendor_name", resolvedLink);
 
         if(access(tmpPath, R_OK) == 0)
         {
             file = fopen(tmpPath, "r");
             if(file != NULL)
             {
-                fread(serial, 256, 1, file);
+                fread(vendor, 256, 1, file);
                 fclose(file);
             }
         }
 
-        break;
+        return 1;
     }
 
-    return *descLen != 0;
+    return 0;
 }

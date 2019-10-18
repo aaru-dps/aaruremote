@@ -426,5 +426,11 @@ uint8_t         GetUsbData(const char* devicePath,
                            char*       manufacturer,
                            char*       product,
                            char*       serial);
+uint8_t         GetFireWireData(const char* devicePath,
+                                uint32_t*   idModel,
+                                uint32_t*   idVendor,
+                                uint64_t*   guid,
+                                char*       vendor,
+                                char*       model);
 
 #endif
