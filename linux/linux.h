@@ -59,5 +59,38 @@ uint8_t         linux_get_ieee1394_data(const char* devicePath,
                                         char*       vendor,
                                         char*       model);
 uint8_t         linux_get_pcmcia_data(const char* devicePath, uint16_t* cisLen, char* cis);
+int32_t         linux_send_ata_chs_command(int                   device_fd,
+                                           AtaRegistersChs       registers,
+                                           AtaErrorRegistersChs* errorRegisters,
+                                           uint8_t               protocol,
+                                           uint8_t               transferRegister,
+                                           char*                 buffer,
+                                           uint32_t              timeout,
+                                           uint8_t               transferBlocks,
+                                           uint32_t*             duration,
+                                           uint32_t*             sense,
+                                           uint32_t*             buf_len);
+int32_t         linux_send_ata_lba28_command(int                     device_fd,
+                                             AtaRegistersLba28       registers,
+                                             AtaErrorRegistersLba28* errorRegisters,
+                                             uint8_t                 protocol,
+                                             uint8_t                 transferRegister,
+                                             char*                   buffer,
+                                             uint32_t                timeout,
+                                             uint8_t                 transferBlocks,
+                                             uint32_t*               duration,
+                                             uint32_t*               sense,
+                                             uint32_t*               buf_len);
+int32_t         linux_send_ata_lba48_command(int                     device_fd,
+                                             AtaRegistersLba48       registers,
+                                             AtaErrorRegistersLba48* errorRegisters,
+                                             uint8_t                 protocol,
+                                             uint8_t                 transferRegister,
+                                             char*                   buffer,
+                                             uint32_t                timeout,
+                                             uint8_t                 transferBlocks,
+                                             uint32_t*               duration,
+                                             uint32_t*               sense,
+                                             uint32_t*               buf_len);
 
 #endif // DICREMOTE_LINUX_H

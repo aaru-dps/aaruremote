@@ -19,6 +19,10 @@
 
 #include <stddef.h>
 
+#if defined(__linux__) && !defined(__ANDROID__)
+#include "linux/linux.h"
+#endif
+
 int32_t SendAtaChsCommand(int                   device_fd,
                           AtaRegistersChs       registers,
                           AtaErrorRegistersChs* errorRegisters,
@@ -28,9 +32,24 @@ int32_t SendAtaChsCommand(int                   device_fd,
                           uint32_t              timeout,
                           uint8_t               transferBlocks,
                           uint32_t*             duration,
-                          uint32_t*             sense)
+                          uint32_t*             sense,
+                          uint32_t*             buf_len)
 {
+#if defined(__linux__) && !defined(__ANDROID__)
+    return linux_send_ata_chs_command(device_fd,
+                                      registers,
+                                      errorRegisters,
+                                      protocol,
+                                      transferRegister,
+                                      buffer,
+                                      timeout,
+                                      transferBlocks,
+                                      duration,
+                                      sense,
+                                      buf_len);
+#else
     return -1;
+#endif
 }
 
 int32_t SendAtaLba28Command(int                     device_fd,
@@ -42,9 +61,24 @@ int32_t SendAtaLba28Command(int                     device_fd,
                             uint32_t                timeout,
                             uint8_t                 transferBlocks,
                             uint32_t*               duration,
-                            uint32_t*               sense)
+                            uint32_t*               sense,
+                            uint32_t*               buf_len)
 {
+#if defined(__linux__) && !defined(__ANDROID__)
+    return linux_send_ata_lba28_command(device_fd,
+                                        registers,
+                                        errorRegisters,
+                                        protocol,
+                                        transferRegister,
+                                        buffer,
+                                        timeout,
+                                        transferBlocks,
+                                        duration,
+                                        sense,
+                                        buf_len);
+#else
     return -1;
+#endif
 }
 
 int32_t SendAtaLba48Command(int                     device_fd,
@@ -56,7 +90,22 @@ int32_t SendAtaLba48Command(int                     device_fd,
                             uint32_t                timeout,
                             uint8_t                 transferBlocks,
                             uint32_t*               duration,
-                            uint32_t*               sense)
+                            uint32_t*               sense,
+                            uint32_t*               buf_len)
 {
+#if defined(__linux__) && !defined(__ANDROID__)
+    return linux_send_ata_lba48_command(device_fd,
+                                        registers,
+                                        errorRegisters,
+                                        protocol,
+                                        transferRegister,
+                                        buffer,
+                                        timeout,
+                                        transferBlocks,
+                                        duration,
+                                        sense,
+                                        buf_len);
+#else
     return -1;
+#endif
 }

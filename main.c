@@ -781,7 +781,8 @@ int main()
                                             pkt_cmd_ata_chs->timeout,
                                             pkt_cmd_ata_chs->transferBlocks,
                                             &duration,
-                                            &sense);
+                                            &sense,
+                                            &pkt_cmd_ata_chs->buf_len);
 
                     out_buf = malloc(sizeof(DicPacketResAtaChs) + pkt_cmd_ata_chs->buf_len);
 
@@ -848,7 +849,8 @@ int main()
                                               pkt_cmd_ata_lba28->timeout,
                                               pkt_cmd_ata_lba28->transferBlocks,
                                               &duration,
-                                              &sense);
+                                              &sense,
+                                              &pkt_cmd_ata_chs->buf_len);
 
                     out_buf = malloc(sizeof(DicPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len);
 
@@ -915,7 +917,8 @@ int main()
                                               pkt_cmd_ata_lba48->timeout,
                                               pkt_cmd_ata_lba48->transferBlocks,
                                               &duration,
-                                              &sense);
+                                              &sense,
+                                              &pkt_cmd_ata_chs->buf_len);
 
                     out_buf = malloc(sizeof(DicPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len);
 

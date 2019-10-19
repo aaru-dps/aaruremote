@@ -48,9 +48,9 @@ int32_t linux_send_scsi_command(int       device_fd,
     {
         case DICMOTE_SCSI_DIRECTION_IN: dir = SG_DXFER_FROM_DEV; break;
         case DICMOTE_SCSI_DIRECTION_OUT: dir = SG_DXFER_TO_DEV; break;
-        case DICMOTE_SCSI_DIRECTION_INOUT: dir = SG_DXFER_TO_FROM_DEV; break;
+        case DICMOTE_SCSI_DIRECTION_INOUT:
+        case DICMOTE_SCSI_DIRECTION_UNSPECIFIED: dir = SG_DXFER_TO_FROM_DEV; break;
         case DICMOTE_SCSI_DIRECTION_NONE:
-        case DICMOTE_SCSI_DIRECTION_UNSPECIFIED:
         default: dir = SG_DXFER_NONE; break;
     }
 

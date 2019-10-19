@@ -82,6 +82,7 @@
 #define DICMOTE_ATA_PROTOCOL_UDMA_IN 10
 #define DICMOTE_ATA_PROTOCOL_UDMA_OUT 11
 #define DICMOTE_ATA_PROTOCOL_FPDMA 12
+#define DICMOTE_ATA_PROTOCOL_RETURN_RESPONSE 15
 #define DICMOTE_ATA_TRANSFER_REGISTER_NONE 0
 #define DICMOTE_ATA_TRANSFER_REGISTER_FEATURE 1
 #define DICMOTE_ATA_TRANSFER_REGISTER_SECTOR_COUNT 2
@@ -458,7 +459,8 @@ int32_t         SendAtaChsCommand(int                   device_fd,
                                   uint32_t              timeout,
                                   uint8_t               transferBlocks,
                                   uint32_t*             duration,
-                                  uint32_t*             sense);
+                                  uint32_t*             sense,
+                                  uint32_t*             buf_len);
 int32_t         SendAtaLba28Command(int                     device_fd,
                                     AtaRegistersLba28       registers,
                                     AtaErrorRegistersLba28* errorRegisters,
@@ -468,7 +470,8 @@ int32_t         SendAtaLba28Command(int                     device_fd,
                                     uint32_t                timeout,
                                     uint8_t                 transferBlocks,
                                     uint32_t*               duration,
-                                    uint32_t*               sense);
+                                    uint32_t*               sense,
+                                    uint32_t*               buf_len);
 int32_t         SendAtaLba48Command(int                     device_fd,
                                     AtaRegistersLba48       registers,
                                     AtaErrorRegistersLba48* errorRegisters,
@@ -478,6 +481,7 @@ int32_t         SendAtaLba48Command(int                     device_fd,
                                     uint32_t                timeout,
                                     uint8_t                 transferBlocks,
                                     uint32_t*               duration,
-                                    uint32_t*               sense);
+                                    uint32_t*               sense,
+                                    uint32_t*               buf_len);
 
 #endif
