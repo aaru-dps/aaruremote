@@ -68,6 +68,15 @@ int main()
     DicPacketResGetUsbData*        pkt_res_usb;
     DicPacketResGetFireWireData*   pkt_res_firewire;
     DicPacketResGetPcmciaData*     pkt_res_pcmcia;
+    DicPacketCmdAtaChs*            pkt_cmd_ata_chs;
+    DicPacketCmdAtaLba28*          pkt_cmd_ata_lba28;
+    DicPacketCmdAtaLba48*          pkt_cmd_ata_lba48;
+    DicPacketResAtaChs*            pkt_res_ata_chs;
+    DicPacketResAtaLba28*          pkt_res_ata_lba28;
+    DicPacketResAtaLba48*          pkt_res_ata_lba48;
+    AtaErrorRegistersChs           ata_chs_error_regs;
+    AtaErrorRegistersLba28         ata_lba28_error_regs;
+    AtaErrorRegistersLba48         ata_lba48_error_regs;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -737,8 +746,206 @@ int main()
                     free(pkt_res_pcmcia);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
+                    // Packet contains data after
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+
+                    pkt_cmd_ata_chs = (DicPacketCmdAtaChs*)in_buf;
+
+                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+
+                    if(pkt_cmd_ata_chs->buf_len > 0)
+                        buffer = in_buf + sizeof(DicPacketCmdAtaChs);
+                    else
+                        buffer = NULL;
+
+                    memset(&ata_chs_error_regs, 0, sizeof(AtaErrorRegistersChs));
+
+                    duration = 0;
+                    sense    = 1;
+                    ret      = SendAtaChsCommand(device_fd,
+                                            pkt_cmd_ata_chs->registers,
+                                            &ata_chs_error_regs,
+                                            pkt_cmd_ata_chs->protocol,
+                                            pkt_cmd_ata_chs->transferRegister,
+                                            buffer,
+                                            pkt_cmd_ata_chs->timeout,
+                                            pkt_cmd_ata_chs->transferBlocks,
+                                            &duration,
+                                            &sense);
+
+                    out_buf = malloc(sizeof(DicPacketResAtaChs) + pkt_cmd_ata_chs->buf_len);
+
+                    if(!out_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    pkt_res_ata_chs = (DicPacketResAtaChs*)out_buf;
+                    if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaChs), buffer, pkt_cmd_ata_chs->buf_len);
+
+                    pkt_res_ata_chs->hdr.len         = sizeof(DicPacketResAtaChs) + pkt_cmd_ata_chs->buf_len;
+                    pkt_res_ata_chs->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS;
+                    pkt_res_ata_chs->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_ata_chs->hdr.id          = DICMOTE_PACKET_ID;
+
+                    pkt_res_ata_chs->registers = ata_chs_error_regs;
+                    pkt_res_ata_chs->buf_len   = pkt_cmd_ata_chs->buf_len;
+                    pkt_res_ata_chs->duration  = duration;
+                    pkt_res_ata_chs->sense     = sense;
+                    pkt_res_ata_chs->error_no  = ret;
+
+                    write(cli_sock, pkt_res_ata_chs, pkt_res_ata_chs->hdr.len);
+                    free(pkt_cmd_ata_chs);
+                    free(pkt_res_ata_chs);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28:
+                    // Packet contains data after
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+
+                    pkt_cmd_ata_lba28 = (DicPacketCmdAtaLba28*)in_buf;
+
+                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+
+                    if(pkt_cmd_ata_lba28->buf_len > 0)
+                        buffer = in_buf + sizeof(DicPacketCmdAtaLba28);
+                    else
+                        buffer = NULL;
+
+                    memset(&ata_lba28_error_regs, 0, sizeof(AtaErrorRegistersLba28));
+
+                    duration = 0;
+                    sense    = 1;
+                    ret      = SendAtaLba28Command(device_fd,
+                                              pkt_cmd_ata_lba28->registers,
+                                              &ata_lba28_error_regs,
+                                              pkt_cmd_ata_lba28->protocol,
+                                              pkt_cmd_ata_lba28->transferRegister,
+                                              buffer,
+                                              pkt_cmd_ata_lba28->timeout,
+                                              pkt_cmd_ata_lba28->transferBlocks,
+                                              &duration,
+                                              &sense);
+
+                    out_buf = malloc(sizeof(DicPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len);
+
+                    if(!out_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    pkt_res_ata_lba28 = (DicPacketResAtaLba28*)out_buf;
+                    if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaLba28), buffer, pkt_cmd_ata_lba28->buf_len);
+
+                    pkt_res_ata_lba28->hdr.len         = sizeof(DicPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len;
+                    pkt_res_ata_lba28->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA28;
+                    pkt_res_ata_lba28->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_ata_lba28->hdr.id          = DICMOTE_PACKET_ID;
+
+                    pkt_res_ata_lba28->registers = ata_lba28_error_regs;
+                    pkt_res_ata_lba28->buf_len   = pkt_cmd_ata_lba28->buf_len;
+                    pkt_res_ata_lba28->duration  = duration;
+                    pkt_res_ata_lba28->sense     = sense;
+                    pkt_res_ata_lba28->error_no  = ret;
+
+                    write(cli_sock, pkt_res_ata_lba28, pkt_res_ata_lba28->hdr.len);
+                    free(pkt_cmd_ata_lba28);
+                    free(pkt_res_ata_lba28);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48:
+                    // Packet contains data after
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+
+                    pkt_cmd_ata_lba48 = (DicPacketCmdAtaLba48*)in_buf;
+
+                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+
+                    if(pkt_cmd_ata_lba48->buf_len > 0)
+                        buffer = in_buf + sizeof(DicPacketCmdAtaLba48);
+                    else
+                        buffer = NULL;
+
+                    memset(&ata_lba48_error_regs, 0, sizeof(AtaErrorRegistersLba48));
+
+                    duration = 0;
+                    sense    = 1;
+                    ret      = SendAtaLba48Command(device_fd,
+                                              pkt_cmd_ata_lba48->registers,
+                                              &ata_lba48_error_regs,
+                                              pkt_cmd_ata_lba48->protocol,
+                                              pkt_cmd_ata_lba48->transferRegister,
+                                              buffer,
+                                              pkt_cmd_ata_lba48->timeout,
+                                              pkt_cmd_ata_lba48->transferBlocks,
+                                              &duration,
+                                              &sense);
+
+                    out_buf = malloc(sizeof(DicPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len);
+
+                    if(!out_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    pkt_res_ata_lba48 = (DicPacketResAtaLba48*)out_buf;
+                    if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaLba48), buffer, pkt_cmd_ata_lba48->buf_len);
+
+                    pkt_res_ata_lba48->hdr.len         = sizeof(DicPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len;
+                    pkt_res_ata_lba48->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA48;
+                    pkt_res_ata_lba48->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_ata_lba48->hdr.id          = DICMOTE_PACKET_ID;
+
+                    pkt_res_ata_lba48->registers = ata_lba48_error_regs;
+                    pkt_res_ata_lba48->buf_len   = pkt_cmd_ata_lba48->buf_len;
+                    pkt_res_ata_lba48->duration  = duration;
+                    pkt_res_ata_lba48->sense     = sense;
+                    pkt_res_ata_lba48->error_no  = ret;
+
+                    write(cli_sock, pkt_res_ata_lba48, pkt_res_ata_lba48->hdr.len);
+                    free(pkt_cmd_ata_lba48);
+                    free(pkt_res_ata_lba48);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED;
                     memset(&pkt_nop->reason, 0, 256);

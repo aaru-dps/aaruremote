@@ -70,6 +70,22 @@
 #define DICMOTE_SCSI_DIRECTION_OUT 1
 #define DICMOTE_SCSI_DIRECTION_IN 2
 #define DICMOTE_SCSI_DIRECTION_INOUT 3
+#define DICMOTE_ATA_PROTOCOL_HARD_RESET 0
+#define DICMOTE_ATA_PROTOCOL_SOFT_RESET 1
+#define DICMOTE_ATA_PROTOCOL_NO_DATA 3
+#define DICMOTE_ATA_PROTOCOL_PIO_IN 4
+#define DICMOTE_ATA_PROTOCOL_PIO_OUT 5
+#define DICMOTE_ATA_PROTOCOL_DMA 6
+#define DICMOTE_ATA_PROTOCOL_DMA_QUEUED 7
+#define DICMOTE_ATA_PROTOCOL_DEVICE_DIAGNOSTIC 8
+#define DICMOTE_ATA_PROTOCOL_DEVICE_RESET 9
+#define DICMOTE_ATA_PROTOCOL_UDMA_IN 10
+#define DICMOTE_ATA_PROTOCOL_UDMA_OUT 11
+#define DICMOTE_ATA_PROTOCOL_FPDMA 12
+#define DICMOTE_ATA_TRANSFER_REGISTER_NONE 0
+#define DICMOTE_ATA_TRANSFER_REGISTER_FEATURE 1
+#define DICMOTE_ATA_TRANSFER_REGISTER_SECTOR_COUNT 2
+#define DICMOTE_ATA_TRANSFER_REGISTER_SPTSIU 3
 
 #pragma pack(push, 1)
 
@@ -433,5 +449,35 @@ uint8_t         GetFireWireData(const char* devicePath,
                                 char*       vendor,
                                 char*       model);
 uint8_t         GetPcmciaData(const char* devicePath, uint16_t* cisLen, char* cis);
+int32_t         SendAtaChsCommand(int                   device_fd,
+                                  AtaRegistersChs       registers,
+                                  AtaErrorRegistersChs* errorRegisters,
+                                  uint8_t               protocol,
+                                  uint8_t               transferRegister,
+                                  char*                 buffer,
+                                  uint32_t              timeout,
+                                  uint8_t               transferBlocks,
+                                  uint32_t*             duration,
+                                  uint32_t*             sense);
+int32_t         SendAtaLba28Command(int                     device_fd,
+                                    AtaRegistersLba28       registers,
+                                    AtaErrorRegistersLba28* errorRegisters,
+                                    uint8_t                 protocol,
+                                    uint8_t                 transferRegister,
+                                    char*                   buffer,
+                                    uint32_t                timeout,
+                                    uint8_t                 transferBlocks,
+                                    uint32_t*               duration,
+                                    uint32_t*               sense);
+int32_t         SendAtaLba48Command(int                     device_fd,
+                                    AtaRegistersLba48       registers,
+                                    AtaErrorRegistersLba48* errorRegisters,
+                                    uint8_t                 protocol,
+                                    uint8_t                 transferRegister,
+                                    char*                   buffer,
+                                    uint32_t                timeout,
+                                    uint8_t                 transferBlocks,
+                                    uint32_t*               duration,
+                                    uint32_t*               sense);
 
 #endif
