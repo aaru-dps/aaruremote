@@ -19,12 +19,11 @@
 #include <stddef.h>
 #include <string.h>
 
-int hexchr2bin(const char hex, char* out)
+int Hexchr2Bin(const char hex, char* out)
 {
     if(out == NULL) return 0;
 
-    if(hex >= '0' && hex <= '9')
-        *out = hex - '0';
+    if(hex >= '0' && hex <= '9') *out = hex - '0';
     else if(hex >= 'A' && hex <= 'F')
         *out = hex - 'A' + 10;
     else if(hex >= 'a' && hex <= 'f')
@@ -35,7 +34,7 @@ int hexchr2bin(const char hex, char* out)
     return 1;
 }
 
-size_t hexs2bin(const char* hex, unsigned char** out)
+size_t Hexs2Bin(const char* hex, unsigned char** out)
 {
     size_t len;
     char   b1;
@@ -52,7 +51,7 @@ size_t hexs2bin(const char* hex, unsigned char** out)
     memset(*out, 'A', len);
     for(i = 0; i < len; i++)
     {
-        if(!hexchr2bin(hex[i * 2], &b1) || !hexchr2bin(hex[i * 2 + 1], &b2)) return 0;
+        if(!Hexchr2Bin(hex[i * 2], &b1) || !Hexchr2Bin(hex[i * 2 + 1], &b2)) return 0;
 
         (*out)[i] = (b1 << 4) | b2;
     }

@@ -22,19 +22,19 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
-int32_t linux_send_sdhci_command(int       device_fd,
-                                 uint8_t   command,
-                                 uint8_t   write,
-                                 uint8_t   application,
-                                 uint32_t  flags,
-                                 uint32_t  argument,
-                                 uint32_t  block_size,
-                                 uint32_t  blocks,
-                                 char*     buffer,
-                                 uint32_t  timeout,
-                                 uint32_t* response,
-                                 uint32_t* duration,
-                                 uint32_t* sense)
+int32_t LinuxSendSdhciCommand(int       device_fd,
+                              uint8_t   command,
+                              uint8_t   write,
+                              uint8_t   application,
+                              uint32_t  flags,
+                              uint32_t  argument,
+                              uint32_t  block_size,
+                              uint32_t  blocks,
+                              char*     buffer,
+                              uint32_t  timeout,
+                              uint32_t* response,
+                              uint32_t* duration,
+                              uint32_t* sense)
 {
     struct mmc_ioc_cmd mmc_ioc_cmd;
     int32_t            error;

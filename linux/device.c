@@ -25,7 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
-int linux_open_device(const char* device_path)
+int LinuxOpenDevice(const char* device_path)
 {
     int fd;
 
@@ -36,19 +36,19 @@ int linux_open_device(const char* device_path)
     return fd;
 }
 
-int32_t linux_get_device_type(const char* devicePath)
+int32_t LinuxGetDeviceType(const char* device_path)
 {
     struct udev*        udev;
     struct udev_device* udev_device;
-    const char*         tmpString;
+    const char*         tmp_string;
     char*               chrptr;
-    int32_t             deviceType = DICMOTE_DEVICE_TYPE_UNKNOWN;
+    int32_t             device_type = DICMOTE_DEVICE_TYPE_UNKNOWN;
 
     udev = udev_new();
 
     if(!udev) return DICMOTE_DEVICE_TYPE_UNKNOWN;
 
-    chrptr = strrchr(devicePath, '/');
+    chrptr = strrchr(device_path, '/');
     if(chrptr == 0) return DICMOTE_DEVICE_TYPE_UNKNOWN;
 
     chrptr++;
@@ -57,83 +57,83 @@ int32_t linux_get_device_type(const char* devicePath)
     udev_device = udev_device_new_from_subsystem_sysname(udev, "block", chrptr);
     if(udev_device)
     {
-        tmpString = udev_device_get_property_value(udev_device, "ID_BUS");
-        if(tmpString)
+        tmp_string = udev_device_get_property_value(udev_device, "ID_BUS");
+        if(tmp_string)
         {
-            if(strncmp(tmpString, "ata", 3) == 0)
+            if(strncmp(tmp_string, "ata", 3) == 0)
             {
-                deviceType = DICMOTE_DEVICE_TYPE_ATA;
+                device_type = DICMOTE_DEVICE_TYPE_ATA;
 
-                free((void*)tmpString);
-                tmpString = udev_device_get_property_value(udev_device, "ID_TYPE");
+                free((void*)tmp_string);
+                tmp_string = udev_device_get_property_value(udev_device, "ID_TYPE");
 
-                if(tmpString)
+                if(tmp_string)
                 {
                     // TODO: ATAPI removable non optical disks
-                    if(strncmp(tmpString, "cd", 2) == 0) { deviceType = DICMOTE_DEVICE_TYPE_ATAPI; }
+                    if(strncmp(tmp_string, "cd", 2) == 0) { device_type = DICMOTE_DEVICE_TYPE_ATAPI; }
 
-                    free((void*)tmpString);
+                    free((void*)tmp_string);
                 }
             }
-            else if(strncmp(tmpString, "mmc", 3) == 0)
+            else if(strncmp(tmp_string, "mmc", 3) == 0)
             {
-                free((void*)tmpString);
-                tmpString = malloc(1024);
+                free((void*)tmp_string);
+                tmp_string = malloc(1024);
 
-                deviceType = DICMOTE_DEVICE_TYPE_MMC;
+                device_type = DICMOTE_DEVICE_TYPE_MMC;
 
-                if(tmpString)
+                if(tmp_string)
                 {
-                    memset((void*)tmpString, 0, 1024);
-                    snprintf((char*)tmpString, 1024, "/sys/block/%s/device/scr", chrptr);
+                    memset((void*)tmp_string, 0, 1024);
+                    snprintf((char*)tmp_string, 1024, "/sys/block/%s/device/scr", chrptr);
 
-                    if(access(tmpString, R_OK) == 0) deviceType = DICMOTE_DEVICE_TYPE_SECURE_DIGITAL;
+                    if(access(tmp_string, R_OK) == 0) device_type = DICMOTE_DEVICE_TYPE_SECURE_DIGITAL;
 
-                    free((void*)tmpString);
+                    free((void*)tmp_string);
                 }
             }
-            else if(strncmp(tmpString, "scsi", 4) == 0 || strncmp(tmpString, "ieee1394", 8) == 0 ||
-                    strncmp(tmpString, "usb", 3) == 0)
+            else if(strncmp(tmp_string, "scsi", 4) == 0 || strncmp(tmp_string, "ieee1394", 8) == 0 ||
+                    strncmp(tmp_string, "usb", 3) == 0)
             {
-                free((void*)tmpString);
-                tmpString = udev_device_get_property_value(udev_device, "ID_TYPE");
+                free((void*)tmp_string);
+                tmp_string = udev_device_get_property_value(udev_device, "ID_TYPE");
 
-                if(tmpString)
+                if(tmp_string)
                 {
-                    if(strncmp(tmpString, "cd", 2) == 0 || strncmp(tmpString, "disk", 4) == 0)
-                    { deviceType = DICMOTE_DEVICE_TYPE_SCSI; }
+                    if(strncmp(tmp_string, "cd", 2) == 0 || strncmp(tmp_string, "disk", 4) == 0)
+                    { device_type = DICMOTE_DEVICE_TYPE_SCSI; }
 
-                    free((void*)tmpString);
+                    free((void*)tmp_string);
                 }
             }
-            else if(strncmp(tmpString, "nvme", 4) == 0)
+            else if(strncmp(tmp_string, "nvme", 4) == 0)
             {
-                free((void*)tmpString);
-                deviceType = DICMOTE_DEVICE_TYPE_NVME;
+                free((void*)tmp_string);
+                device_type = DICMOTE_DEVICE_TYPE_NVME;
             }
         }
     }
 
     udev_unref(udev);
 
-    return deviceType;
+    return device_type;
 }
 
-int32_t linux_get_sdhci_registers(const char* devicePath,
-                                  char**      csd,
-                                  char**      cid,
-                                  char**      ocr,
-                                  char**      scr,
-                                  uint32_t*   csd_len,
-                                  uint32_t*   cid_len,
-                                  uint32_t*   ocr_len,
-                                  uint32_t*   scr_len)
+int32_t LinuxGetSdhciRegisters(const char* device_path,
+                               char**      csd,
+                               char**      cid,
+                               char**      ocr,
+                               char**      scr,
+                               uint32_t*   csd_len,
+                               uint32_t*   cid_len,
+                               uint32_t*   ocr_len,
+                               uint32_t*   scr_len)
 {
-    char*  tmpString;
-    char*  sysfsPath_csd;
-    char*  sysfsPath_cid;
-    char*  sysfsPath_scr;
-    char*  sysfsPath_ocr;
+    char*  tmp_string;
+    char*  sysfs_path_csd;
+    char*  sysfs_path_cid;
+    char*  sysfs_path_scr;
+    char*  sysfs_path_ocr;
     size_t len;
     FILE*  file;
     *csd     = NULL;
@@ -146,47 +146,47 @@ int32_t linux_get_sdhci_registers(const char* devicePath,
     *scr_len = 0;
     size_t n = 1026;
 
-    if(strncmp(devicePath, "/dev/mmcblk", 11) != 0) return 0;
+    if(strncmp(device_path, "/dev/mmcblk", 11) != 0) return 0;
 
-    len           = strlen(devicePath) + 19;
-    sysfsPath_csd = malloc(len);
-    sysfsPath_cid = malloc(len);
-    sysfsPath_scr = malloc(len);
-    sysfsPath_ocr = malloc(len);
-    tmpString     = malloc(1024);
+    len            = strlen(device_path) + 19;
+    sysfs_path_csd = malloc(len);
+    sysfs_path_cid = malloc(len);
+    sysfs_path_scr = malloc(len);
+    sysfs_path_ocr = malloc(len);
+    tmp_string     = malloc(1024);
 
-    if(!sysfsPath_csd || !sysfsPath_cid || !sysfsPath_scr || !sysfsPath_ocr || !tmpString)
+    if(!sysfs_path_csd || !sysfs_path_cid || !sysfs_path_scr || !sysfs_path_ocr || !tmp_string)
     {
-        free(sysfsPath_csd);
-        free(sysfsPath_cid);
-        free(sysfsPath_scr);
-        free(sysfsPath_ocr);
-        free(tmpString);
+        free(sysfs_path_csd);
+        free(sysfs_path_cid);
+        free(sysfs_path_scr);
+        free(sysfs_path_ocr);
+        free(tmp_string);
         return 0;
     }
 
-    memset(sysfsPath_csd, 0, len);
-    memset(sysfsPath_cid, 0, len);
-    memset(sysfsPath_scr, 0, len);
-    memset(sysfsPath_ocr, 0, len);
-    memset(tmpString, 0, strlen(devicePath) - 5);
+    memset(sysfs_path_csd, 0, len);
+    memset(sysfs_path_cid, 0, len);
+    memset(sysfs_path_scr, 0, len);
+    memset(sysfs_path_ocr, 0, len);
+    memset(tmp_string, 0, strlen(device_path) - 5);
 
-    memcpy(tmpString, devicePath + 5, strlen(devicePath) - 5);
-    snprintf(sysfsPath_csd, len, "/sys/block/%s/device/csd", tmpString);
-    snprintf(sysfsPath_cid, len, "/sys/block/%s/device/cid", tmpString);
-    snprintf(sysfsPath_scr, len, "/sys/block/%s/device/scr", tmpString);
-    snprintf(sysfsPath_ocr, len, "/sys/block/%s/device/ocr", tmpString);
+    memcpy(tmp_string, device_path + 5, strlen(device_path) - 5);
+    snprintf(sysfs_path_csd, len, "/sys/block/%s/device/csd", tmp_string);
+    snprintf(sysfs_path_cid, len, "/sys/block/%s/device/cid", tmp_string);
+    snprintf(sysfs_path_scr, len, "/sys/block/%s/device/scr", tmp_string);
+    snprintf(sysfs_path_ocr, len, "/sys/block/%s/device/ocr", tmp_string);
 
-    if(access(sysfsPath_csd, R_OK) == 0)
+    if(access(sysfs_path_csd, R_OK) == 0)
     {
-        file = fopen(sysfsPath_csd, "r");
+        file = fopen(sysfs_path_csd, "r");
 
         if(file != NULL)
         {
-            len = getline(&tmpString, &n, file);
+            len = getline(&tmp_string, &n, file);
             if(len > 0)
             {
-                *csd_len = hexs2bin(tmpString, (unsigned char**)csd);
+                *csd_len = Hexs2Bin(tmp_string, (unsigned char**)csd);
 
                 if(*csd_len <= 0)
                 {
@@ -199,16 +199,16 @@ int32_t linux_get_sdhci_registers(const char* devicePath,
         }
     }
 
-    if(access(sysfsPath_cid, R_OK) == 0)
+    if(access(sysfs_path_cid, R_OK) == 0)
     {
-        file = fopen(sysfsPath_cid, "r");
+        file = fopen(sysfs_path_cid, "r");
 
         if(file != NULL)
         {
-            len = getline(&tmpString, &n, file);
+            len = getline(&tmp_string, &n, file);
             if(len > 0)
             {
-                *cid_len = hexs2bin(tmpString, (unsigned char**)cid);
+                *cid_len = Hexs2Bin(tmp_string, (unsigned char**)cid);
 
                 if(*cid_len <= 0)
                 {
@@ -221,16 +221,16 @@ int32_t linux_get_sdhci_registers(const char* devicePath,
         }
     }
 
-    if(access(sysfsPath_scr, R_OK) == 0)
+    if(access(sysfs_path_scr, R_OK) == 0)
     {
-        file = fopen(sysfsPath_scr, "r");
+        file = fopen(sysfs_path_scr, "r");
 
         if(file != NULL)
         {
-            len = getline(&tmpString, &n, file);
+            len = getline(&tmp_string, &n, file);
             if(len > 0)
             {
-                *scr_len = hexs2bin(tmpString, (unsigned char**)scr);
+                *scr_len = Hexs2Bin(tmp_string, (unsigned char**)scr);
 
                 if(*scr_len <= 0)
                 {
@@ -243,16 +243,16 @@ int32_t linux_get_sdhci_registers(const char* devicePath,
         }
     }
 
-    if(access(sysfsPath_ocr, R_OK) == 0)
+    if(access(sysfs_path_ocr, R_OK) == 0)
     {
-        file = fopen(sysfsPath_ocr, "r");
+        file = fopen(sysfs_path_ocr, "r");
 
         if(file != NULL)
         {
-            len = getline(&tmpString, &n, file);
+            len = getline(&tmp_string, &n, file);
             if(len > 0)
             {
-                *ocr_len = hexs2bin(tmpString, (unsigned char**)ocr);
+                *ocr_len = Hexs2Bin(tmp_string, (unsigned char**)ocr);
 
                 if(*ocr_len <= 0)
                 {
@@ -265,11 +265,11 @@ int32_t linux_get_sdhci_registers(const char* devicePath,
         }
     }
 
-    free(sysfsPath_csd);
-    free(sysfsPath_cid);
-    free(sysfsPath_scr);
-    free(sysfsPath_ocr);
-    free(tmpString);
+    free(sysfs_path_csd);
+    free(sysfs_path_cid);
+    free(sysfs_path_scr);
+    free(sysfs_path_ocr);
+    free(tmp_string);
 
     return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
 }

@@ -19,25 +19,25 @@
 #include "linux/linux.h"
 #endif
 
-int DeviceOpen(const char* devicePath)
+int DeviceOpen(const char* device_path)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_open_device(devicePath);
+    return LinuxOpenDevice(device_path);
 #else
     return -1;
 #endif
 }
 
-int32_t GetDeviceType(const char* devicePath)
+int32_t GetDeviceType(const char* device_path)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_get_device_type(devicePath);
+    return LinuxGetDeviceType(device_path);
 #else
     return DICMOTE_DEVICE_TYPE_UNKNOWN;
 #endif
 }
 
-int32_t GetSdhciRegisters(const char* devicePath,
+int32_t GetSdhciRegisters(const char* device_path,
                           char**      csd,
                           char**      cid,
                           char**      ocr,
@@ -48,7 +48,7 @@ int32_t GetSdhciRegisters(const char* devicePath,
                           uint32_t*   scr_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_get_sdhci_registers(devicePath, csd, cid, ocr, scr, csd_len, cid_len, ocr_len, scr_len);
+    return LinuxGetSdhciRegisters(device_path, csd, cid, ocr, scr, csd_len, cid_len, ocr_len, scr_len);
 #else
     return 0;
 #endif

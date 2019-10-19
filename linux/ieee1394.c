@@ -15,111 +15,109 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "linux.h"
-
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
-uint8_t linux_get_ieee1394_data(const char* devicePath,
-                                uint32_t*   idModel,
-                                uint32_t*   idVendor,
-                                uint64_t*   guid,
-                                char*       vendor,
-                                char*       model)
+uint8_t LinuxGetIeee1394Data(const char* device_path,
+                             uint32_t*   id_model,
+                             uint32_t*   id_vendor,
+                             uint64_t*   guid,
+                             char*       vendor,
+                             char*       model)
 {
-    char*       devPath;
-    char        tmpPath[4096];
-    char        resolvedLink[4096];
+    char*       dev_path;
+    char        tmp_path[4096];
+    char        resolved_link[4096];
     struct stat sb;
     ssize_t     len;
     char*       rchr;
     int         found;
     FILE*       file;
 
-    *idModel  = 0;
-    *idVendor = 0;
-    *guid     = 0;
-    memset(tmpPath, 0, 4096);
-    memset(resolvedLink, 0, 4096);
+    *id_model  = 0;
+    *id_vendor = 0;
+    *guid      = 0;
+    memset(tmp_path, 0, 4096);
+    memset(resolved_link, 0, 4096);
 
-    if(strncmp(devicePath, "/dev/sd", 7) != 0 && strncmp(devicePath, "/dev/sr", 7) != 0 &&
-       strncmp(devicePath, "/dev/st", 7) != 0)
+    if(strncmp(device_path, "/dev/sd", 7) != 0 && strncmp(device_path, "/dev/sr", 7) != 0 &&
+       strncmp(device_path, "/dev/st", 7) != 0)
         return 0;
 
-    devPath = (char*)devicePath + 5;
+    dev_path = (char*)device_path + 5;
 
-    snprintf(tmpPath, 4096, "/sys/block/%s", devPath);
+    snprintf(tmp_path, 4096, "/sys/block/%s", dev_path);
 
-    if(stat(tmpPath, &sb) != 0 || !S_ISDIR(sb.st_mode)) { return 0; }
+    if(stat(tmp_path, &sb) != 0 || !S_ISDIR(sb.st_mode)) { return 0; }
 
-    len = readlink(tmpPath, resolvedLink, 4096);
+    len = readlink(tmp_path, resolved_link, 4096);
 
     if(len == 0) return 0;
 
-    memset(tmpPath, 0, 4096);
-    snprintf(tmpPath, 4096, "/sys%s", resolvedLink + 2);
-    memcpy(resolvedLink, tmpPath, 4096);
+    memset(tmp_path, 0, 4096);
+    snprintf(tmp_path, 4096, "/sys%s", resolved_link + 2);
+    memcpy(resolved_link, tmp_path, 4096);
 
-    while(strstr(resolvedLink, "firewire") != NULL)
+    while(strstr(resolved_link, "firewire") != NULL)
     {
         found = 1;
-        rchr  = strrchr(resolvedLink, '/');
+        rchr  = strrchr(resolved_link, '/');
 
         if(rchr == NULL) break;
 
         *rchr = '\0';
 
-        if(strlen(resolvedLink) == 0) break;
+        if(strlen(resolved_link) == 0) break;
 
-        snprintf(tmpPath, 4096, "%s/model", resolvedLink);
-        if(access(tmpPath, R_OK) != 0) found = 0;
-        memset(tmpPath, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/model", resolved_link);
+        if(access(tmp_path, R_OK) != 0) found = 0;
+        memset(tmp_path, 0, 4096);
 
-        snprintf(tmpPath, 4096, "%s/vendor", resolvedLink);
-        if(access(tmpPath, R_OK) != 0) found = 0;
-        memset(tmpPath, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/vendor", resolved_link);
+        if(access(tmp_path, R_OK) != 0) found = 0;
+        memset(tmp_path, 0, 4096);
 
-        snprintf(tmpPath, 4096, "%s/guid", resolvedLink);
-        if(access(tmpPath, R_OK) != 0) found = 0;
-        memset(tmpPath, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/guid", resolved_link);
+        if(access(tmp_path, R_OK) != 0) found = 0;
+        memset(tmp_path, 0, 4096);
 
         if(!found) continue;
 
-        memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/model", resolvedLink);
+        memset(tmp_path, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/model", resolved_link);
 
-        if(access(tmpPath, R_OK) == 0)
+        if(access(tmp_path, R_OK) == 0)
         {
-            file = fopen(tmpPath, "r");
+            file = fopen(tmp_path, "r");
             if(file != NULL)
             {
-                fscanf(file, "%8x", idModel);
+                fscanf(file, "%8x", id_model);
                 fclose(file);
             }
         }
 
-        memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/vendor", resolvedLink);
+        memset(tmp_path, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/vendor", resolved_link);
 
-        if(access(tmpPath, R_OK) == 0)
+        if(access(tmp_path, R_OK) == 0)
         {
-            file = fopen(tmpPath, "r");
+            file = fopen(tmp_path, "r");
             if(file != NULL)
             {
-                fscanf(file, "%8x", idVendor);
+                fscanf(file, "%8x", id_vendor);
                 fclose(file);
             }
         }
 
-        memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/guid", resolvedLink);
+        memset(tmp_path, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/guid", resolved_link);
 
-        if(access(tmpPath, R_OK) == 0)
+        if(access(tmp_path, R_OK) == 0)
         {
-            file = fopen(tmpPath, "r");
+            file = fopen(tmp_path, "r");
             if(file != NULL)
             {
                 fscanf(file, "%16lx", guid);
@@ -127,12 +125,12 @@ uint8_t linux_get_ieee1394_data(const char* devicePath,
             }
         }
 
-        memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/model_name", resolvedLink);
+        memset(tmp_path, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/model_name", resolved_link);
 
-        if(access(tmpPath, R_OK) == 0)
+        if(access(tmp_path, R_OK) == 0)
         {
-            file = fopen(tmpPath, "r");
+            file = fopen(tmp_path, "r");
             if(file != NULL)
             {
                 fread(model, 256, 1, file);
@@ -140,12 +138,12 @@ uint8_t linux_get_ieee1394_data(const char* devicePath,
             }
         }
 
-        memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/vendor_name", resolvedLink);
+        memset(tmp_path, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/vendor_name", resolved_link);
 
-        if(access(tmpPath, R_OK) == 0)
+        if(access(tmp_path, R_OK) == 0)
         {
-            file = fopen(tmpPath, "r");
+            file = fopen(tmp_path, "r");
             if(file != NULL)
             {
                 fread(vendor, 256, 1, file);

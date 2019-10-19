@@ -17,11 +17,9 @@
 
 #include "linux.h"
 
-#include <scsi/sg.h>
-#include <stddef.h>
 #include <string.h>
 
-int32_t ata_protocol_to_scsi_direction(uint8_t protocol)
+int32_t AtaProtocolToScsiDirection(uint8_t protocol)
 {
     switch(protocol)
     {
@@ -39,17 +37,17 @@ int32_t ata_protocol_to_scsi_direction(uint8_t protocol)
     }
 }
 
-int32_t linux_send_ata_chs_command(int                   device_fd,
-                                   AtaRegistersChs       registers,
-                                   AtaErrorRegistersChs* errorRegisters,
-                                   uint8_t               protocol,
-                                   uint8_t               transferRegister,
-                                   char*                 buffer,
-                                   uint32_t              timeout,
-                                   uint8_t               transferBlocks,
-                                   uint32_t*             duration,
-                                   uint32_t*             sense,
-                                   uint32_t*             buf_len)
+int32_t LinuxSendAtaChsCommand(int                   device_fd,
+                               AtaRegistersChs       registers,
+                               AtaErrorRegistersChs* error_registers,
+                               uint8_t               protocol,
+                               uint8_t               transfer_register,
+                               char*                 buffer,
+                               uint32_t              timeout,
+                               uint8_t               transfer_blocks,
+                               uint32_t*             duration,
+                               uint32_t*             sense,
+                               uint32_t*             buf_len)
 {
     duration = 0;
     sense    = 0;
@@ -61,7 +59,7 @@ int32_t linux_send_ata_chs_command(int                   device_fd,
 
     cdb[0] = 0x85;
     cdb[1] = (protocol << 1) & 0x1E;
-    if(transferRegister != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
+    if(transfer_register != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
     {
         switch(protocol)
         {
@@ -70,58 +68,58 @@ int32_t linux_send_ata_chs_command(int                   device_fd,
             default: cdb[2] = 0x00; break;
         }
 
-        if(transferBlocks) cdb[2] |= 0x04;
+        if(transfer_blocks) cdb[2] |= 0x04;
 
-        cdb[2] |= (transferRegister & 0x03);
+        cdb[2] |= (transfer_register & 0x03);
     }
 
-    cdb[4]  = registers.Feature;
-    cdb[6]  = registers.SectorCount;
-    cdb[8]  = registers.Sector;
-    cdb[10] = registers.CylinderLow;
-    cdb[12] = registers.CylinderHigh;
-    cdb[13] = registers.DeviceHead;
-    cdb[14] = registers.Command;
+    cdb[4]  = registers.feature;
+    cdb[6]  = registers.sector_count;
+    cdb[8]  = registers.sector;
+    cdb[10] = registers.cylinder_low;
+    cdb[12] = registers.cylinder_high;
+    cdb[13] = registers.device_head;
+    cdb[14] = registers.command;
 
-    int error = linux_send_scsi_command(device_fd,
-                                        (char*)cdb,
-                                        buffer,
-                                        &sense_buf,
-                                        timeout,
-                                        ata_protocol_to_scsi_direction(protocol),
-                                        duration,
-                                        sense,
-                                        16,
-                                        buf_len,
-                                        &sense_len);
+    int error = LinuxSendScsiCommand(device_fd,
+                                     (char*)cdb,
+                                     buffer,
+                                     &sense_buf,
+                                     timeout,
+                                     AtaProtocolToScsiDirection(protocol),
+                                     duration,
+                                     sense,
+                                     16,
+                                     buf_len,
+                                     &sense_len);
 
     if(sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C)) return error;
 
-    errorRegisters->Error = sense_buf[11];
+    error_registers->error = sense_buf[11];
 
-    errorRegisters->SectorCount  = sense_buf[13];
-    errorRegisters->Sector       = sense_buf[15];
-    errorRegisters->CylinderLow  = sense_buf[17];
-    errorRegisters->CylinderHigh = sense_buf[19];
-    errorRegisters->DeviceHead   = sense_buf[20];
-    errorRegisters->Status       = sense_buf[21];
+    error_registers->sector_count  = sense_buf[13];
+    error_registers->sector        = sense_buf[15];
+    error_registers->cylinder_low  = sense_buf[17];
+    error_registers->cylinder_high = sense_buf[19];
+    error_registers->device_head   = sense_buf[20];
+    error_registers->status        = sense_buf[21];
 
-    *sense = errorRegisters->Error != 0 || (errorRegisters->Status & 0xA5) != 0;
+    *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
 
     return error;
 }
 
-int32_t linux_send_ata_lba28_command(int                     device_fd,
-                                     AtaRegistersLba28       registers,
-                                     AtaErrorRegistersLba28* errorRegisters,
-                                     uint8_t                 protocol,
-                                     uint8_t                 transferRegister,
-                                     char*                   buffer,
-                                     uint32_t                timeout,
-                                     uint8_t                 transferBlocks,
-                                     uint32_t*               duration,
-                                     uint32_t*               sense,
-                                     uint32_t*               buf_len)
+int32_t LinuxSendAtaLba28Command(int                     device_fd,
+                                 AtaRegistersLba28       registers,
+                                 AtaErrorRegistersLba28* error_registers,
+                                 uint8_t                 protocol,
+                                 uint8_t                 transfer_register,
+                                 char*                   buffer,
+                                 uint32_t                timeout,
+                                 uint8_t                 transfer_blocks,
+                                 uint32_t*               duration,
+                                 uint32_t*               sense,
+                                 uint32_t*               buf_len)
 {
     duration = 0;
     sense    = 0;
@@ -133,7 +131,7 @@ int32_t linux_send_ata_lba28_command(int                     device_fd,
 
     cdb[0] = 0x85;
     cdb[1] = (protocol << 1) & 0x1E;
-    if(transferRegister != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
+    if(transfer_register != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
     {
         switch(protocol)
         {
@@ -142,59 +140,60 @@ int32_t linux_send_ata_lba28_command(int                     device_fd,
             default: cdb[2] = 0x00; break;
         }
 
-        if(transferBlocks) cdb[2] |= 0x04;
+        if(transfer_blocks) cdb[2] |= 0x04;
 
-        cdb[2] |= (transferRegister & 0x03);
+        cdb[2] |= (transfer_register & 0x03);
     }
 
     cdb[2] |= 0x20;
 
-    cdb[4]  = registers.Feature;
-    cdb[6]  = registers.SectorCount;
-    cdb[8]  = registers.LbaLow;
-    cdb[10] = registers.LbaMid;
-    cdb[12] = registers.LbaHigh;
-    cdb[13] = registers.DeviceHead;
-    cdb[14] = registers.Command;
+    cdb[4]  = registers.feature;
+    cdb[6]  = registers.sector_count;
+    cdb[8]  = registers.lba_low;
+    cdb[10] = registers.lba_mid;
+    cdb[12] = registers.lba_high;
+    cdb[13] = registers.device_head;
+    cdb[14] = registers.command;
 
-    int error = linux_send_scsi_command(device_fd,
-                                        (char*)cdb,
-                                        buffer,
-                                        &sense_buf,
-                                        timeout,
-                                        ata_protocol_to_scsi_direction(protocol),
-                                        duration,
-                                        sense,
-                                        16,
-                                        buf_len,
-                                        &sense_len);
+    int error = LinuxSendScsiCommand(device_fd,
+                                     (char*)cdb,
+                                     buffer,
+                                     &sense_buf,
+                                     timeout,
+                                     AtaProtocolToScsiDirection(protocol),
+                                     duration,
+                                     sense,
+                                     16,
+                                     buf_len,
+                                     &sense_len);
 
     if(sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C)) return error;
 
-    errorRegisters->Error = sense_buf[11];
+    error_registers->error = sense_buf[11];
 
-    errorRegisters->SectorCount = sense_buf[13];
-    errorRegisters->LbaLow      = sense_buf[15];
-    errorRegisters->LbaMid      = sense_buf[17];
-    errorRegisters->LbaHigh     = sense_buf[19];
-    errorRegisters->DeviceHead  = sense_buf[20];
-    errorRegisters->Status      = sense_buf[21];
+    error_registers->sector_count = sense_buf[13];
+    error_registers->lba_low      = sense_buf[15];
+    error_registers->lba_mid      = sense_buf[17];
+    error_registers->lba_high     = sense_buf[19];
+    error_registers->device_head  = sense_buf[20];
+    error_registers->status       = sense_buf[21];
 
-    *sense = errorRegisters->Error != 0 || (errorRegisters->Status & 0xA5) != 0;
+    *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
 
     return error;
 }
-int32_t linux_send_ata_lba48_command(int                     device_fd,
-                                     AtaRegistersLba48       registers,
-                                     AtaErrorRegistersLba48* errorRegisters,
-                                     uint8_t                 protocol,
-                                     uint8_t                 transferRegister,
-                                     char*                   buffer,
-                                     uint32_t                timeout,
-                                     uint8_t                 transferBlocks,
-                                     uint32_t*               duration,
-                                     uint32_t*               sense,
-                                     uint32_t*               buf_len)
+
+int32_t LinuxSendAtaLba48Command(int                     device_fd,
+                                 AtaRegistersLba48       registers,
+                                 AtaErrorRegistersLba48* error_registers,
+                                 uint8_t                 protocol,
+                                 uint8_t                 transfer_register,
+                                 char*                   buffer,
+                                 uint32_t                timeout,
+                                 uint8_t                 transfer_blocks,
+                                 uint32_t*               duration,
+                                 uint32_t*               sense,
+                                 uint32_t*               buf_len)
 {
     duration = 0;
     sense    = 0;
@@ -207,7 +206,7 @@ int32_t linux_send_ata_lba48_command(int                     device_fd,
     cdb[0] = 0x85;
     cdb[1] = (protocol << 1) & 0x1E;
     cdb[1] |= 0x01;
-    if(transferRegister != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
+    if(transfer_register != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
     {
         switch(protocol)
         {
@@ -216,50 +215,50 @@ int32_t linux_send_ata_lba48_command(int                     device_fd,
             default: cdb[2] = 0x00; break;
         }
 
-        if(transferBlocks) cdb[2] |= 0x04;
+        if(transfer_blocks) cdb[2] |= 0x04;
 
-        cdb[2] |= (transferRegister & 0x03);
+        cdb[2] |= (transfer_register & 0x03);
     }
 
     cdb[2] |= 0x20;
 
-    cdb[3]  = ((registers.Feature & 0xFF00) >> 8);
-    cdb[4]  = (registers.Feature & 0xFF);
-    cdb[5]  = ((registers.SectorCount & 0xFF00) >> 8);
-    cdb[6]  = (registers.SectorCount & 0xFF);
-    cdb[7]  = ((registers.LbaLow & 0xFF00) >> 8);
-    cdb[8]  = (registers.LbaLow & 0xFF);
-    cdb[9]  = ((registers.LbaMid & 0xFF00) >> 8);
-    cdb[10] = (registers.LbaMid & 0xFF);
-    cdb[11] = ((registers.LbaHigh & 0xFF00) >> 8);
-    cdb[12] = (registers.LbaHigh & 0xFF);
-    cdb[13] = registers.DeviceHead;
-    cdb[14] = registers.Command;
+    cdb[3]  = ((registers.feature & 0xFF00) >> 8);
+    cdb[4]  = (registers.feature & 0xFF);
+    cdb[5]  = ((registers.sector_count & 0xFF00) >> 8);
+    cdb[6]  = (registers.sector_count & 0xFF);
+    cdb[7]  = ((registers.lba_low & 0xFF00) >> 8);
+    cdb[8]  = (registers.lba_low & 0xFF);
+    cdb[9]  = ((registers.lba_mid & 0xFF00) >> 8);
+    cdb[10] = (registers.lba_mid & 0xFF);
+    cdb[11] = ((registers.lba_high & 0xFF00) >> 8);
+    cdb[12] = (registers.lba_high & 0xFF);
+    cdb[13] = registers.device_head;
+    cdb[14] = registers.command;
 
-    int error = linux_send_scsi_command(device_fd,
-                                        (char*)cdb,
-                                        buffer,
-                                        &sense_buf,
-                                        timeout,
-                                        ata_protocol_to_scsi_direction(protocol),
-                                        duration,
-                                        sense,
-                                        16,
-                                        buf_len,
-                                        &sense_len);
+    int error = LinuxSendScsiCommand(device_fd,
+                                     (char*)cdb,
+                                     buffer,
+                                     &sense_buf,
+                                     timeout,
+                                     AtaProtocolToScsiDirection(protocol),
+                                     duration,
+                                     sense,
+                                     16,
+                                     buf_len,
+                                     &sense_len);
 
     if(sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C)) return error;
 
-    errorRegisters->Error = sense_buf[11];
+    error_registers->error = sense_buf[11];
 
-    errorRegisters->SectorCount = (uint16_t)((sense_buf[12] << 8) + sense_buf[13]);
-    errorRegisters->LbaLow      = (uint16_t)((sense_buf[14] << 8) + sense_buf[15]);
-    errorRegisters->LbaMid      = (uint16_t)((sense_buf[16] << 8) + sense_buf[17]);
-    errorRegisters->LbaHigh     = (uint16_t)((sense_buf[18] << 8) + sense_buf[19]);
-    errorRegisters->DeviceHead  = sense_buf[20];
-    errorRegisters->Status      = sense_buf[21];
+    error_registers->sector_count = (uint16_t)((sense_buf[12] << 8) + sense_buf[13]);
+    error_registers->lba_low      = (uint16_t)((sense_buf[14] << 8) + sense_buf[15]);
+    error_registers->lba_mid      = (uint16_t)((sense_buf[16] << 8) + sense_buf[17]);
+    error_registers->lba_high     = (uint16_t)((sense_buf[18] << 8) + sense_buf[19]);
+    error_registers->device_head  = sense_buf[20];
+    error_registers->status       = sense_buf[21];
 
-    *sense = errorRegisters->Error != 0 || (errorRegisters->Status & 0xA5) != 0;
+    *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
 
     return error;
 }

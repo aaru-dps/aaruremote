@@ -17,36 +17,34 @@
 
 #include "dicmote.h"
 
-#include <stddef.h>
-
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"
 #endif
 
 int32_t SendAtaChsCommand(int                   device_fd,
                           AtaRegistersChs       registers,
-                          AtaErrorRegistersChs* errorRegisters,
+                          AtaErrorRegistersChs* error_registers,
                           uint8_t               protocol,
-                          uint8_t               transferRegister,
+                          uint8_t               transfer_register,
                           char*                 buffer,
                           uint32_t              timeout,
-                          uint8_t               transferBlocks,
+                          uint8_t               transfer_blocks,
                           uint32_t*             duration,
                           uint32_t*             sense,
                           uint32_t*             buf_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_send_ata_chs_command(device_fd,
-                                      registers,
-                                      errorRegisters,
-                                      protocol,
-                                      transferRegister,
-                                      buffer,
-                                      timeout,
-                                      transferBlocks,
-                                      duration,
-                                      sense,
-                                      buf_len);
+    return LinuxSendAtaChsCommand(device_fd,
+                                  registers,
+                                  error_registers,
+                                  protocol,
+                                  transfer_register,
+                                  buffer,
+                                  timeout,
+                                  transfer_blocks,
+                                  duration,
+                                  sense,
+                                  buf_len);
 #else
     return -1;
 #endif
@@ -54,28 +52,28 @@ int32_t SendAtaChsCommand(int                   device_fd,
 
 int32_t SendAtaLba28Command(int                     device_fd,
                             AtaRegistersLba28       registers,
-                            AtaErrorRegistersLba28* errorRegisters,
+                            AtaErrorRegistersLba28* error_registers,
                             uint8_t                 protocol,
-                            uint8_t                 transferRegister,
+                            uint8_t                 transfer_register,
                             char*                   buffer,
                             uint32_t                timeout,
-                            uint8_t                 transferBlocks,
+                            uint8_t                 transfer_blocks,
                             uint32_t*               duration,
                             uint32_t*               sense,
                             uint32_t*               buf_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_send_ata_lba28_command(device_fd,
-                                        registers,
-                                        errorRegisters,
-                                        protocol,
-                                        transferRegister,
-                                        buffer,
-                                        timeout,
-                                        transferBlocks,
-                                        duration,
-                                        sense,
-                                        buf_len);
+    return LinuxSendAtaLba28Command(device_fd,
+                                    registers,
+                                    error_registers,
+                                    protocol,
+                                    transfer_register,
+                                    buffer,
+                                    timeout,
+                                    transfer_blocks,
+                                    duration,
+                                    sense,
+                                    buf_len);
 #else
     return -1;
 #endif
@@ -83,28 +81,28 @@ int32_t SendAtaLba28Command(int                     device_fd,
 
 int32_t SendAtaLba48Command(int                     device_fd,
                             AtaRegistersLba48       registers,
-                            AtaErrorRegistersLba48* errorRegisters,
+                            AtaErrorRegistersLba48* error_registers,
                             uint8_t                 protocol,
-                            uint8_t                 transferRegister,
+                            uint8_t                 transfer_register,
                             char*                   buffer,
                             uint32_t                timeout,
-                            uint8_t                 transferBlocks,
+                            uint8_t                 transfer_blocks,
                             uint32_t*               duration,
                             uint32_t*               sense,
                             uint32_t*               buf_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_send_ata_lba48_command(device_fd,
-                                        registers,
-                                        errorRegisters,
-                                        protocol,
-                                        transferRegister,
-                                        buffer,
-                                        timeout,
-                                        transferBlocks,
-                                        duration,
-                                        sense,
-                                        buf_len);
+    return LinuxSendAtaLba48Command(device_fd,
+                                    registers,
+                                    error_registers,
+                                    protocol,
+                                    transfer_register,
+                                    buffer,
+                                    timeout,
+                                    transfer_blocks,
+                                    duration,
+                                    sense,
+                                    buf_len);
 #else
     return -1;
 #endif

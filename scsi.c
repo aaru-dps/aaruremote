@@ -22,7 +22,7 @@
 int32_t SendScsiCommand(int       device_fd,
                         char*     cdb,
                         char*     buffer,
-                        char**    senseBuffer,
+                        char**    sense_buffer,
                         uint32_t  timeout,
                         int32_t   direction,
                         uint32_t* duration,
@@ -32,8 +32,8 @@ int32_t SendScsiCommand(int       device_fd,
                         uint32_t* sense_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_send_scsi_command(
-        device_fd, cdb, buffer, senseBuffer, timeout, direction, duration, sense, cdb_len, buf_len, sense_len);
+    return LinuxSendScsiCommand(
+        device_fd, cdb, buffer, sense_buffer, timeout, direction, duration, sense, cdb_len, buf_len, sense_len);
 #else
     return -1;
 #endif

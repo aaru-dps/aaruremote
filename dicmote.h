@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICMOTE_H
-#define DICMOTE_H
+#ifndef DICREMOTE__DICMOTE_H_
+#define DICREMOTE__DICMOTE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -35,10 +35,10 @@
 #define DICMOTE_PACKET_TYPE_RESPONSE_SCSI 6
 #define DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS 7
 #define DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS 8
-#define DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28 9
-#define DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA28 10
-#define DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48 11
-#define DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA48 12
+#define DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA_28 9
+#define DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_28 10
+#define DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA_48 11
+#define DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_48 12
 #define DICMOTE_PACKET_TYPE_COMMAND_SDHCI 13
 #define DICMOTE_PACKET_TYPE_RESPONSE_SDHCI 14
 #define DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE 15
@@ -145,7 +145,7 @@ typedef struct
     uint8_t         reason_code;
     char            spare[3];
     char            reason[256];
-    int32_t         errorNo;
+    int32_t         error_no;
 } DicPacketNop;
 
 typedef struct
@@ -175,24 +175,24 @@ typedef struct
 
 typedef struct
 {
-    uint8_t Feature;
-    uint8_t SectorCount;
-    uint8_t Sector;
-    uint8_t CylinderLow;
-    uint8_t CylinderHigh;
-    uint8_t DeviceHead;
-    uint8_t Command;
+    uint8_t feature;
+    uint8_t sector_count;
+    uint8_t sector;
+    uint8_t cylinder_low;
+    uint8_t cylinder_high;
+    uint8_t device_head;
+    uint8_t command;
 } AtaRegistersChs;
 
 typedef struct
 {
-    uint8_t Status;
-    uint8_t Error;
-    uint8_t SectorCount;
-    uint8_t Sector;
-    uint8_t CylinderLow;
-    uint8_t CylinderHigh;
-    uint8_t DeviceHead;
+    uint8_t status;
+    uint8_t error;
+    uint8_t sector_count;
+    uint8_t sector;
+    uint8_t cylinder_low;
+    uint8_t cylinder_high;
+    uint8_t device_head;
 } AtaErrorRegistersChs;
 
 typedef struct
@@ -201,8 +201,8 @@ typedef struct
     uint32_t        buf_len;
     AtaRegistersChs registers;
     uint8_t         protocol;
-    uint8_t         transferRegister;
-    uint8_t         transferBlocks;
+    uint8_t         transfer_register;
+    uint8_t         transfer_blocks;
     uint8_t         spare;
     uint32_t        timeout;
 } DicPacketCmdAtaChs;
@@ -219,24 +219,24 @@ typedef struct
 
 typedef struct
 {
-    uint8_t Feature;
-    uint8_t SectorCount;
-    uint8_t LbaLow;
-    uint8_t LbaMid;
-    uint8_t LbaHigh;
-    uint8_t DeviceHead;
-    uint8_t Command;
+    uint8_t feature;
+    uint8_t sector_count;
+    uint8_t lba_low;
+    uint8_t lba_mid;
+    uint8_t lba_high;
+    uint8_t device_head;
+    uint8_t command;
 } AtaRegistersLba28;
 
 typedef struct
 {
-    uint8_t Status;
-    uint8_t Error;
-    uint8_t SectorCount;
-    uint8_t LbaLow;
-    uint8_t LbaMid;
-    uint8_t LbaHigh;
-    uint8_t DeviceHead;
+    uint8_t status;
+    uint8_t error;
+    uint8_t sector_count;
+    uint8_t lba_low;
+    uint8_t lba_mid;
+    uint8_t lba_high;
+    uint8_t device_head;
 } AtaErrorRegistersLba28;
 
 typedef struct
@@ -245,8 +245,8 @@ typedef struct
     uint32_t          buf_len;
     AtaRegistersLba28 registers;
     uint8_t           protocol;
-    uint8_t           transferRegister;
-    uint8_t           transferBlocks;
+    uint8_t           transfer_register;
+    uint8_t           transfer_blocks;
     uint8_t           spare;
     uint32_t          timeout;
 } DicPacketCmdAtaLba28;
@@ -263,24 +263,24 @@ typedef struct
 
 typedef struct
 {
-    uint16_t Feature;
-    uint16_t SectorCount;
-    uint16_t LbaLow;
-    uint16_t LbaMid;
-    uint16_t LbaHigh;
-    uint8_t  DeviceHead;
-    uint8_t  Command;
+    uint16_t feature;
+    uint16_t sector_count;
+    uint16_t lba_low;
+    uint16_t lba_mid;
+    uint16_t lba_high;
+    uint8_t  device_head;
+    uint8_t  command;
 } AtaRegistersLba48;
 
 typedef struct
 {
-    uint8_t  Status;
-    uint8_t  Error;
-    uint16_t SectorCount;
-    uint16_t LbaLow;
-    uint16_t LbaMid;
-    uint16_t LbaHigh;
-    uint8_t  DeviceHead;
+    uint8_t  status;
+    uint8_t  error;
+    uint16_t sector_count;
+    uint16_t lba_low;
+    uint16_t lba_mid;
+    uint16_t lba_high;
+    uint8_t  device_head;
 } AtaErrorRegistersLba48;
 
 typedef struct
@@ -289,8 +289,8 @@ typedef struct
     uint32_t          buf_len;
     AtaRegistersLba48 registers;
     uint8_t           protocol;
-    uint8_t           transferRegister;
-    uint8_t           transferBlocks;
+    uint8_t           transfer_register;
+    uint8_t           transfer_blocks;
     uint8_t           spare;
     uint32_t          timeout;
 } DicPacketCmdAtaLba48;
@@ -348,7 +348,7 @@ typedef struct
 typedef struct
 {
     DicPacketHeader hdr;
-    uint8_t         isSdhci;
+    uint8_t         is_sdhci;
     char            csd[16];
     char            cid[16];
     char            ocr[4];
@@ -367,11 +367,11 @@ typedef struct
 typedef struct
 {
     DicPacketHeader hdr;
-    uint8_t         isUsb;
-    uint16_t        descLen;
+    uint8_t         is_usb;
+    uint16_t        desc_len;
     char            descriptors[65536];
-    uint16_t        idVendor;
-    uint16_t        idProduct;
+    uint16_t        id_vendor;
+    uint16_t        id_product;
     char            manufacturer[256];
     char            product[256];
     char            serial[256];
@@ -385,9 +385,9 @@ typedef struct
 typedef struct
 {
     DicPacketHeader hdr;
-    uint8_t         isFireWire;
-    uint32_t        idModel;
-    uint32_t        idVendor;
+    uint8_t         is_firewire;
+    uint32_t        id_model;
+    uint32_t        id_vendor;
     uint64_t        guid;
     char            vendor[256];
     char            model[256];
@@ -401,7 +401,7 @@ typedef struct
 typedef struct
 {
     DicPacketHeader hdr;
-    uint8_t         isPcmcia;
+    uint8_t         is_pcmcia;
     uint16_t        cis_len;
     char            cis[65536];
 } DicPacketResGetPcmciaData;
@@ -411,12 +411,12 @@ typedef struct
 DeviceInfoList* ListDevices();
 void            FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t        DeviceInfoListCount(DeviceInfoList* start);
-int             DeviceOpen(const char* devicePath);
-int32_t         GetDeviceType(const char* devicePath);
+int             DeviceOpen(const char* device_path);
+int32_t         GetDeviceType(const char* device_path);
 int32_t         SendScsiCommand(int       device_fd,
                                 char*     cdb,
                                 char*     buffer,
-                                char**    senseBuffer,
+                                char**    sense_buffer,
                                 uint32_t  timeout,
                                 int32_t   direction,
                                 uint32_t* duration,
@@ -424,9 +424,9 @@ int32_t         SendScsiCommand(int       device_fd,
                                 uint32_t  cdb_len,
                                 uint32_t* buf_len,
                                 uint32_t* sense_len);
-int             hexchr2bin(const char hex, char* out);
-size_t          hexs2bin(const char* hex, unsigned char** out);
-int32_t         GetSdhciRegisters(const char* devicePath,
+int             Hexchr2Bin(const char hex, char* out);
+size_t          Hexs2Bin(const char* hex, unsigned char** out);
+int32_t         GetSdhciRegisters(const char* device_path,
                                   char**      csd,
                                   char**      cid,
                                   char**      ocr,
@@ -435,51 +435,51 @@ int32_t         GetSdhciRegisters(const char* devicePath,
                                   uint32_t*   cid_len,
                                   uint32_t*   ocr_len,
                                   uint32_t*   scr_len);
-uint8_t         GetUsbData(const char* devicePath,
-                           uint16_t*   descLen,
+uint8_t         GetUsbData(const char* device_path,
+                           uint16_t*   desc_len,
                            char*       descriptors,
-                           uint16_t*   idVendor,
-                           uint16_t*   idProduct,
+                           uint16_t*   id_vendor,
+                           uint16_t*   id_product,
                            char*       manufacturer,
                            char*       product,
                            char*       serial);
-uint8_t         GetFireWireData(const char* devicePath,
-                                uint32_t*   idModel,
-                                uint32_t*   idVendor,
+uint8_t         GetFireWireData(const char* device_path,
+                                uint32_t*   id_model,
+                                uint32_t*   id_vendor,
                                 uint64_t*   guid,
                                 char*       vendor,
                                 char*       model);
-uint8_t         GetPcmciaData(const char* devicePath, uint16_t* cisLen, char* cis);
+uint8_t         GetPcmciaData(const char* device_path, uint16_t* cis_len, char* cis);
 int32_t         SendAtaChsCommand(int                   device_fd,
                                   AtaRegistersChs       registers,
-                                  AtaErrorRegistersChs* errorRegisters,
+                                  AtaErrorRegistersChs* error_registers,
                                   uint8_t               protocol,
-                                  uint8_t               transferRegister,
+                                  uint8_t               transfer_register,
                                   char*                 buffer,
                                   uint32_t              timeout,
-                                  uint8_t               transferBlocks,
+                                  uint8_t               transfer_blocks,
                                   uint32_t*             duration,
                                   uint32_t*             sense,
                                   uint32_t*             buf_len);
 int32_t         SendAtaLba28Command(int                     device_fd,
                                     AtaRegistersLba28       registers,
-                                    AtaErrorRegistersLba28* errorRegisters,
+                                    AtaErrorRegistersLba28* error_registers,
                                     uint8_t                 protocol,
-                                    uint8_t                 transferRegister,
+                                    uint8_t                 transfer_register,
                                     char*                   buffer,
                                     uint32_t                timeout,
-                                    uint8_t                 transferBlocks,
+                                    uint8_t                 transfer_blocks,
                                     uint32_t*               duration,
                                     uint32_t*               sense,
                                     uint32_t*               buf_len);
 int32_t         SendAtaLba48Command(int                     device_fd,
                                     AtaRegistersLba48       registers,
-                                    AtaErrorRegistersLba48* errorRegisters,
+                                    AtaErrorRegistersLba48* error_registers,
                                     uint8_t                 protocol,
-                                    uint8_t                 transferRegister,
+                                    uint8_t                 transfer_register,
                                     char*                   buffer,
                                     uint32_t                timeout,
-                                    uint8_t                 transferBlocks,
+                                    uint8_t                 transfer_blocks,
                                     uint32_t*               duration,
                                     uint32_t*               sense,
                                     uint32_t*               buf_len);

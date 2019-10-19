@@ -21,13 +21,12 @@
 #include "linux/linux.h"
 #endif
 
-#include <stddef.h>
 #include <stdlib.h>
 
 DeviceInfoList* ListDevices()
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_list_devices();
+    return LinuxListDevices();
 #else
     return NULL;
 #endif

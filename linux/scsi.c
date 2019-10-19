@@ -23,26 +23,26 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
-int32_t linux_send_scsi_command(int       device_fd,
-                                char*     cdb,
-                                char*     buffer,
-                                char**    senseBuffer,
-                                uint32_t  timeout,
-                                int32_t   direction,
-                                uint32_t* duration,
-                                uint32_t* sense,
-                                uint32_t  cdb_len,
-                                uint32_t* buf_len,
-                                uint32_t* sense_len)
+int32_t LinuxSendScsiCommand(int       device_fd,
+                             char*     cdb,
+                             char*     buffer,
+                             char**    sense_buffer,
+                             uint32_t  timeout,
+                             int32_t   direction,
+                             uint32_t* duration,
+                             uint32_t* sense,
+                             uint32_t  cdb_len,
+                             uint32_t* buf_len,
+                             uint32_t* sense_len)
 {
     sg_io_hdr_t hdr;
     int         dir, ret;
     *sense_len = 32;
 
     memset(&hdr, 0, sizeof(sg_io_hdr_t));
-    *senseBuffer = malloc(*sense_len);
+    *sense_buffer = malloc(*sense_len);
 
-    if(!*senseBuffer) return -1;
+    if(!*sense_buffer) return -1;
 
     switch(direction)
     {
@@ -61,7 +61,7 @@ int32_t linux_send_scsi_command(int       device_fd,
     hdr.dxfer_len       = *buf_len;
     hdr.dxferp          = buffer;
     hdr.cmdp            = (unsigned char*)cdb;
-    hdr.sbp             = (unsigned char*)*senseBuffer;
+    hdr.sbp             = (unsigned char*)*sense_buffer;
     hdr.timeout         = timeout;
     hdr.flags           = SG_FLAG_DIRECT_IO;
 

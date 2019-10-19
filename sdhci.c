@@ -35,19 +35,19 @@ int32_t SendSdhciCommand(int       device_fd,
                          uint32_t* sense)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_send_sdhci_command(device_fd,
-                                    command,
-                                    write,
-                                    application,
-                                    flags,
-                                    argument,
-                                    block_size,
-                                    blocks,
-                                    buffer,
-                                    timeout,
-                                    response,
-                                    duration,
-                                    sense);
+    return LinuxSendSdhciCommand(device_fd,
+                                 command,
+                                 write,
+                                 application,
+                                 flags,
+                                 argument,
+                                 block_size,
+                                 blocks,
+                                 buffer,
+                                 timeout,
+                                 response,
+                                 duration,
+                                 sense);
 #else
     return -1;
 #endif

@@ -21,17 +21,17 @@
 #include "linux/linux.h"
 #endif
 
-uint8_t GetUsbData(const char* devicePath,
-                   uint16_t*   descLen,
+uint8_t GetUsbData(const char* device_path,
+                   uint16_t*   desc_len,
                    char*       descriptors,
-                   uint16_t*   idVendor,
-                   uint16_t*   idProduct,
+                   uint16_t*   id_vendor,
+                   uint16_t*   id_product,
                    char*       manufacturer,
                    char*       product,
                    char*       serial)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return linux_get_usb_data(devicePath, descLen, descriptors, idVendor, idProduct, manufacturer, product, serial);
+    return LinuxGetUsbData(device_path, desc_len, descriptors, id_vendor, id_product, manufacturer, product, serial);
 #else
     return 0;
 #endif

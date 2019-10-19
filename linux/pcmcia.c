@@ -15,8 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "linux.h"
-
 #include <dirent.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -24,55 +22,55 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-uint8_t linux_get_pcmcia_data(const char* devicePath, uint16_t* cisLen, char* cis)
+uint8_t LinuxGetPcmciaData(const char* device_path, uint16_t* cis_len, char* cis)
 {
-    char*          devPath;
-    char           tmpPath[4096];
-    char           resolvedLink[4096];
+    char*          dev_path;
+    char           tmp_path[4096];
+    char           resolved_link[4096];
     struct stat    sb;
     ssize_t        len;
     char*          rchr;
     FILE*          file;
     DIR*           dir;
     struct dirent* dent;
-    *cisLen = 0;
+    *cis_len = 0;
 
-    memset(tmpPath, 0, 4096);
-    memset(resolvedLink, 0, 4096);
+    memset(tmp_path, 0, 4096);
+    memset(resolved_link, 0, 4096);
 
-    if(strncmp(devicePath, "/dev/sd", 7) != 0 && strncmp(devicePath, "/dev/sr", 7) != 0 &&
-       strncmp(devicePath, "/dev/st", 7) != 0)
+    if(strncmp(device_path, "/dev/sd", 7) != 0 && strncmp(device_path, "/dev/sr", 7) != 0 &&
+       strncmp(device_path, "/dev/st", 7) != 0)
         return 0;
 
-    devPath = (char*)devicePath + 5;
+    dev_path = (char*)device_path + 5;
 
-    snprintf(tmpPath, 4096, "/sys/block/%s", devPath);
+    snprintf(tmp_path, 4096, "/sys/block/%s", dev_path);
 
-    if(stat(tmpPath, &sb) != 0 || !S_ISDIR(sb.st_mode)) { return 0; }
+    if(stat(tmp_path, &sb) != 0 || !S_ISDIR(sb.st_mode)) { return 0; }
 
-    len = readlink(tmpPath, resolvedLink, 4096);
+    len = readlink(tmp_path, resolved_link, 4096);
 
     if(len == 0) return 0;
 
-    memset(tmpPath, 0, 4096);
-    snprintf(tmpPath, 4096, "/sys%s", resolvedLink + 2);
-    memcpy(resolvedLink, tmpPath, 4096);
+    memset(tmp_path, 0, 4096);
+    snprintf(tmp_path, 4096, "/sys%s", resolved_link + 2);
+    memcpy(resolved_link, tmp_path, 4096);
 
-    while(strstr(resolvedLink, "/sys/devices") != NULL)
+    while(strstr(resolved_link, "/sys/devices") != NULL)
     {
-        rchr = strrchr(resolvedLink, '/');
+        rchr = strrchr(resolved_link, '/');
 
         if(rchr == NULL) break;
 
         *rchr = '\0';
 
-        if(strlen(resolvedLink) == 0) break;
+        if(strlen(resolved_link) == 0) break;
 
-        memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/pcmcia_socket", resolvedLink);
-        if(access(tmpPath, R_OK) != 0) continue;
+        memset(tmp_path, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/pcmcia_socket", resolved_link);
+        if(access(tmp_path, R_OK) != 0) continue;
 
-        dir = opendir(tmpPath);
+        dir = opendir(tmp_path);
         if(!dir) continue;
 
         do
@@ -85,14 +83,14 @@ uint8_t linux_get_pcmcia_data(const char* devicePath, uint16_t* cisLen, char* ci
 
         if(!dent) continue;
 
-        memset(tmpPath, 0, 4096);
-        snprintf(tmpPath, 4096, "%s/pcmcia_socket/%s/cis", resolvedLink, dent->d_name);
-        if(access(tmpPath, R_OK) != 0) continue;
+        memset(tmp_path, 0, 4096);
+        snprintf(tmp_path, 4096, "%s/pcmcia_socket/%s/cis", resolved_link, dent->d_name);
+        if(access(tmp_path, R_OK) != 0) continue;
 
-        file = fopen(tmpPath, "r");
+        file = fopen(tmp_path, "r");
         if(!file) return 0;
 
-        *cisLen = fread(cis, 65536, 1, file);
+        *cis_len = fread(cis, 65536, 1, file);
 
         return 1;
     }

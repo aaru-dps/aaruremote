@@ -28,15 +28,15 @@
 #include <string.h>
 #include <unistd.h>
 
-DeviceInfoList* linux_list_devices()
+DeviceInfoList* LinuxListDevices()
 {
     DIR*                dir;
     struct dirent*      dirent;
     struct udev*        udev;
-    int                 hasUdev   = false, i;
-    DeviceInfoList *    listStart = NULL, *listCurrent = NULL, *listNext = NULL;
+    int                 has_udev   = false, i;
+    DeviceInfoList *    list_start = NULL, *list_current = NULL, *list_next = NULL;
     struct udev_device* udev_device;
-    const char*         tmpString;
+    const char*         tmp_string;
     FILE*               file;
     char*               line_str;
     size_t              n, ret;
@@ -44,7 +44,7 @@ DeviceInfoList* linux_list_devices()
 
     udev = udev_new();
 
-    hasUdev = udev != 0;
+    has_udev = udev != 0;
 
     dir = opendir(PATH_SYS_DEVBLOCK);
     if(!dir) return NULL;
@@ -59,82 +59,82 @@ DeviceInfoList* linux_list_devices()
             continue;
         }
 
-        listNext = malloc(sizeof(DeviceInfoList));
-        memset(listNext, 0, sizeof(DeviceInfoList));
+        list_next = malloc(sizeof(DeviceInfoList));
+        memset(list_next, 0, sizeof(DeviceInfoList));
 
-        if(!listNext)
+        if(!list_next)
         {
             closedir(dir);
 
-            if(hasUdev) udev_unref(udev);
+            if(has_udev) udev_unref(udev);
 
-            return listStart;
+            return list_start;
         }
 
-        if(!listStart) listStart = listNext;
+        if(!list_start) list_start = list_next;
 
-        if(listCurrent) listCurrent->next = listNext;
+        if(list_current) list_current->next = list_next;
 
-        snprintf(listNext->this.path, 1024, "/dev/%s", dirent->d_name);
+        snprintf(list_next->this.path, 1024, "/dev/%s", dirent->d_name);
 
-        if(hasUdev)
+        if(has_udev)
         {
             udev_device = udev_device_new_from_subsystem_sysname(udev, "block", dirent->d_name);
             if(udev_device)
             {
-                tmpString = udev_device_get_property_value(udev_device, "ID_VENDOR");
-                if(tmpString)
+                tmp_string = udev_device_get_property_value(udev_device, "ID_VENDOR");
+                if(tmp_string)
                 {
-                    strncpy(listNext->this.vendor, tmpString, 256);
-                    free((void*)tmpString);
+                    strncpy(list_next->this.vendor, tmp_string, 256);
+                    free((void*)tmp_string);
                 }
 
-                tmpString = udev_device_get_property_value(udev_device, "ID_MODEL");
-                if(tmpString)
+                tmp_string = udev_device_get_property_value(udev_device, "ID_MODEL");
+                if(tmp_string)
                 {
-                    strncpy(listNext->this.model, tmpString, 256);
-                    free((void*)tmpString);
+                    strncpy(list_next->this.model, tmp_string, 256);
+                    free((void*)tmp_string);
 
                     for(i = 0; i < 256; i++)
                     {
-                        if(listNext->this.model[i] == 0) break;
+                        if(list_next->this.model[i] == 0) break;
 
-                        if(listNext->this.model[i] == '_') listNext->this.model[i] = ' ';
+                        if(list_next->this.model[i] == '_') list_next->this.model[i] = ' ';
                     }
                 }
 
-                tmpString = udev_device_get_property_value(udev_device, "ID_SCSI_SERIAL");
-                if(tmpString)
+                tmp_string = udev_device_get_property_value(udev_device, "ID_SCSI_SERIAL");
+                if(tmp_string)
                 {
-                    strncpy(listNext->this.serial, tmpString, 256);
-                    free((void*)tmpString);
+                    strncpy(list_next->this.serial, tmp_string, 256);
+                    free((void*)tmp_string);
                 }
                 else
                 {
-                    tmpString = udev_device_get_property_value(udev_device, "ID_SERIAL_SHORT");
-                    if(tmpString)
+                    tmp_string = udev_device_get_property_value(udev_device, "ID_SERIAL_SHORT");
+                    if(tmp_string)
                     {
-                        strncpy(listNext->this.serial, tmpString, 256);
-                        free((void*)tmpString);
+                        strncpy(list_next->this.serial, tmp_string, 256);
+                        free((void*)tmp_string);
                     }
                 }
 
-                tmpString = udev_device_get_property_value(udev_device, "ID_BUS");
-                if(tmpString)
+                tmp_string = udev_device_get_property_value(udev_device, "ID_BUS");
+                if(tmp_string)
                 {
-                    strncpy(listNext->this.bus, tmpString, 256);
-                    free((void*)tmpString);
+                    strncpy(list_next->this.bus, tmp_string, 256);
+                    free((void*)tmp_string);
                 }
             }
         }
 
-        tmpString = malloc(1024);
-        memset((void*)tmpString, 0, 1024);
-        snprintf((char*)tmpString, 1024, "%s/%s/device/vendor", PATH_SYS_DEVBLOCK, dirent->d_name);
+        tmp_string = malloc(1024);
+        memset((void*)tmp_string, 0, 1024);
+        snprintf((char*)tmp_string, 1024, "%s/%s/device/vendor", PATH_SYS_DEVBLOCK, dirent->d_name);
 
-        if(access(tmpString, R_OK) == 0 && strlen(listNext->this.vendor) == 0)
+        if(access(tmp_string, R_OK) == 0 && strlen(list_next->this.vendor) == 0)
         {
-            file = fopen(tmpString, "rb");
+            file = fopen(tmp_string, "rb");
 
             if(file != NULL)
             {
@@ -145,15 +145,14 @@ DeviceInfoList* linux_list_devices()
 
                 if(ret > 0 && line_str != NULL)
                 {
-                    strncpy(listNext->this.vendor, line_str, 256);
+                    strncpy(list_next->this.vendor, line_str, 256);
                     for(i = 255; i >= 0; i--)
                     {
-                        if(listNext->this.vendor[i] == 0)
-                            continue;
+                        if(list_next->this.vendor[i] == 0) continue;
 
-                        else if(listNext->this.vendor[i] == 0x0A || listNext->this.vendor[i] == 0x0D ||
-                                listNext->this.vendor[i] == ' ')
-                            listNext->this.vendor[i] = 0;
+                        else if(list_next->this.vendor[i] == 0x0A || list_next->this.vendor[i] == 0x0D ||
+                                list_next->this.vendor[i] == ' ')
+                            list_next->this.vendor[i] = 0;
                         else
                             break;
                     }
@@ -165,18 +164,18 @@ DeviceInfoList* linux_list_devices()
         }
         else if(strncmp(dirent->d_name, "loop", 4) == 0)
         {
-            strncpy(listNext->this.vendor, "Linux", 256);
+            strncpy(list_next->this.vendor, "Linux", 256);
         }
-        free((void*)tmpString);
+        free((void*)tmp_string);
 
-        tmpString = malloc(1024);
-        memset((void*)tmpString, 0, 1024);
-        snprintf((char*)tmpString, 1024, "%s/%s/device/model", PATH_SYS_DEVBLOCK, dirent->d_name);
+        tmp_string = malloc(1024);
+        memset((void*)tmp_string, 0, 1024);
+        snprintf((char*)tmp_string, 1024, "%s/%s/device/model", PATH_SYS_DEVBLOCK, dirent->d_name);
 
-        if(access(tmpString, R_OK) == 0 &&
-           (strlen(listNext->this.model) == 0 || strncmp(listNext->this.bus, "ata", 3) == 0))
+        if(access(tmp_string, R_OK) == 0 &&
+           (strlen(list_next->this.model) == 0 || strncmp(list_next->this.bus, "ata", 3) == 0))
         {
-            file = fopen(tmpString, "rb");
+            file = fopen(tmp_string, "rb");
 
             if(file != NULL)
             {
@@ -187,15 +186,14 @@ DeviceInfoList* linux_list_devices()
 
                 if(ret > 0 && line_str != NULL)
                 {
-                    strncpy(listNext->this.model, line_str, 256);
+                    strncpy(list_next->this.model, line_str, 256);
                     for(i = 255; i >= 0; i--)
                     {
-                        if(listNext->this.model[i] == 0)
-                            continue;
+                        if(list_next->this.model[i] == 0) continue;
 
-                        else if(listNext->this.model[i] == 0x0A || listNext->this.model[i] == 0x0D ||
-                                listNext->this.model[i] == ' ')
-                            listNext->this.model[i] = 0;
+                        else if(list_next->this.model[i] == 0x0A || list_next->this.model[i] == 0x0D ||
+                                list_next->this.model[i] == ' ')
+                            list_next->this.model[i] = 0;
                         else
                             break;
                     }
@@ -207,17 +205,17 @@ DeviceInfoList* linux_list_devices()
         }
         else if(strncmp(dirent->d_name, "loop", 4) == 0)
         {
-            strncpy(listNext->this.model, "Linux", 256);
+            strncpy(list_next->this.model, "Linux", 256);
         }
-        free((void*)tmpString);
+        free((void*)tmp_string);
 
-        tmpString = malloc(1024);
-        memset((void*)tmpString, 0, 1024);
-        snprintf((char*)tmpString, 1024, "%s/%s/device/serial", PATH_SYS_DEVBLOCK, dirent->d_name);
+        tmp_string = malloc(1024);
+        memset((void*)tmp_string, 0, 1024);
+        snprintf((char*)tmp_string, 1024, "%s/%s/device/serial", PATH_SYS_DEVBLOCK, dirent->d_name);
 
-        if(access(tmpString, R_OK) == 0 && (strlen(listNext->this.serial) == 0))
+        if(access(tmp_string, R_OK) == 0 && (strlen(list_next->this.serial) == 0))
         {
-            file = fopen(tmpString, "rb");
+            file = fopen(tmp_string, "rb");
 
             if(file != NULL)
             {
@@ -228,15 +226,14 @@ DeviceInfoList* linux_list_devices()
 
                 if(ret > 0 && line_str != NULL)
                 {
-                    strncpy(listNext->this.serial, line_str, 256);
+                    strncpy(list_next->this.serial, line_str, 256);
                     for(i = 255; i >= 0; i--)
                     {
-                        if(listNext->this.serial[i] == 0)
-                            continue;
+                        if(list_next->this.serial[i] == 0) continue;
 
-                        else if(listNext->this.serial[i] == 0x0A || listNext->this.serial[i] == 0x0D ||
-                                listNext->this.serial[i] == ' ')
-                            listNext->this.serial[i] = 0;
+                        else if(list_next->this.serial[i] == 0x0A || list_next->this.serial[i] == 0x0D ||
+                                list_next->this.serial[i] == ' ')
+                            list_next->this.serial[i] = 0;
                         else
                             break;
                     }
@@ -246,64 +243,63 @@ DeviceInfoList* linux_list_devices()
                 fclose(file);
             }
         }
-        free((void*)tmpString);
+        free((void*)tmp_string);
 
-        if(strlen(listNext->this.vendor) == 0 || strncmp(listNext->this.vendor, "ATA", 3) == 0)
+        if(strlen(list_next->this.vendor) == 0 || strncmp(list_next->this.vendor, "ATA", 3) == 0)
         {
-            if(strlen(listNext->this.model) > 0)
+            if(strlen(list_next->this.model) > 0)
             {
-                tmpString = malloc(256);
-                strncpy((void*)tmpString, listNext->this.model, 256);
+                tmp_string = malloc(256);
+                strncpy((void*)tmp_string, list_next->this.model, 256);
 
-                chrptr = strchr(tmpString, ' ');
+                chrptr = strchr(tmp_string, ' ');
 
                 if(chrptr)
                 {
-                    memset(&listNext->this.vendor, 0, 256);
-                    memset(&listNext->this.model, 0, 256);
-                    strncpy(listNext->this.vendor, tmpString, chrptr - tmpString);
-                    strncpy(listNext->this.model, chrptr + 1, 256 - (chrptr - tmpString) - 1);
+                    memset(&list_next->this.vendor, 0, 256);
+                    memset(&list_next->this.model, 0, 256);
+                    strncpy(list_next->this.vendor, tmp_string, chrptr - tmp_string);
+                    strncpy(list_next->this.model, chrptr + 1, 256 - (chrptr - tmp_string) - 1);
                 }
 
-                free((void*)tmpString);
+                free((void*)tmp_string);
             }
         }
 
         // TODO: Get better device type from sysfs paths
-        if(strlen(listNext->this.bus) == 0)
+        if(strlen(list_next->this.bus) == 0)
         {
-            if(strncmp(dirent->d_name, "loop", 4) == 0)
-                strncpy(listNext->this.bus, "loop", 4);
+            if(strncmp(dirent->d_name, "loop", 4) == 0) strncpy(list_next->this.bus, "loop", 4);
             else if(strncmp(dirent->d_name, "nvme", 4) == 0)
-                strncpy(listNext->this.bus, "NVMe", 4);
+                strncpy(list_next->this.bus, "NVMe", 4);
             else if(strncmp(dirent->d_name, "mmc", 3) == 0)
-                strncpy(listNext->this.bus, "MMC/SD", 6);
+                strncpy(list_next->this.bus, "MMC/SD", 6);
         }
         else
         {
             for(i = 0; i < 256; i++)
             {
-                if(listNext->this.bus[i] == 0) break;
+                if(list_next->this.bus[i] == 0) break;
 
-                listNext->this.bus[i] = (char)toupper(listNext->this.bus[i]);
+                list_next->this.bus[i] = (char)toupper(list_next->this.bus[i]);
             }
         }
 
-        if(strncmp(listNext->this.bus, "ATA", 3) == 0 || strncmp(listNext->this.bus, "ATAPI", 5) == 0 ||
-           strncmp(listNext->this.bus, "SCSI", 4) == 0 || strncmp(listNext->this.bus, "USB", 3) == 0 ||
-           strncmp(listNext->this.bus, "PCMCIA", 6) == 0 || strncmp(listNext->this.bus, "FireWire", 8) == 0 ||
-           strncmp(listNext->this.bus, "MMC/SD", 6) == 0)
-            listNext->this.supported = true;
+        if(strncmp(list_next->this.bus, "ATA", 3) == 0 || strncmp(list_next->this.bus, "ATAPI", 5) == 0 ||
+           strncmp(list_next->this.bus, "SCSI", 4) == 0 || strncmp(list_next->this.bus, "USB", 3) == 0 ||
+           strncmp(list_next->this.bus, "PCMCIA", 6) == 0 || strncmp(list_next->this.bus, "FireWire", 8) == 0 ||
+           strncmp(list_next->this.bus, "MMC/SD", 6) == 0)
+            list_next->this.supported = true;
         else
-            listNext->this.supported = false;
+            list_next->this.supported = false;
 
-        listCurrent = listNext;
-        dirent      = readdir(dir);
+        list_current = list_next;
+        dirent       = readdir(dir);
     }
 
     closedir(dir);
 
-    if(hasUdev) udev_unref(udev);
+    if(has_udev) udev_unref(udev);
 
-    return listStart;
+    return list_start;
 }
