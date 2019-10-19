@@ -49,8 +49,8 @@ int32_t LinuxSendAtaChsCommand(int                   device_fd,
                                uint32_t*             sense,
                                uint32_t*             buf_len)
 {
-    duration = 0;
-    sense    = 0;
+    *duration = 0;
+    *sense    = 0;
     unsigned char cdb[16];
     char*         sense_buf;
     uint32_t      sense_len;
@@ -121,8 +121,8 @@ int32_t LinuxSendAtaLba28Command(int                     device_fd,
                                  uint32_t*               sense,
                                  uint32_t*               buf_len)
 {
-    duration = 0;
-    sense    = 0;
+    *duration = 0;
+    *sense    = 0;
     unsigned char cdb[16];
     char*         sense_buf;
     uint32_t      sense_len;
@@ -195,8 +195,8 @@ int32_t LinuxSendAtaLba48Command(int                     device_fd,
                                  uint32_t*               sense,
                                  uint32_t*               buf_len)
 {
-    duration = 0;
-    sense    = 0;
+    *duration = 0;
+    *sense    = 0;
     unsigned char cdb[16];
     char*         sense_buf;
     uint32_t      sense_len;
