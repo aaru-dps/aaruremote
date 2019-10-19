@@ -77,6 +77,9 @@ int main()
     AtaErrorRegistersChs           ata_chs_error_regs;
     AtaErrorRegistersLba28         ata_lba28_error_regs;
     AtaErrorRegistersLba48         ata_lba48_error_regs;
+    DicPacketCmdSdhci*             pkt_cmd_sdhci;
+    DicPacketResSdhci*             pkt_res_sdhci;
+    uint32_t                       sdhci_response[4];
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -950,12 +953,75 @@ int main()
                     free(pkt_res_ata_lba48);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
-                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED;
-                    memset(&pkt_nop->reason, 0, 256);
-                    strncpy(pkt_nop->reason, "Packet not yet implemented, skipping...", 256);
-                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
-                    printf("%s...\n", pkt_nop->reason);
-                    skip_next_hdr = 1;
+                    // Packet contains data after
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+
+                    pkt_cmd_sdhci = (DicPacketCmdSdhci*)in_buf;
+
+                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+
+                    if(pkt_cmd_sdhci->buf_len > 0)
+                        buffer = in_buf + sizeof(DicPacketCmdSdhci);
+                    else
+                        buffer = NULL;
+
+                    memset((char*)&sdhci_response, 0, sizeof(uint32_t) * 4);
+
+                    duration = 0;
+                    sense    = 1;
+                    ret      = SendSdhciCommand(device_fd,
+                                           pkt_cmd_sdhci->command,
+                                           pkt_cmd_sdhci->write,
+                                           pkt_cmd_sdhci->application,
+                                           pkt_cmd_sdhci->flags,
+                                           pkt_cmd_sdhci->argument,
+                                           pkt_cmd_sdhci->block_size,
+                                           pkt_cmd_sdhci->blocks,
+                                           buffer,
+                                           pkt_cmd_sdhci->buf_len,
+                                           pkt_cmd_sdhci->timeout,
+                                           (uint32_t*)&sdhci_response,
+                                           &duration,
+                                           &sense);
+
+                    out_buf = malloc(sizeof(DicPacketResSdhci) + pkt_cmd_sdhci->buf_len);
+
+                    if(!out_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    pkt_res_sdhci = (DicPacketResSdhci*)out_buf;
+                    if(buffer) memcpy(out_buf + sizeof(DicPacketResSdhci), buffer, pkt_cmd_sdhci->buf_len);
+
+                    pkt_res_sdhci->hdr.len         = sizeof(DicPacketResSdhci) + pkt_cmd_sdhci->buf_len;
+                    pkt_res_sdhci->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SDHCI;
+                    pkt_res_sdhci->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_sdhci->hdr.id          = DICMOTE_PACKET_ID;
+
+                    memcpy((char*)&pkt_res_sdhci->response, (char*)&sdhci_response, sizeof(uint32_t) * 4);
+                    pkt_res_sdhci->buf_len  = pkt_cmd_sdhci->buf_len;
+                    pkt_res_sdhci->duration = duration;
+                    pkt_res_sdhci->sense    = sense;
+                    pkt_res_sdhci->error_no = ret;
+
+                    write(cli_sock, pkt_res_sdhci, pkt_res_sdhci->hdr.len);
+                    free(pkt_cmd_sdhci);
+                    free(pkt_res_sdhci);
                     continue;
                 default:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
