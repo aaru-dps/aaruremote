@@ -92,5 +92,17 @@ int32_t         linux_send_ata_lba48_command(int                     device_fd,
                                              uint32_t*               duration,
                                              uint32_t*               sense,
                                              uint32_t*               buf_len);
-
+int32_t         linux_send_sdhci_command(int       device_fd,
+                                         uint8_t   command,
+                                         uint8_t   write,
+                                         uint8_t   application,
+                                         uint32_t  flags,
+                                         uint32_t  argument,
+                                         uint32_t  block_size,
+                                         uint32_t  blocks,
+                                         char*     buffer,
+                                         uint32_t  timeout,
+                                         uint32_t* response,
+                                         uint32_t* duration,
+                                         uint32_t* sense);
 #endif // DICREMOTE_LINUX_H

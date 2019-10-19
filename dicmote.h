@@ -483,5 +483,19 @@ int32_t         SendAtaLba48Command(int                     device_fd,
                                     uint32_t*               duration,
                                     uint32_t*               sense,
                                     uint32_t*               buf_len);
+int32_t         SendSdhciCommand(int       device_fd,
+                                 uint8_t   command,
+                                 uint8_t   write,
+                                 uint8_t   application,
+                                 uint32_t  flags,
+                                 uint32_t  argument,
+                                 uint32_t  block_size,
+                                 uint32_t  blocks,
+                                 char*     buffer,
+                                 uint32_t  buf_len,
+                                 uint32_t  timeout,
+                                 uint32_t* response,
+                                 uint32_t* duration,
+                                 uint32_t* sense);
 
 #endif
