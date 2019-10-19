@@ -67,6 +67,7 @@ int main()
     char*                          scr;
     DicPacketResGetUsbData*        pkt_res_usb;
     DicPacketResGetFireWireData*   pkt_res_firewire;
+    DicPacketResGetPcmciaData*     pkt_res_pcmcia;
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
@@ -700,11 +701,45 @@ int main()
                     write(cli_sock, pkt_res_firewire, pkt_res_firewire->hdr.len);
                     free(pkt_res_firewire);
                     continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
+                    // Packet only contains header so, dummy
+                    in_buf = malloc(pkt_hdr->len);
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    free(in_buf);
+
+                    pkt_res_pcmcia = malloc(sizeof(DicPacketResGetPcmciaData));
+                    if(!pkt_res_pcmcia)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        close(cli_sock);
+                        continue;
+                    }
+
+                    memset(pkt_res_pcmcia, 0, sizeof(DicPacketResGetPcmciaData));
+                    pkt_res_pcmcia->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_pcmcia->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_pcmcia->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA;
+                    pkt_res_pcmcia->hdr.len         = sizeof(DicPacketResGetPcmciaData);
+                    pkt_res_pcmcia->isPcmcia =
+                        GetPcmciaData(device_path, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
+
+                    write(cli_sock, pkt_res_pcmcia, pkt_res_pcmcia->hdr.len);
+                    free(pkt_res_pcmcia);
+                    continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA28:
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA48:
                 case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Packet not yet implemented, skipping...", 256);

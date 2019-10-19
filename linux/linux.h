@@ -58,5 +58,6 @@ uint8_t         linux_get_ieee1394_data(const char* devicePath,
                                         uint64_t*   guid,
                                         char*       vendor,
                                         char*       model);
+uint8_t         linux_get_pcmcia_data(const char* devicePath, uint16_t* cisLen, char* cis);
 
 #endif // DICREMOTE_LINUX_H

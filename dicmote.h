@@ -432,5 +432,6 @@ uint8_t         GetFireWireData(const char* devicePath,
                                 uint64_t*   guid,
                                 char*       vendor,
                                 char*       model);
+uint8_t         GetPcmciaData(const char* devicePath, uint16_t* cisLen, char* cis);
 
 #endif
