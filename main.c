@@ -89,7 +89,7 @@ int main()
         "Running under %s %s (%s).\n", pkt_server_hello->sysname, pkt_server_hello->release, pkt_server_hello->machine);
 
     printf("Opening socket.\n");
-    sock_fd = socket(AF_INET, SOCK_STREAM, 0);
+    sock_fd = NetSocket(AF_INET, SOCK_STREAM, 0);
     if(sock_fd < 0)
     {
         printf("Error %d opening socket.\n", errno);
@@ -100,10 +100,10 @@ int main()
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port        = htons(DICMOTE_PORT);
 
-    if(bind(sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    if(NetBind(sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
     {
         printf("Error %d binding socket.\n", errno);
-        close(sock_fd);
+        NetClose(sock_fd);
         return 1;
     }
 
@@ -115,12 +115,12 @@ int main()
         return 1;
     }
 
-    ret = listen(sock_fd, 1);
+    ret = NetListen(sock_fd, 1);
 
     if(ret)
     {
         printf("Error %d listening.\n", errno);
-        close(sock_fd);
+        NetClose(sock_fd);
         return 1;
     }
 
@@ -129,7 +129,7 @@ int main()
     if(!pkt_nop)
     {
         printf("Fatal error %d allocating memory.\n", errno);
-        close(sock_fd);
+        NetClose(sock_fd);
         return 1;
     }
 
@@ -146,38 +146,38 @@ int main()
         printf("Waiting for a client...\n");
 
         cli_len  = sizeof(cli_addr);
-        cli_sock = accept(sock_fd, (struct sockaddr*)&cli_addr, &cli_len);
+        cli_sock = NetAccept(sock_fd, (struct sockaddr*)&cli_addr, &cli_len);
 
         if(cli_sock < 0)
         {
             printf("Error %d accepting incoming connection.\n", errno);
-            close(sock_fd);
+            NetClose(sock_fd);
             return 1;
         }
 
         inet_ntop(AF_INET, &cli_addr.sin_addr, ipv4_address, INET_ADDRSTRLEN);
         printf("Client %s connected successfully.\n", ipv4_address);
 
-        write(cli_sock, pkt_server_hello, sizeof(DicPacketHello));
+        NetWrite(cli_sock, pkt_server_hello, sizeof(DicPacketHello));
 
         pkt_hdr = malloc(sizeof(DicPacketHeader));
 
         if(!pkt_hdr)
         {
             printf("Fatal error %d allocating memory.\n", errno);
-            close(cli_sock);
-            close(sock_fd);
+            NetClose(cli_sock);
+            NetClose(sock_fd);
             free(pkt_server_hello);
             return 1;
         }
 
-        recv_size = recv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
+        recv_size = NetRecv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
 
         if(recv_size < 0)
         {
             printf("Error %d reading response from client.\n", errno);
             free(pkt_hdr);
-            close(cli_sock);
+            NetClose(cli_sock);
             continue;
         }
 
@@ -185,7 +185,7 @@ int main()
         {
             printf("Client closed connection.\n");
             free(pkt_hdr);
-            close(cli_sock);
+            NetClose(cli_sock);
             continue;
         }
 
@@ -193,7 +193,7 @@ int main()
         {
             printf("Received data is not a correct dicremote packet, closing connection...\n");
             free(pkt_hdr);
-            close(cli_sock);
+            NetClose(cli_sock);
             continue;
         }
 
@@ -201,7 +201,7 @@ int main()
         {
             printf("Unrecognized packet version, closing connection...\n");
             free(pkt_hdr);
-            close(cli_sock);
+            NetClose(cli_sock);
             continue;
         }
 
@@ -209,7 +209,7 @@ int main()
         {
             printf("Expecting hello packet type, received type %d, closing connection...\n", pkt_hdr->packet_type);
             free(pkt_hdr);
-            close(cli_sock);
+            NetClose(cli_sock);
             continue;
         }
 
@@ -219,16 +219,16 @@ int main()
         {
             printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
             free(pkt_hdr);
-            close(cli_sock);
+            NetClose(cli_sock);
             continue;
         }
 
-        recv_size = recv(cli_sock, pkt_client_hello, pkt_hdr->len, 0);
+        recv_size = NetRecv(cli_sock, pkt_client_hello, pkt_hdr->len, 0);
 
         if(recv_size != pkt_hdr->len)
         {
             printf("Expected %d bytes of packet, got %ld, closing connection...\n", pkt_hdr->len, recv_size);
-            close(cli_sock);
+            NetClose(cli_sock);
             free(pkt_hdr);
             free(pkt_client_hello);
             continue;
@@ -255,21 +255,21 @@ int main()
                 {
                     printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                     free(pkt_hdr);
-                    close(cli_sock);
+                    NetClose(cli_sock);
                     continue;
                 }
 
-                recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
                 free(in_buf);
                 skip_next_hdr = 0;
             }
 
-            recv_size = recv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
+            recv_size = NetRecv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
 
             if(recv_size < 0)
             {
                 printf("Error %d reading response from client, closing connection...\n", errno);
-                close(cli_sock);
+                NetClose(cli_sock);
                 free(pkt_hdr);
                 break;
             }
@@ -277,7 +277,7 @@ int main()
             if(recv_size == 0)
             {
                 printf("Client closed connection, closing connection...\n");
-                close(cli_sock);
+                NetClose(cli_sock);
                 free(pkt_hdr);
                 break;
             }
@@ -285,7 +285,7 @@ int main()
             if(pkt_hdr->id != DICMOTE_PACKET_ID)
             {
                 printf("Received data is not a correct dicremote packet, closing connection...\n");
-                close(cli_sock);
+                NetClose(cli_sock);
                 free(pkt_hdr);
                 break;
             }
@@ -303,7 +303,7 @@ int main()
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Received hello packet out of order, skipping...", 256);
-                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
@@ -317,11 +317,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
                     free(in_buf);
 
                     if(!device_info_list)
@@ -329,7 +329,7 @@ int main()
                         pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES;
                         memset(&pkt_nop->reason, 0, 256);
                         strncpy(pkt_nop->reason, "Could not get device list, continuing...", 256);
-                        write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                        NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
                         printf("%s...\n", pkt_nop->reason);
                         continue;
                     }
@@ -362,7 +362,7 @@ int main()
                     device_info_list = (struct DeviceInfoList*)in_buf;
                     FreeDeviceInfoList(device_info_list);
 
-                    write(cli_sock, pkt_res_devinfo, pkt_res_devinfo->hdr.len);
+                    NetWrite(cli_sock, pkt_res_devinfo, pkt_res_devinfo->hdr.len);
                     free(pkt_res_devinfo);
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
@@ -379,7 +379,7 @@ int main()
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Received response packet?! You should certainly not do that...", 256);
-                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
@@ -390,11 +390,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, pkt_dev_open, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, pkt_dev_open, pkt_hdr->len, 0);
 
                     device_fd = DeviceOpen(pkt_dev_open->device_path);
 
@@ -402,7 +402,7 @@ int main()
                         device_fd == -1 ? DICMOTE_PACKET_NOP_REASON_OPEN_ERROR : DICMOTE_PACKET_NOP_REASON_OPEN_OK;
                     pkt_nop->error_no = errno;
                     memset(&pkt_nop->reason, 0, 256);
-                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
 
                     if(pkt_nop->reason_code == DICMOTE_PACKET_NOP_REASON_OPEN_OK)
                         strncpy(device_path, pkt_dev_open->device_path, 1024);
@@ -417,11 +417,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
                     free(in_buf);
 
                     pkt_dev_type = malloc(sizeof(DicPacketResGetDeviceType));
@@ -430,7 +430,7 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -442,7 +442,7 @@ int main()
                     pkt_dev_type->hdr.id          = DICMOTE_PACKET_ID;
                     pkt_dev_type->device_type     = GetDeviceType(device_path);
 
-                    write(cli_sock, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
+                    NetWrite(cli_sock, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
                     free(pkt_dev_type);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SCSI:
@@ -453,11 +453,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
 
                     pkt_cmd_scsi = (DicPacketCmdScsi*)in_buf;
 
@@ -490,7 +490,7 @@ int main()
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -509,7 +509,7 @@ int main()
                     pkt_res_scsi->sense     = sense;
                     pkt_res_scsi->error_no  = ret;
 
-                    write(cli_sock, pkt_res_scsi, pkt_res_scsi->hdr.len);
+                    NetWrite(cli_sock, pkt_res_scsi, pkt_res_scsi->hdr.len);
                     free(pkt_cmd_scsi);
                     free(pkt_res_scsi);
                     if(sense_buf) free(sense_buf);
@@ -522,11 +522,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
                     free(in_buf);
 
                     pkt_res_sdhci_registers = malloc(sizeof(DicPacketResGetSdhciRegisters));
@@ -534,7 +534,7 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -583,7 +583,7 @@ int main()
                     free(scr);
                     free(ocr);
 
-                    write(cli_sock, pkt_res_sdhci_registers, pkt_res_sdhci_registers->hdr.len);
+                    NetWrite(cli_sock, pkt_res_sdhci_registers, pkt_res_sdhci_registers->hdr.len);
                     free(pkt_res_sdhci_registers);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
@@ -594,11 +594,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
                     free(in_buf);
 
                     pkt_res_usb = malloc(sizeof(DicPacketResGetUsbData));
@@ -606,7 +606,7 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -624,7 +624,7 @@ int main()
                                                      pkt_res_usb->product,
                                                      pkt_res_usb->serial);
 
-                    write(cli_sock, pkt_res_usb, pkt_res_usb->hdr.len);
+                    NetWrite(cli_sock, pkt_res_usb, pkt_res_usb->hdr.len);
                     free(pkt_res_usb);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
@@ -635,11 +635,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
                     free(in_buf);
 
                     pkt_res_firewire = malloc(sizeof(DicPacketResGetFireWireData));
@@ -647,7 +647,7 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -663,7 +663,7 @@ int main()
                                                                     pkt_res_firewire->vendor,
                                                                     pkt_res_firewire->model);
 
-                    write(cli_sock, pkt_res_firewire, pkt_res_firewire->hdr.len);
+                    NetWrite(cli_sock, pkt_res_firewire, pkt_res_firewire->hdr.len);
                     free(pkt_res_firewire);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
@@ -674,11 +674,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
                     free(in_buf);
 
                     pkt_res_pcmcia = malloc(sizeof(DicPacketResGetPcmciaData));
@@ -686,7 +686,7 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -698,7 +698,7 @@ int main()
                     pkt_res_pcmcia->is_pcmcia =
                         GetPcmciaData(device_path, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
 
-                    write(cli_sock, pkt_res_pcmcia, pkt_res_pcmcia->hdr.len);
+                    NetWrite(cli_sock, pkt_res_pcmcia, pkt_res_pcmcia->hdr.len);
                     free(pkt_res_pcmcia);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
@@ -709,11 +709,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
 
                     pkt_cmd_ata_chs = (DicPacketCmdAtaChs*)in_buf;
 
@@ -746,7 +746,7 @@ int main()
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -764,7 +764,7 @@ int main()
                     pkt_res_ata_chs->sense     = sense;
                     pkt_res_ata_chs->error_no  = ret;
 
-                    write(cli_sock, pkt_res_ata_chs, pkt_res_ata_chs->hdr.len);
+                    NetWrite(cli_sock, pkt_res_ata_chs, pkt_res_ata_chs->hdr.len);
                     free(pkt_cmd_ata_chs);
                     free(pkt_res_ata_chs);
                     continue;
@@ -776,11 +776,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
 
                     pkt_cmd_ata_lba28 = (DicPacketCmdAtaLba28*)in_buf;
 
@@ -813,7 +813,7 @@ int main()
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -831,7 +831,7 @@ int main()
                     pkt_res_ata_lba28->sense     = sense;
                     pkt_res_ata_lba28->error_no  = ret;
 
-                    write(cli_sock, pkt_res_ata_lba28, pkt_res_ata_lba28->hdr.len);
+                    NetWrite(cli_sock, pkt_res_ata_lba28, pkt_res_ata_lba28->hdr.len);
                     free(pkt_cmd_ata_lba28);
                     free(pkt_res_ata_lba28);
                     continue;
@@ -843,11 +843,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
 
                     pkt_cmd_ata_lba48 = (DicPacketCmdAtaLba48*)in_buf;
 
@@ -880,7 +880,7 @@ int main()
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -898,7 +898,7 @@ int main()
                     pkt_res_ata_lba48->sense     = sense;
                     pkt_res_ata_lba48->error_no  = ret;
 
-                    write(cli_sock, pkt_res_ata_lba48, pkt_res_ata_lba48->hdr.len);
+                    NetWrite(cli_sock, pkt_res_ata_lba48, pkt_res_ata_lba48->hdr.len);
                     free(pkt_cmd_ata_lba48);
                     free(pkt_res_ata_lba48);
                     continue;
@@ -910,11 +910,11 @@ int main()
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
-                    recv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
 
                     pkt_cmd_sdhci = (DicPacketCmdSdhci*)in_buf;
 
@@ -950,7 +950,7 @@ int main()
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        close(cli_sock);
+                        NetClose(cli_sock);
                         continue;
                     }
 
@@ -968,7 +968,7 @@ int main()
                     pkt_res_sdhci->sense    = sense;
                     pkt_res_sdhci->error_no = ret;
 
-                    write(cli_sock, pkt_res_sdhci, pkt_res_sdhci->hdr.len);
+                    NetWrite(cli_sock, pkt_res_sdhci, pkt_res_sdhci->hdr.len);
                     free(pkt_cmd_sdhci);
                     free(pkt_res_sdhci);
                     continue;
@@ -979,7 +979,7 @@ int main()
                              256,
                              "Received unrecognized packet with type %d, skipping...",
                              pkt_hdr->packet_type);
-                    write(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;

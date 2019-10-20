@@ -21,6 +21,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifdef GEKKO
+#include <network.h>
+#else
+#include <netinet/in.h>
+#include <sys/socket.h>
+#endif
+
 #define DICMOTE_NAME "DiscImageChef Remote Server"
 #define DICMOTE_VERSION "0.99"
 #define DICMOTE_PORT 6666
@@ -499,5 +506,12 @@ int32_t         SendSdhciCommand(int       device_fd,
                                  uint32_t* sense);
 DicPacketHello* GetHello();
 int             PrintNetworkAddresses();
-
+char*           PrintIpv4Address(struct in_addr addr);
+int32_t         NetSocket(uint32_t domain, uint32_t type, uint32_t protocol);
+int32_t         NetBind(int32_t sockfd, struct sockaddr* addr, socklen_t addrlen);
+int32_t         NetListen(int32_t sockfd, uint32_t backlog);
+int32_t         NetAccept(int32_t sockfd, struct sockaddr* addr, socklen_t* addrlen);
+int32_t         NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags);
+int32_t         NetWrite(int32_t fd, const void* buf, int32_t size);
+int32_t         NetClose(int32_t fd);
 #endif

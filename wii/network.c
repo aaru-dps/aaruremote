@@ -24,3 +24,15 @@ int PrintNetworkAddresses()
     // TODO: Implement
     return -1;
 }
+
+char*   PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
+int32_t NetSocket(uint32_t domain, uint32_t type, uint32_t protocol) { return net_socket(domain, type, protocol); }
+int32_t NetBind(int32_t sockfd, struct sockaddr* addr, socklen_t addrlen) { return net_bind(sockfd, addr, addrlen); }
+int32_t NetListen(int32_t sockfd, uint32_t backlog) { return net_listen(sockfd, backlog); }
+int32_t NetAccept(int32_t sockfd, struct sockaddr* addr, socklen_t* addrlen)
+{
+    return net_accept(sockfd, addr, addrlen);
+}
+int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags) { return net_recv(sockfd, buf, len, flags); }
+int32_t NetWrite(int32_t fd, const void* buf, int32_t size) { return net_write(fd, buf, size); }
+int32_t NetClose(int32_t fd) { return net_close(fd); }
