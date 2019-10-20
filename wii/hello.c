@@ -18,7 +18,9 @@
 #include "../dicmote.h"
 
 #include <malloc.h>
+#include <gccore.h>
 #include <string.h>
+#include <stdio.h>
 
 DicPacketHello* GetHello()
 {
@@ -37,9 +39,9 @@ DicPacketHello* GetHello()
     strncpy(pkt_server_hello->application, DICMOTE_NAME, sizeof(DICMOTE_NAME));
     strncpy(pkt_server_hello->version, DICMOTE_VERSION, sizeof(DICMOTE_VERSION));
     pkt_server_hello->max_protocol = DICMOTE_PROTOCOL_MAX;
-    strncpy(pkt_server_hello->sysname, "TODO: Gecko", 255);
-    strncpy(pkt_server_hello->release, "TODO: Unknown", 255);
-    strncpy(pkt_server_hello->machine, "TODO: Unknown", 255);
+    snprintf(pkt_server_hello->sysname, 255, "Nintendo Wii IOS %d", IOS_GetVersion());
+    snprintf(pkt_server_hello->release, 255, "%d", IOS_GetRevision());
+    strncpy(pkt_server_hello->machine, "ppc", 255);
 
     return pkt_server_hello;
 }
