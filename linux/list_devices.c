@@ -20,7 +20,6 @@
 
 #include <ctype.h>
 #include <dirent.h>
-#include <libudev.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -28,23 +27,29 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef HAS_UDEV
+#include <libudev.h>
+#endif
+
 DeviceInfoList* LinuxListDevices()
 {
-    DIR*                dir;
-    struct dirent*      dirent;
+    DIR*            dir;
+    struct dirent*  dirent;
+    int             i;
+    DeviceInfoList *list_start = NULL, *list_current = NULL, *list_next = NULL;
+    const char*     tmp_string;
+    FILE*           file;
+    char*           line_str;
+    size_t          n, ret;
+    char*           chrptr;
+#ifdef HAS_UDEV
+    int                 has_udev;
     struct udev*        udev;
-    int                 has_udev   = false, i;
-    DeviceInfoList *    list_start = NULL, *list_current = NULL, *list_next = NULL;
     struct udev_device* udev_device;
-    const char*         tmp_string;
-    FILE*               file;
-    char*               line_str;
-    size_t              n, ret;
-    char*               chrptr;
 
-    udev = udev_new();
-
+    udev     = udev_new();
     has_udev = udev != 0;
+#endif
 
     dir = opendir(PATH_SYS_DEVBLOCK);
     if(!dir) return NULL;
@@ -66,8 +71,9 @@ DeviceInfoList* LinuxListDevices()
         {
             closedir(dir);
 
+#ifdef HAS_UDEV
             if(has_udev) udev_unref(udev);
-
+#endif
             return list_start;
         }
 
@@ -77,6 +83,7 @@ DeviceInfoList* LinuxListDevices()
 
         snprintf(list_next->this.path, 1024, "/dev/%s", dirent->d_name);
 
+#ifdef HAS_UDEV
         if(has_udev)
         {
             udev_device = udev_device_new_from_subsystem_sysname(udev, "block", dirent->d_name);
@@ -127,6 +134,7 @@ DeviceInfoList* LinuxListDevices()
                 }
             }
         }
+#endif
 
         tmp_string = malloc(1024);
         memset((void*)tmp_string, 0, 1024);
@@ -299,7 +307,9 @@ DeviceInfoList* LinuxListDevices()
 
     closedir(dir);
 
+#ifdef HAS_UDEV
     if(has_udev) udev_unref(udev);
+#endif
 
     return list_start;
 }

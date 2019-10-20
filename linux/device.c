@@ -19,11 +19,14 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <libudev.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+
+#ifdef HAS_UDEV
+#include <libudev.h>
+#endif
 
 int LinuxOpenDevice(const char* device_path)
 {
@@ -38,6 +41,9 @@ int LinuxOpenDevice(const char* device_path)
 
 int32_t LinuxGetDeviceType(const char* device_path)
 {
+#ifndef HAS_UDEV
+    return DICMOTE_DEVICE_TYPE_UNKNOWN;
+#else
     struct udev*        udev;
     struct udev_device* udev_device;
     const char*         tmp_string;
@@ -120,26 +126,26 @@ int32_t LinuxGetDeviceType(const char* device_path)
 }
 
 int32_t LinuxGetSdhciRegisters(const char* device_path,
-                               char**      csd,
-                               char**      cid,
-                               char**      ocr,
-                               char**      scr,
-                               uint32_t*   csd_len,
-                               uint32_t*   cid_len,
-                               uint32_t*   ocr_len,
-                               uint32_t*   scr_len)
+                               char** csd,
+                               char** cid,
+                               char** ocr,
+                               char** scr,
+                               uint32_t* csd_len,
+                               uint32_t* cid_len,
+                               uint32_t* ocr_len,
+                               uint32_t* scr_len)
 {
-    char*  tmp_string;
-    char*  sysfs_path_csd;
-    char*  sysfs_path_cid;
-    char*  sysfs_path_scr;
-    char*  sysfs_path_ocr;
+    char* tmp_string;
+    char* sysfs_path_csd;
+    char* sysfs_path_cid;
+    char* sysfs_path_scr;
+    char* sysfs_path_ocr;
     size_t len;
-    FILE*  file;
-    *csd     = NULL;
-    *cid     = NULL;
-    *ocr     = NULL;
-    *scr     = NULL;
+    FILE* file;
+    *csd = NULL;
+    *cid = NULL;
+    *ocr = NULL;
+    *scr = NULL;
     *csd_len = 0;
     *cid_len = 0;
     *ocr_len = 0;
@@ -148,12 +154,12 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
 
     if(strncmp(device_path, "/dev/mmcblk", 11) != 0) return 0;
 
-    len            = strlen(device_path) + 19;
+    len = strlen(device_path) + 19;
     sysfs_path_csd = malloc(len);
     sysfs_path_cid = malloc(len);
     sysfs_path_scr = malloc(len);
     sysfs_path_ocr = malloc(len);
-    tmp_string     = malloc(1024);
+    tmp_string = malloc(1024);
 
     if(!sysfs_path_csd || !sysfs_path_cid || !sysfs_path_scr || !sysfs_path_ocr || !tmp_string)
     {
@@ -191,7 +197,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*csd_len <= 0)
                 {
                     *csd_len = 0;
-                    *csd     = NULL;
+                    *csd = NULL;
                 }
             }
 
@@ -213,7 +219,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*cid_len <= 0)
                 {
                     *cid_len = 0;
-                    *cid     = NULL;
+                    *cid = NULL;
                 }
             }
 
@@ -235,7 +241,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*scr_len <= 0)
                 {
                     *scr_len = 0;
-                    *scr     = NULL;
+                    *scr = NULL;
                 }
             }
 
@@ -257,7 +263,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*ocr_len <= 0)
                 {
                     *ocr_len = 0;
-                    *ocr     = NULL;
+                    *ocr = NULL;
                 }
             }
 
@@ -272,4 +278,5 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
     free(tmp_string);
 
     return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
+#endif
 }
