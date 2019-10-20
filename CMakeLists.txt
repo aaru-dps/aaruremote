@@ -5,7 +5,7 @@ include(CheckLibraryExists)
 
 set(CMAKE_C_STANDARD 90)
 
-set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c usb.c ieee1394.c pcmcia.c ata.c sdhci.c)
+set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c usb.c ieee1394.c pcmcia.c ata.c sdhci.c worker.c)
 
 add_library(dicremote ${MAIN_SOURCES})
 

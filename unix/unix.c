@@ -19,10 +19,7 @@
 
 void Initialize()
 {
-    // TODO: Initialize framebuffer
+    // Do nothing
 }
 
-void PlatformLoop(DicPacketHello* pkt_server_hello)
-{
-    // TODO: Call working loop in a background thread and wait for pad control
-}
+void PlatformLoop(DicPacketHello* pkt_server_hello) { WorkingLoop(pkt_server_hello); }

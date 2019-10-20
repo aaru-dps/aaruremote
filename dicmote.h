@@ -517,4 +517,7 @@ int32_t         NetAccept(int32_t sockfd, struct sockaddr* addr, socklen_t* addr
 int32_t         NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags);
 int32_t         NetWrite(int32_t fd, const void* buf, int32_t size);
 int32_t         NetClose(int32_t fd);
+void            Initialize();
+void            PlatformLoop(DicPacketHello* pkt_server_hello);
+void*           WorkingLoop(void* arguments);
 #endif
