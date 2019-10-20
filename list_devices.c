@@ -19,6 +19,8 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"
+#elif defined(GEKKO)
+#include "wii/wii.h"
 #endif
 
 #include <stdlib.h>
@@ -27,6 +29,8 @@ DeviceInfoList* ListDevices()
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxListDevices();
+#elif defined(GEKKO)
+    return WiiListDevices();
 #else
     return NULL;
 #endif
