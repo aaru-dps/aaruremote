@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="dicremote-x86_64" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dicremote" TARGET_NAME="dicremote-x86_64" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="dicremote" RUN_TARGET_NAME="dicremote-x86_64">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

@@ -1,0 +1,7 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="dicremote-wii" type="CMakeRunConfiguration" factoryName="Application" nameIsGenerated="true" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dicremote" TARGET_NAME="dicremote-wii" CONFIG_NAME="Wii - Debug" RUN_TARGET_PROJECT_NAME="dicremote" RUN_TARGET_NAME="dicremote-wii">
+    <method v="2">
+      <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+    </method>
+  </configuration>
+</component>

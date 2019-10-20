@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/dicremote.iml" filepath="$PROJECT_DIR$/.idea/dicremote.iml" />
+    </modules>
+  </component>
+  <component name="CMakeSettings" AUTO_RELOAD="true">
+    <configurations>
+      <configuration PROFILE_NAME="Wii - Debug" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_TOOLCHAIN_FILE=/opt/devkitpro/wii.cmake">
+        <ADDITIONAL_GENERATION_ENVIRONMENT>
+          <envs>
+            <env name="PORTLIBS_ROOT" value="/opt/devkitpro/portlibs" />
+            <env name="TOOL_PREFIX" value="powerpc-eabi-" />
+            <env name="AR" value="powerpc-eabi-gcc-ar" />
+            <env name="RANLIB" value="powerpc-eabi-gcc-ranlib" />
+            <env name="PORTLIBS_PREFIX" value="/opt/devkitpro/portlibs/ppc" />
+            <env name="CFLAGS" value="-O2 -mcpu=750 -meabi -mhard-float -ffunction-sections -fdata-sections" />
+            <env name="CXXFLAGS" value="-O2 -mcpu=750 -meabi -mhard-float -ffunction-sections -fdata-sections" />
+            <env name="CPPFLAGS" value="-DGEKKO -I/opt/devkitpro/portlibs/ppc/include" />
+            <env name="LDFLAGS" value="-L/opt/devkitpro/portlibs/ppc/lib" />
+            <env name="PATH" value="/opt/devkitpro/portlibs/ppc/bin:/opt/devkitpro/portlibs/ppc/bin:/opt/devkitpro/tools/bin:/opt/devkitpro/devkitPPC/bin:/opt/devkitpro/portlibs/ppc/bin:/opt/devkitpro/tools/bin:/opt/devkitpro/devkitPPC/bin:/opt/devkitpro/tools/bin:/usr/local/sbin:/usr/local/bin:/usr/bin:/usr/lib/jvm/default/bin:/usr/bin/site_perl:/usr/bin/vendor_perl:/usr/bin/core_perl" />
+          </envs>
+        </ADDITIONAL_GENERATION_ENVIRONMENT>
+      </configuration>
+    </configurations>
+  </component>
+</project>
