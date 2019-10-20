@@ -38,7 +38,6 @@ int main()
     char*                          out_buf;
     char*                          scr;
     char*                          sense_buf;
-    char                           ipv4_address[INET_ADDRSTRLEN];
     DicPacketCmdAtaChs*            pkt_cmd_ata_chs;
     DicPacketCmdAtaLba28*          pkt_cmd_ata_lba28;
     DicPacketCmdAtaLba48*          pkt_cmd_ata_lba48;
@@ -155,8 +154,7 @@ int main()
             return 1;
         }
 
-        inet_ntop(AF_INET, &cli_addr.sin_addr, ipv4_address, INET_ADDRSTRLEN);
-        printf("Client %s connected successfully.\n", ipv4_address);
+        printf("Client %s connected successfully.\n", PrintIpv4Address(cli_addr.sin_addr));
 
         NetWrite(cli_sock, pkt_server_hello, sizeof(DicPacketHello));
 
