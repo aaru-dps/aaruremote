@@ -18,11 +18,23 @@
 #include "../dicmote.h"
 
 #include <network.h>
+#include <stdio.h>
 
 int PrintNetworkAddresses()
 {
-    // TODO: Implement
-    return -1;
+    int  ret;
+    char localip[16] = {0};
+    char gateway[16] = {0};
+    char netmask[16] = {0};
+
+    ret = if_config(localip, netmask, gateway, TRUE, 20);
+
+    if(ret < 0) return -1;
+
+    printf("Available addresses:\n");
+    printf("%s port %d\n", localip, DICMOTE_PORT);
+
+    return 0;
 }
 
 char*   PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
