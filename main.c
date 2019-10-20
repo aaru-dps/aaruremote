@@ -86,6 +86,14 @@ int main()
     printf(
         "Running under %s %s (%s).\n", pkt_server_hello->sysname, pkt_server_hello->release, pkt_server_hello->machine);
 
+    ret = PrintNetworkAddresses();
+
+    if(ret)
+    {
+        printf("Error %d enumerating interfaces\n", errno);
+        return 1;
+    }
+
     printf("Opening socket.\n");
     sock_fd = NetSocket(AF_INET, SOCK_STREAM, 0);
     if(sock_fd < 0)
@@ -102,14 +110,6 @@ int main()
     {
         printf("Error %d binding socket.\n", errno);
         NetClose(sock_fd);
-        return 1;
-    }
-
-    ret = PrintNetworkAddresses();
-
-    if(ret)
-    {
-        printf("Error %d enumerating interfaces\n", errno);
         return 1;
     }
 
