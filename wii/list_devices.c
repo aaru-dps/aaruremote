@@ -16,6 +16,7 @@
  */
 
 #include "../dicmote.h"
+#include "wii.h"
 
 #include <gccore.h>
 #include <stdbool.h>
@@ -27,8 +28,8 @@
 DeviceInfoList* WiiListDevices()
 {
     DeviceInfoList *list_start = NULL, *list_current = NULL, *list_next = NULL;
-
-    u32 deviceId = 0;
+    u32             deviceId = 0;
+    s32             sd_fd;
 
     list_next = malloc(sizeof(DeviceInfoList));
     memset(list_next, 0, sizeof(DeviceInfoList));
@@ -44,6 +45,27 @@ DeviceInfoList* WiiListDevices()
 
     list_start   = list_next;
     list_current = list_start;
+
+    sd_fd = IOS_Open("/dev/sdio/slot0", IPC_OPEN_READ);
+
+    if(sd_fd >= 0)
+    {
+        deviceId = 0;
+        IOS_Ioctl(sd_fd, DICREMOTE_WII_IOCTL_SD_GET_DEVICE_STATUS, 0, 0, &deviceId, sizeof(deviceId));
+
+        if(deviceId == DICREMOTE_WII_SD_INSERTED)
+        {
+            strncpy(list_next->this.path, "/dev/flash", 1024);
+            strncpy(list_next->this.vendor, "Nintendo", 256);
+            strncpy(list_next->this.model, "Wii SD", 256);
+            strncpy(list_next->this.bus, "MMC/SD", 256);
+            list_next->this.supported = false; // TODO: Implement SD/MMC reading
+            list_current->next        = list_next;
+            list_current              = list_next;
+        }
+
+        IOS_Close(sd_fd);
+    }
 
     return list_start;
 }
