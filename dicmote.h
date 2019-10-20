@@ -23,6 +23,9 @@
 
 #ifdef GEKKO
 #include <network.h>
+#ifndef MSG_PEEK
+#define MSG_PEEK 0x02 // TODO: Untested, may not work
+#endif
 #else
 #include <netinet/in.h>
 #include <sys/socket.h>
