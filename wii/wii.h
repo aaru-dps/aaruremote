@@ -29,6 +29,12 @@
 #define DICREMOTE_WII_IOCTL_SD_GET_DEVICE_STATUS 0x0B
 #define DICREMOTE_WII_SD_INSERTED 1
 
+#define DICREMOTE_WII_DEVICE_PATH_NAND "/dev/flash"
+#define DICREMOTE_WII_DEVICE_PATH_DVD "/dev/di"
+#define DICREMOTE_WII_DEVICE_PATH_SD "/dev/sdio/slot0"
+#define DICREMOTE_WII_DEVICE_PATH_GCMM_A "/dev/gcmm/slota"
+#define DICREMOTE_WII_DEVICE_PATH_GCMM_B "/dev/gcmm/slotb"
+
 DeviceInfoList* WiiListDevices();
 
 #endif // DICREMOTE_WII_WII_H_

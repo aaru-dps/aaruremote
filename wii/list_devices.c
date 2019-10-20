@@ -35,7 +35,7 @@ DeviceInfoList* WiiListDevices()
     memset(list_next, 0, sizeof(DeviceInfoList));
 
     // All Wiis do have flash
-    strncpy(list_next->this.path, "/dev/flash", 1024);
+    strncpy(list_next->this.path, DICREMOTE_WII_DEVICE_PATH_NAND, 1024);
     strncpy(list_next->this.vendor, "Nintendo", 256);
     strncpy(list_next->this.model, "Wii NAND", 256);
     strncpy(list_next->this.bus, "NAND", 256);
@@ -46,7 +46,7 @@ DeviceInfoList* WiiListDevices()
     list_start   = list_next;
     list_current = list_start;
 
-    sd_fd = IOS_Open("/dev/sdio/slot0", IPC_OPEN_READ);
+    sd_fd = IOS_Open(DICREMOTE_WII_DEVICE_PATH_SD, IPC_OPEN_READ);
 
     if(sd_fd >= 0)
     {
