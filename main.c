@@ -18,7 +18,6 @@
 #include "dicmote.h"
 
 #include <errno.h>
-#include <ifaddrs.h>
 #include <libnet.h>
 #include <netinet/in.h>
 #include <stdio.h>
@@ -68,8 +67,6 @@ int main()
     socklen_t                      cli_len;
     ssize_t                        recv_size;
     struct DeviceInfoList*         device_info_list;
-    struct ifaddrs*                ifa;
-    struct ifaddrs*                ifa_start;
     struct sockaddr_in             cli_addr, serv_addr;
     uint32_t                       duration;
     uint32_t                       sdhci_response[4];
@@ -110,29 +107,13 @@ int main()
         return 1;
     }
 
-    ret = getifaddrs(&ifa);
+    ret = PrintNetworkAddresses();
 
     if(ret)
     {
         printf("Error %d enumerating interfaces\n", errno);
         return 1;
     }
-
-    ifa_start = ifa;
-
-    printf("Available addresses:\n");
-    while(ifa != NULL)
-    {
-        if(ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET)
-        {
-            inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ipv4_address, INET_ADDRSTRLEN);
-            printf("%s port %d\n", ipv4_address, DICMOTE_PORT);
-        }
-
-        ifa = ifa->ifa_next;
-    }
-
-    freeifaddrs(ifa_start);
 
     ret = listen(sock_fd, 1);
 
