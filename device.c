@@ -19,6 +19,10 @@
 #include "linux/linux.h"
 #endif
 
+#include "dicmote.h"
+
+#include <stdint.h>
+
 int DeviceOpen(const char* device_path)
 {
 #if defined(__linux__) && !defined(__ANDROID__)

@@ -19,6 +19,8 @@
 #include "linux/linux.h"
 #endif
 
+#include <stdint.h>
+
 int32_t SendScsiCommand(int       device_fd,
                         char*     cdb,
                         char*     buffer,

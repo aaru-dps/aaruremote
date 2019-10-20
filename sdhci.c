@@ -19,6 +19,8 @@
 #include "linux/linux.h"
 #endif
 
+#include <stdint.h>
+
 int32_t SendSdhciCommand(int       device_fd,
                          uint8_t   command,
                          uint8_t   write,
