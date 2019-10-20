@@ -10,9 +10,20 @@ if ("${CMAKE_SYSTEM}" MATCHES "Linux")
     find_library(HAS_UDEV NAMES udev)
 endif ()
 
-add_executable(dicremote ${MAIN_SOURCES} ${PLATFORM_SOURCES})
+add_executable(dicremote-${CMAKE_SYSTEM_PROCESSOR} ${MAIN_SOURCES} ${PLATFORM_SOURCES})
 
 if (HAS_UDEV)
-    target_link_libraries(dicremote udev)
+    target_link_libraries(dicremote-${CMAKE_SYSTEM_PROCESSOR} udev)
     add_definitions(-DHAS_UDEV)
+endif ()
+
+if ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64")
+    add_executable(dicremote-x86 ${MAIN_SOURCES} ${PLATFORM_SOURCES})
+    set_target_properties(dicremote-x86 PROPERTIES LINK_FLAGS -m32)
+    target_compile_options(dicremote-x86 PUBLIC -m32)
+
+    if (HAS_UDEV)
+        target_link_libraries(dicremote-x86 udev)
+        add_definitions(-DHAS_UDEV)
+    endif ()
 endif ()
