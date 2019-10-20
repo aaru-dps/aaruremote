@@ -8,6 +8,7 @@ set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c usb.c ieee1394.
 if ("${CMAKE_SYSTEM}" MATCHES "Linux")
     set(PLATFORM_SOURCES linux/list_devices.c linux/linux.h linux/device.c linux/scsi.c linux/usb.c linux/ieee1394.c linux/pcmcia.c linux/ata.c linux/sdhci.c)
     find_library(HAS_UDEV NAMES udev)
+    find_path(UAPI_MMC ioctl.h /usr/include/linux/mmc/)
 endif ()
 
 add_executable(dicremote-${CMAKE_SYSTEM_PROCESSOR} ${MAIN_SOURCES} ${PLATFORM_SOURCES})
@@ -15,6 +16,10 @@ add_executable(dicremote-${CMAKE_SYSTEM_PROCESSOR} ${MAIN_SOURCES} ${PLATFORM_SO
 if (HAS_UDEV)
     target_link_libraries(dicremote-${CMAKE_SYSTEM_PROCESSOR} udev)
     add_definitions(-DHAS_UDEV)
+endif ()
+
+if (UAPI_MMC)
+    add_definitions(-DHAS_UAPI_MMC)
 endif ()
 
 if ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "x86_64")

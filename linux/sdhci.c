@@ -15,12 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdint.h>
+
+#ifdef HAS_UAPI_MMC
 #include <errno.h>
 #include <linux/major.h>
 #include <linux/mmc/ioctl.h>
-#include <stdint.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#endif
 
 int32_t LinuxSendSdhciCommand(int       device_fd,
                               uint8_t   command,
@@ -36,6 +39,9 @@ int32_t LinuxSendSdhciCommand(int       device_fd,
                               uint32_t* duration,
                               uint32_t* sense)
 {
+#ifndef HAS_UAPI_MMC
+    return -1;
+#else
     struct mmc_ioc_cmd mmc_ioc_cmd;
     int32_t            error;
     *duration = 0;
@@ -68,4 +74,5 @@ int32_t LinuxSendSdhciCommand(int       device_fd,
     memcpy((char*)response, (char*)&mmc_ioc_cmd.response, sizeof(uint32_t) * 4);
 
     return error;
+#endif
 }
