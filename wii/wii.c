@@ -44,5 +44,22 @@ void Initialize()
 
 void PlatformLoop(DicPacketHello* pkt_server_hello)
 {
-    // TODO: Call working loop in a background thread and wait for pad control
+    static lwp_t worker = (lwp_t)NULL;
+    int          buttonsDown;
+    LWP_CreateThread(&worker,          /* thread handle */
+                     WorkingLoop,      /* code */
+                     pkt_server_hello, /* arg pointer for thread */
+                     NULL,             /* stack base */
+                     16 * 1024,        /* stack size */
+                     50 /* thread priority */);
+
+    while(true)
+    {
+        VIDEO_WaitVSync();
+        WPAD_ScanPads();
+
+        buttonsDown = WPAD_ButtonsDown(0);
+
+        if(buttonsDown & WPAD_BUTTON_HOME) { return; }
+    }
 }
