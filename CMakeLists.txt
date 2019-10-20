@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(dicremote C)
+include(CheckIncludeFiles)
+include(CheckLibraryExists)
 
 set(CMAKE_C_STANDARD 90)
 
@@ -7,8 +9,8 @@ set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c usb.c ieee1394.
 
 if ("${CMAKE_SYSTEM}" MATCHES "Linux")
     set(PLATFORM_SOURCES linux/list_devices.c linux/linux.h linux/device.c linux/scsi.c linux/usb.c linux/ieee1394.c linux/pcmcia.c linux/ata.c linux/sdhci.c)
-    find_library(HAS_UDEV NAMES udev)
-    find_path(UAPI_MMC ioctl.h /usr/include/linux/mmc/)
+    CHECK_LIBRARY_EXISTS("udev" udev_new "" HAS_UDEV)
+    CHECK_INCLUDE_FILES("linux/mmc/ioctl.h" HAVE_MMC_IOCTL_H)
 endif ()
 
 add_executable(dicremote-${CMAKE_SYSTEM_PROCESSOR} ${MAIN_SOURCES} ${PLATFORM_SOURCES})
@@ -18,7 +20,7 @@ if (HAS_UDEV)
     add_definitions(-DHAS_UDEV)
 endif ()
 
-if (UAPI_MMC)
+if (HAVE_MMC_IOCTL_H)
     add_definitions(-DHAS_UAPI_MMC)
 endif ()
 
