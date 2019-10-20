@@ -497,5 +497,6 @@ int32_t         SendSdhciCommand(int       device_fd,
                                  uint32_t* response,
                                  uint32_t* duration,
                                  uint32_t* sense);
+DicPacketHello* GetHello();
 
 #endif

@@ -4,7 +4,7 @@ if (NOT WII)
     return()
 endif ()
 
-set(PLATFORM_SOURCES wii.c)
+set(PLATFORM_SOURCES wii.c hello.c)
 
 add_executable(dicremote-wii ${PLATFORM_SOURCES})
 set_target_properties(dicremote-wii PROPERTIES LINK_FLAGS -L$ENV{DEVKITPRO}/libogc/lib/wii/)

@@ -23,9 +23,6 @@
 #include <netinet/in.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/utsname.h>
-
-// TODO: Packet for NOP
 
 int main()
 {
@@ -74,7 +71,6 @@ int main()
     struct ifaddrs*                ifa;
     struct ifaddrs*                ifa_start;
     struct sockaddr_in             cli_addr, serv_addr;
-    struct utsname                 utsname;
     uint32_t                       duration;
     uint32_t                       sdhci_response[4];
     uint32_t                       sense;
@@ -84,15 +80,16 @@ int main()
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019 Natalia Portillo\n");
 
-    ret = uname(&utsname);
+    pkt_server_hello = GetHello();
 
-    if(ret)
+    if(!pkt_server_hello)
     {
         printf("Error %d getting system version.\n", errno);
         return 1;
     }
 
-    printf("Running under %s %s (%s).\n", utsname.sysname, utsname.release, utsname.machine);
+    printf(
+        "Running under %s %s (%s).\n", pkt_server_hello->sysname, pkt_server_hello->release, pkt_server_hello->machine);
 
     printf("Opening socket.\n");
     sock_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -145,28 +142,6 @@ int main()
         close(sock_fd);
         return 1;
     }
-
-    pkt_server_hello = malloc(sizeof(DicPacketHello));
-
-    if(!pkt_server_hello)
-    {
-        printf("Fatal error %d allocating memory.\n", errno);
-        close(sock_fd);
-        return 1;
-    }
-
-    memset(pkt_server_hello, 0, sizeof(DicPacketHello));
-
-    pkt_server_hello->hdr.id          = DICMOTE_PACKET_ID;
-    pkt_server_hello->hdr.len         = sizeof(DicPacketHello);
-    pkt_server_hello->hdr.version     = DICMOTE_PACKET_VERSION;
-    pkt_server_hello->hdr.packet_type = DICMOTE_PACKET_TYPE_HELLO;
-    strncpy(pkt_server_hello->application, DICMOTE_NAME, sizeof(DICMOTE_NAME));
-    strncpy(pkt_server_hello->version, DICMOTE_VERSION, sizeof(DICMOTE_VERSION));
-    pkt_server_hello->max_protocol = DICMOTE_PROTOCOL_MAX;
-    strncpy(pkt_server_hello->sysname, utsname.sysname, 255);
-    strncpy(pkt_server_hello->release, utsname.release, 255);
-    strncpy(pkt_server_hello->machine, utsname.machine, 255);
 
     pkt_nop = malloc(sizeof(DicPacketNop));
 
