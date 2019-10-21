@@ -57,6 +57,23 @@ int32_t NetSocket(uint32_t domain, uint32_t type, uint32_t protocol) { return so
 int32_t NetBind(int32_t sockfd, struct sockaddr* addr, socklen_t addrlen) { return bind(sockfd, addr, addrlen); }
 int32_t NetListen(int32_t sockfd, uint32_t backlog) { return listen(sockfd, backlog); }
 int32_t NetAccept(int32_t sockfd, struct sockaddr* addr, socklen_t* addrlen) { return accept(sockfd, addr, addrlen); }
-int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags) { return recv(sockfd, buf, len, flags); }
+int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags)
+{
+    int32_t got_once;
+    int32_t got_total = 0;
+
+    while(len > 0)
+    {
+        got_once = recv(sockfd, buf, len, flags);
+
+        if(got_once <= 0) break;
+
+        buf += got_once;
+        got_total += got_once;
+        len -= got_once;
+    }
+
+    return got_total;
+}
 int32_t NetWrite(int32_t fd, const void* buf, int32_t size) { return write(fd, buf, size); }
 int32_t NetClose(int32_t fd) { return close(fd); }

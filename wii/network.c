@@ -45,6 +45,23 @@ int32_t NetAccept(int32_t sockfd, struct sockaddr* addr, socklen_t* addrlen)
 {
     return net_accept(sockfd, addr, addrlen);
 }
-int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags) { return net_recv(sockfd, buf, len, flags); }
+int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags)
+{
+    int32_t got_once;
+    int32_t got_total = 0;
+
+    while(len > 0)
+    {
+        got_once = net_recv(sockfd, buf, len, flags);
+
+        if(got_once <= 0) break;
+
+        buf += got_once;
+        got_total += got_once;
+        len -= got_once;
+    }
+
+    return got_total;
+}
 int32_t NetWrite(int32_t fd, const void* buf, int32_t size) { return net_write(fd, buf, size); }
 int32_t NetClose(int32_t fd) { return net_close(fd); }
