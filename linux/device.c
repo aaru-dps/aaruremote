@@ -41,9 +41,7 @@ int LinuxOpenDevice(const char* device_path)
 
 int32_t LinuxGetDeviceType(const char* device_path)
 {
-#ifndef HAS_UDEV
-    return DICMOTE_DEVICE_TYPE_UNKNOWN;
-#else
+#ifdef HAS_UDEV
     struct udev*        udev;
     struct udev_device* udev_device;
     const char*         tmp_string;
@@ -123,30 +121,197 @@ int32_t LinuxGetDeviceType(const char* device_path)
     udev_unref(udev);
 
     return device_type;
+#else
+    int32_t     dev_type = DICMOTE_DEVICE_TYPE_UNKNOWN;
+    const char* dev_name;
+    const char* sysfs_path;
+    char*       dev_path;
+    char*       host_no;
+    char*       scsi_path;
+    char*       iscsi_path;
+    char*       spi_path;
+    char*       fc_path;
+    char*       sas_path;
+    int         ret;
+    char*       chrptr;
+    char*       sysfs_path_scr;
+    FILE*       file;
+    size_t      len = 4096;
+
+    if(strlen(device_path) <= 5) return dev_type;
+
+    if(strstr(device_path, "nvme")) return DICMOTE_DEVICE_TYPE_NVME;
+
+    dev_name = device_path + 5;
+
+    if(strstr(device_path, "mmcblk"))
+    {
+        dev_type = DICMOTE_DEVICE_TYPE_MMC;
+
+        sysfs_path_scr = malloc(len);
+
+        if(sysfs_path_scr)
+        {
+            snprintf(sysfs_path_scr, len, "/sys/block/%s/device/scr", dev_name);
+
+            if(access(sysfs_path_scr, F_OK) == 0) dev_type = DICMOTE_DEVICE_TYPE_SECURE_DIGITAL;
+
+            free(sysfs_path_scr);
+        }
+
+        return dev_type;
+    }
+
+    sysfs_path = malloc(len);
+    dev_path   = malloc(len);
+    host_no    = malloc(len);
+    scsi_path  = malloc(len);
+    iscsi_path = malloc(len);
+    spi_path   = malloc(len);
+    fc_path    = malloc(len);
+    sas_path   = malloc(len);
+
+    if(!sysfs_path || !dev_path || !host_no || !scsi_path || !iscsi_path || !spi_path || !fc_path || !sas_path)
+    {
+        free((void*)sysfs_path);
+        free((void*)dev_path);
+        free((void*)host_no);
+        free((void*)iscsi_path);
+        free((void*)scsi_path);
+        free((void*)spi_path);
+        free((void*)fc_path);
+        free((void*)sas_path);
+        return dev_type;
+    }
+
+    memset((void*)sysfs_path, 0, len);
+    memset((void*)dev_path, 0, len);
+    memset((void*)host_no, 0, len);
+    memset((void*)iscsi_path, 0, len);
+    memset((void*)scsi_path, 0, len);
+    memset((void*)spi_path, 0, len);
+    memset((void*)fc_path, 0, len);
+    memset((void*)sas_path, 0, len);
+
+    snprintf((char*)sysfs_path, len, "%s/%s/device", PATH_SYS_DEVBLOCK, dev_name);
+
+    ret = readlink(sysfs_path, dev_path, len);
+
+    if(ret <= 0)
+    {
+        free((void*)sysfs_path);
+        free((void*)dev_path);
+        free((void*)host_no);
+        free((void*)iscsi_path);
+        free((void*)scsi_path);
+        free((void*)spi_path);
+        free((void*)fc_path);
+        free((void*)sas_path);
+        return dev_type;
+    }
+
+    ret    = 0;
+    chrptr = strchr(dev_path, ':') - 1;
+
+    while(chrptr != dev_path)
+    {
+        if(chrptr[0] == '/')
+        {
+            chrptr++;
+            break;
+        }
+
+        ret++;
+        chrptr--;
+    }
+
+    memcpy((void*)host_no, chrptr, ret);
+
+    snprintf(spi_path, len, "/sys/class/spi_host/host%s", host_no);
+    snprintf(fc_path, len, "/sys/class/fc_host/host%s", host_no);
+    snprintf(sas_path, len, "/sys/class/sas_host/host%s", host_no);
+    snprintf(iscsi_path, len, "/sys/class/iscsi_host/host%s", host_no);
+    snprintf(scsi_path, len, "/sys/class/scsi_host/host%s", host_no);
+
+    if(access(spi_path, F_OK) == 0 || access(fc_path, F_OK) == 0 || access(sas_path, F_OK) == 0 ||
+       access(iscsi_path, F_OK) == 0)
+        dev_type = DICMOTE_DEVICE_TYPE_SCSI;
+    else if(access(scsi_path, F_OK) == 0)
+    {
+        dev_type = DICMOTE_DEVICE_TYPE_SCSI;
+        memset(scsi_path, 0, len);
+        snprintf(scsi_path, len, "/sys/class/scsi_host/host%s/proc_name", host_no);
+        if(access(scsi_path, F_OK) == 0)
+        {
+            file = fopen(scsi_path, "r");
+            if(file)
+            {
+                memset(scsi_path, 0, len);
+                ret = getline(&scsi_path, &len, file);
+
+                len = 4096;
+
+                fclose(file);
+
+                if(ret > 0)
+                {
+                    if(strncmp(scsi_path, "ata", 3) == 0 || strncmp(scsi_path, "sata", 4) == 0 ||
+                       strncmp(scsi_path, "ahci", 4) == 0)
+                    {
+                        dev_type = DICMOTE_DEVICE_TYPE_ATA;
+                        memset(scsi_path, 0, len);
+                        snprintf(scsi_path, len, "%s/%s/removable", PATH_SYS_DEVBLOCK, dev_name);
+
+                        file = fopen(scsi_path, "r");
+                        if(file)
+                        {
+                            ret = (size_t)fread(scsi_path, 1, 1, file);
+                            if(ret == 1)
+                            {
+                                if(scsi_path[0] == '1') dev_type = DICMOTE_DEVICE_TYPE_ATAPI;
+                            }
+                            fclose(file);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    free((void*)sysfs_path);
+    free((void*)dev_path);
+    free((void*)host_no);
+    free((void*)iscsi_path);
+    free((void*)scsi_path);
+    free((void*)spi_path);
+    free((void*)fc_path);
+    free((void*)sas_path);
+
+    return dev_type;
 #endif
 }
 
 int32_t LinuxGetSdhciRegisters(const char* device_path,
-                               char** csd,
-                               char** cid,
-                               char** ocr,
-                               char** scr,
-                               uint32_t* csd_len,
-                               uint32_t* cid_len,
-                               uint32_t* ocr_len,
-                               uint32_t* scr_len)
+                               char**      csd,
+                               char**      cid,
+                               char**      ocr,
+                               char**      scr,
+                               uint32_t*   csd_len,
+                               uint32_t*   cid_len,
+                               uint32_t*   ocr_len,
+                               uint32_t*   scr_len)
 {
-    char* tmp_string;
-    char* sysfs_path_csd;
-    char* sysfs_path_cid;
-    char* sysfs_path_scr;
-    char* sysfs_path_ocr;
+    char*  tmp_string;
+    char*  sysfs_path_csd;
+    char*  sysfs_path_cid;
+    char*  sysfs_path_scr;
+    char*  sysfs_path_ocr;
     size_t len;
-    FILE* file;
-    *csd = NULL;
-    *cid = NULL;
-    *ocr = NULL;
-    *scr = NULL;
+    FILE*  file;
+    *csd     = NULL;
+    *cid     = NULL;
+    *ocr     = NULL;
+    *scr     = NULL;
     *csd_len = 0;
     *cid_len = 0;
     *ocr_len = 0;
@@ -155,12 +320,12 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
 
     if(strncmp(device_path, "/dev/mmcblk", 11) != 0) return 0;
 
-    len = strlen(device_path) + 19;
+    len            = strlen(device_path) + 19;
     sysfs_path_csd = malloc(len);
     sysfs_path_cid = malloc(len);
     sysfs_path_scr = malloc(len);
     sysfs_path_ocr = malloc(len);
-    tmp_string = malloc(1024);
+    tmp_string     = malloc(1024);
 
     if(!sysfs_path_csd || !sysfs_path_cid || !sysfs_path_scr || !sysfs_path_ocr || !tmp_string)
     {
@@ -198,7 +363,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*csd_len <= 0)
                 {
                     *csd_len = 0;
-                    *csd = NULL;
+                    *csd     = NULL;
                 }
             }
 
@@ -220,7 +385,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*cid_len <= 0)
                 {
                     *cid_len = 0;
-                    *cid = NULL;
+                    *cid     = NULL;
                 }
             }
 
@@ -242,7 +407,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*scr_len <= 0)
                 {
                     *scr_len = 0;
-                    *scr = NULL;
+                    *scr     = NULL;
                 }
             }
 
@@ -264,7 +429,7 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
                 if(*ocr_len <= 0)
                 {
                     *ocr_len = 0;
-                    *ocr = NULL;
+                    *ocr     = NULL;
                 }
             }
 

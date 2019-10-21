@@ -42,8 +42,8 @@ DeviceInfoList* LinuxListDevices()
     char*           line_str;
     size_t          n, ret;
     char*           chrptr;
+    int             has_udev = 0;
 #ifdef HAS_UDEV
-    int                 has_udev;
     struct udev*        udev;
     struct udev_device* udev_device;
 
@@ -133,6 +133,86 @@ DeviceInfoList* LinuxListDevices()
                     free((void*)tmp_string);
                 }
             }
+        }
+#else // Use sysfs
+        if(!has_udev && !strstr(dirent->d_name, "loop"))
+        {
+            tmp_string = malloc(1024);
+            memset((void*)tmp_string, 0, 1024);
+            snprintf((char*)tmp_string, 1024, "/dev/%s", dirent->d_name);
+
+            switch(GetDeviceType(tmp_string))
+            {
+                case DICMOTE_DEVICE_TYPE_ATA: strncpy(list_next->this.bus, "ATA", 256); break;
+                case DICMOTE_DEVICE_TYPE_ATAPI: strncpy(list_next->this.bus, "ATAPI", 256); break;
+                case DICMOTE_DEVICE_TYPE_MMC:
+                case DICMOTE_DEVICE_TYPE_SECURE_DIGITAL: strncpy(list_next->this.bus, "MMC/SD", 256); break;
+                case DICMOTE_DEVICE_TYPE_NVME: strncpy(list_next->this.bus, "NVMe", 256); break;
+                case DICMOTE_DEVICE_TYPE_SCSI:
+                    memset((void*)tmp_string, 0, 1024);
+                    snprintf((char*)tmp_string, 1024, "%s/%s/device", PATH_SYS_DEVBLOCK, dirent->d_name);
+                    line_str = malloc(1024);
+                    memset(line_str, 0, 1024);
+
+                    ret = readlink(tmp_string, line_str, 1024);
+
+                    if(ret > 0)
+                    {
+                        ret    = 0;
+                        chrptr = strchr(line_str, ':') - 1;
+
+                        while(chrptr != line_str)
+                        {
+                            if(chrptr[0] == '/')
+                            {
+                                chrptr++;
+                                break;
+                            }
+
+                            ret++;
+                            chrptr--;
+                        }
+
+                        memset((void*)tmp_string, 0, 1024);
+                        memcpy((void*)tmp_string, chrptr, ret);
+                        snprintf((char*)line_str, 1024, "/sys/class/scsi_host/host%s/proc_name", tmp_string);
+                        memset((void*)tmp_string, 0, 1024);
+
+                        file = fopen(line_str, "r");
+                        if(file)
+                        {
+                            n   = 1024;
+                            ret = getline(&line_str, &n, file);
+
+                            if(ret > 0)
+                            {
+                                if(strncmp(line_str, "sbp2", 4) == 0) strncpy(list_next->this.bus, "FireWire", 256);
+                                else if(strncmp(line_str, "usb-storage", 11) == 0)
+                                    strncpy(list_next->this.bus, "USB", 256);
+                                else
+                                    strncpy(list_next->this.bus, "SCSI", 256);
+                            }
+                            else
+                                strncpy(list_next->this.bus, "SCSI", 256);
+
+                            fclose(file);
+                        }
+                        else
+                            strncpy(list_next->this.bus, "SCSI", 256);
+
+                        free(line_str);
+                    }
+                    else
+                    {
+                        strncpy(list_next->this.bus, "SCSI", 256);
+                        free(line_str);
+                    }
+
+                    break;
+                default: memset(&list_next->this.bus, 0, 256); break;
+            }
+
+            free((void*)tmp_string);
         }
 #endif
 
