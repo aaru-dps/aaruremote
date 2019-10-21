@@ -28,7 +28,6 @@ TODO
 - More buffer overflow guards
 - Support FreeBSD
 - Support Windows (Windows XP at the lowest level)
-- Support big-endian architectures
 - Support PSP
 - Support Wii
 - Support Wii U

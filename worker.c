@@ -17,6 +17,7 @@
 
 #include "dicmote.h"
 
+#include <endian.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -119,8 +120,8 @@ void* WorkingLoop(void* arguments)
 
     memset(pkt_nop, 0, sizeof(DicPacketNop));
 
-    pkt_nop->hdr.id          = DICMOTE_PACKET_ID;
-    pkt_nop->hdr.len         = sizeof(DicPacketNop);
+    pkt_nop->hdr.id          = htole64(DICMOTE_PACKET_ID);
+    pkt_nop->hdr.len         = htole32(sizeof(DicPacketNop));
     pkt_nop->hdr.version     = DICMOTE_PACKET_VERSION;
     pkt_nop->hdr.packet_type = DICMOTE_PACKET_TYPE_NOP;
 
@@ -172,7 +173,7 @@ void* WorkingLoop(void* arguments)
             continue;
         }
 
-        if(pkt_hdr->id != DICMOTE_PACKET_ID)
+        if(pkt_hdr->id != htole64(DICMOTE_PACKET_ID))
         {
             printf("Received data is not a correct dicremote packet, closing connection...\n");
             free(pkt_hdr);
@@ -196,7 +197,7 @@ void* WorkingLoop(void* arguments)
             continue;
         }
 
-        pkt_client_hello = malloc(pkt_hdr->len);
+        pkt_client_hello = malloc(le32toh(pkt_hdr->len));
 
         if(!pkt_client_hello)
         {
@@ -206,11 +207,11 @@ void* WorkingLoop(void* arguments)
             continue;
         }
 
-        recv_size = NetRecv(cli_sock, pkt_client_hello, pkt_hdr->len, 0);
+        recv_size = NetRecv(cli_sock, pkt_client_hello, le32toh(pkt_hdr->len), 0);
 
-        if(recv_size != pkt_hdr->len)
+        if(recv_size != le32toh(pkt_hdr->len))
         {
-            printf("Expected %d bytes of packet, got %ld, closing connection...\n", pkt_hdr->len, recv_size);
+            printf("Expected %d bytes of packet, got %ld, closing connection...\n", le32toh(pkt_hdr->len), recv_size);
             NetClose(cli_sock);
             free(pkt_hdr);
             free(pkt_client_hello);
@@ -232,7 +233,7 @@ void* WorkingLoop(void* arguments)
         {
             if(skip_next_hdr)
             {
-                in_buf = malloc(pkt_hdr->len);
+                in_buf = malloc(le32toh(pkt_hdr->len));
 
                 if(!in_buf)
                 {
@@ -242,7 +243,7 @@ void* WorkingLoop(void* arguments)
                     continue;
                 }
 
-                NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
                 free(in_buf);
                 skip_next_hdr = 0;
             }
@@ -265,7 +266,7 @@ void* WorkingLoop(void* arguments)
                 break;
             }
 
-            if(pkt_hdr->id != DICMOTE_PACKET_ID)
+            if(pkt_hdr->id != htole64(DICMOTE_PACKET_ID))
             {
                 printf("Received data is not a correct dicremote packet, closing connection...\n");
                 NetClose(cli_sock);
@@ -294,7 +295,7 @@ void* WorkingLoop(void* arguments)
                     device_info_list = ListDevices();
 
                     // Packet only contains header so, dummy
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -304,7 +305,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     if(!device_info_list)
@@ -318,16 +319,16 @@ void* WorkingLoop(void* arguments)
                     }
 
                     pkt_res_devinfo          = malloc(sizeof(DicPacketResListDevs));
-                    pkt_res_devinfo->devices = DeviceInfoListCount(device_info_list);
+                    pkt_res_devinfo->devices = htole16(DeviceInfoListCount(device_info_list));
 
-                    n      = sizeof(DicPacketResListDevs) + pkt_res_devinfo->devices * sizeof(DeviceInfo);
+                    n      = sizeof(DicPacketResListDevs) + le16toh(pkt_res_devinfo->devices) * sizeof(DeviceInfo);
                     in_buf = malloc(n);
-                    ((DicPacketResListDevs*)in_buf)->hdr.len = n;
+                    ((DicPacketResListDevs*)in_buf)->hdr.len = htole32(n);
                     ((DicPacketResListDevs*)in_buf)->devices = pkt_res_devinfo->devices;
                     free(pkt_res_devinfo);
                     pkt_res_devinfo = (DicPacketResListDevs*)in_buf;
 
-                    pkt_res_devinfo->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_devinfo->hdr.id          = htole64(DICMOTE_PACKET_ID);
                     pkt_res_devinfo->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_devinfo->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
 
@@ -345,7 +346,7 @@ void* WorkingLoop(void* arguments)
                     device_info_list = (struct DeviceInfoList*)in_buf;
                     FreeDeviceInfoList(device_info_list);
 
-                    NetWrite(cli_sock, pkt_res_devinfo, pkt_res_devinfo->hdr.len);
+                    NetWrite(cli_sock, pkt_res_devinfo, le32toh(pkt_res_devinfo->hdr.len));
                     free(pkt_res_devinfo);
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
@@ -367,7 +368,7 @@ void* WorkingLoop(void* arguments)
                     skip_next_hdr = 1;
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_OPEN_DEVICE:
-                    pkt_dev_open = malloc(pkt_hdr->len);
+                    pkt_dev_open = malloc(le32toh(pkt_hdr->len));
 
                     if(!pkt_dev_open)
                     {
@@ -377,7 +378,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, pkt_dev_open, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, pkt_dev_open, le32toh(pkt_hdr->len), 0);
 
                     device_fd = DeviceOpen(pkt_dev_open->device_path);
 
@@ -394,7 +395,7 @@ void* WorkingLoop(void* arguments)
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE:
                     // Packet only contains header so, dummy
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -404,7 +405,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_dev_type = malloc(sizeof(DicPacketResGetDeviceType));
@@ -419,18 +420,18 @@ void* WorkingLoop(void* arguments)
 
                     memset(pkt_dev_type, 0, sizeof(DicPacketResGetDeviceType));
 
-                    pkt_dev_type->hdr.len         = sizeof(DicPacketResGetDeviceType);
+                    pkt_dev_type->hdr.len         = htole32(sizeof(DicPacketResGetDeviceType));
                     pkt_dev_type->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE;
                     pkt_dev_type->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_dev_type->hdr.id          = DICMOTE_PACKET_ID;
-                    pkt_dev_type->device_type     = GetDeviceType(device_path);
+                    pkt_dev_type->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_dev_type->device_type     = htole32(GetDeviceType(device_path));
 
                     NetWrite(cli_sock, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
                     free(pkt_dev_type);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SCSI:
                     // Packet contains data after
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -440,33 +441,40 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_scsi = (DicPacketCmdScsi*)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(pkt_cmd_scsi->cdb_len > 0) cdb_buf = in_buf + sizeof(DicPacketCmdScsi);
+                    if(le32toh(pkt_cmd_scsi->cdb_len) > 0) cdb_buf = in_buf + sizeof(DicPacketCmdScsi);
                     else
                         cdb_buf = NULL;
 
-                    if(pkt_cmd_scsi->buf_len > 0) buffer = in_buf + pkt_cmd_scsi->cdb_len + sizeof(DicPacketCmdScsi);
+                    if(le32toh(pkt_cmd_scsi->buf_len) > 0)
+                        buffer = in_buf + le32toh(pkt_cmd_scsi->cdb_len) + sizeof(DicPacketCmdScsi);
                     else
                         buffer = NULL;
+
+                    // Swap buf_len
+                    pkt_cmd_scsi->buf_len = le32toh(pkt_cmd_scsi->buf_len);
 
                     ret = SendScsiCommand(device_fd,
                                           cdb_buf,
                                           buffer,
                                           &sense_buf,
-                                          pkt_cmd_scsi->timeout,
-                                          pkt_cmd_scsi->direction,
+                                          le32toh(pkt_cmd_scsi->timeout),
+                                          le32toh(pkt_cmd_scsi->direction),
                                           &duration,
                                           &sense,
-                                          pkt_cmd_scsi->cdb_len,
+                                          le32toh(pkt_cmd_scsi->cdb_len),
                                           &pkt_cmd_scsi->buf_len,
                                           &sense_len);
 
-                    out_buf = malloc(sizeof(DicPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len);
+                    // Swap buf_len back
+                    pkt_cmd_scsi->buf_len = htole32(pkt_cmd_scsi->buf_len);
+
+                    out_buf = malloc(sizeof(DicPacketResScsi) + sense_len + le32toh(pkt_cmd_scsi->buf_len));
 
                     if(!out_buf)
                     {
@@ -481,25 +489,25 @@ void* WorkingLoop(void* arguments)
                     if(sense_buf) memcpy(out_buf + sizeof(DicPacketResScsi), sense_buf, sense_len);
                     if(buffer) memcpy(out_buf + sizeof(DicPacketResScsi) + sense_len, buffer, pkt_cmd_scsi->buf_len);
 
-                    pkt_res_scsi->hdr.len         = sizeof(DicPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len;
+                    pkt_res_scsi->hdr.len = htole32(sizeof(DicPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len);
                     pkt_res_scsi->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SCSI;
                     pkt_res_scsi->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_scsi->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_scsi->hdr.id          = htole64(DICMOTE_PACKET_ID);
 
-                    pkt_res_scsi->sense_len = sense_len;
+                    pkt_res_scsi->sense_len = htole32(sense_len);
                     pkt_res_scsi->buf_len   = pkt_cmd_scsi->buf_len;
-                    pkt_res_scsi->duration  = duration;
-                    pkt_res_scsi->sense     = sense;
-                    pkt_res_scsi->error_no  = ret;
+                    pkt_res_scsi->duration  = htole32(duration);
+                    pkt_res_scsi->sense     = htole32(sense);
+                    pkt_res_scsi->error_no  = htole32(ret);
 
-                    NetWrite(cli_sock, pkt_res_scsi, pkt_res_scsi->hdr.len);
+                    NetWrite(cli_sock, pkt_res_scsi, le32toh(pkt_res_scsi->hdr.len));
                     free(pkt_cmd_scsi);
                     free(pkt_res_scsi);
                     if(sense_buf) free(sense_buf);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
                     // Packet only contains header so, dummy
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -509,7 +517,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_sdhci_registers = malloc(sizeof(DicPacketResGetSdhciRegisters));
@@ -522,10 +530,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_sdhci_registers, 0, sizeof(DicPacketResGetSdhciRegisters));
-                    pkt_res_sdhci_registers->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_sdhci_registers->hdr.id          = htole64(DICMOTE_PACKET_ID);
                     pkt_res_sdhci_registers->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_sdhci_registers->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
-                    pkt_res_sdhci_registers->hdr.len         = sizeof(DicPacketResGetSdhciRegisters);
+                    pkt_res_sdhci_registers->hdr.len         = htole32(sizeof(DicPacketResGetSdhciRegisters));
                     pkt_res_sdhci_registers->is_sdhci        = GetSdhciRegisters(device_path,
                                                                           &csd,
                                                                           &cid,
@@ -561,17 +569,23 @@ void* WorkingLoop(void* arguments)
                         memcpy(pkt_res_sdhci_registers->scr, scr, pkt_res_sdhci_registers->scr_len);
                     }
 
+                    // Swap lengths
+                    pkt_res_sdhci_registers->csd_len = htole32(pkt_res_sdhci_registers->csd_len);
+                    pkt_res_sdhci_registers->cid_len = htole32(pkt_res_sdhci_registers->cid_len);
+                    pkt_res_sdhci_registers->ocr_len = htole32(pkt_res_sdhci_registers->ocr_len);
+                    pkt_res_sdhci_registers->scr_len = htole32(pkt_res_sdhci_registers->scr_len);
+
                     free(csd);
                     free(cid);
                     free(scr);
                     free(ocr);
 
-                    NetWrite(cli_sock, pkt_res_sdhci_registers, pkt_res_sdhci_registers->hdr.len);
+                    NetWrite(cli_sock, pkt_res_sdhci_registers, le32toh(pkt_res_sdhci_registers->hdr.len));
                     free(pkt_res_sdhci_registers);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
                     // Packet only contains header so, dummy
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -581,7 +595,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_usb = malloc(sizeof(DicPacketResGetUsbData));
@@ -594,10 +608,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_usb, 0, sizeof(DicPacketResGetUsbData));
-                    pkt_res_usb->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_usb->hdr.id          = htole64(DICMOTE_PACKET_ID);
                     pkt_res_usb->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_usb->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
-                    pkt_res_usb->hdr.len         = sizeof(DicPacketResGetUsbData);
+                    pkt_res_usb->hdr.len         = htole32(sizeof(DicPacketResGetUsbData));
                     pkt_res_usb->is_usb          = GetUsbData(device_path,
                                                      &pkt_res_usb->desc_len,
                                                      pkt_res_usb->descriptors,
@@ -607,12 +621,16 @@ void* WorkingLoop(void* arguments)
                                                      pkt_res_usb->product,
                                                      pkt_res_usb->serial);
 
-                    NetWrite(cli_sock, pkt_res_usb, pkt_res_usb->hdr.len);
+                    // Swap parameters
+                    pkt_res_usb->desc_len = htole32(pkt_res_usb->desc_len);
+                    // TODO: Need to swap vendor, product?
+
+                    NetWrite(cli_sock, pkt_res_usb, le32toh(pkt_res_usb->hdr.len));
                     free(pkt_res_usb);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
                     // Packet only contains header so, dummy
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -622,7 +640,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_firewire = malloc(sizeof(DicPacketResGetFireWireData));
@@ -635,10 +653,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_firewire, 0, sizeof(DicPacketResGetFireWireData));
-                    pkt_res_firewire->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_firewire->hdr.id          = htole64(DICMOTE_PACKET_ID);
                     pkt_res_firewire->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_firewire->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA;
-                    pkt_res_firewire->hdr.len         = sizeof(DicPacketResGetFireWireData);
+                    pkt_res_firewire->hdr.len         = htole32(sizeof(DicPacketResGetFireWireData));
                     pkt_res_firewire->is_firewire     = GetFireWireData(device_path,
                                                                     &pkt_res_firewire->id_model,
                                                                     &pkt_res_firewire->id_vendor,
@@ -646,12 +664,14 @@ void* WorkingLoop(void* arguments)
                                                                     pkt_res_firewire->vendor,
                                                                     pkt_res_firewire->model);
 
-                    NetWrite(cli_sock, pkt_res_firewire, pkt_res_firewire->hdr.len);
+                    // TODO: Need to swap IDs?
+
+                    NetWrite(cli_sock, pkt_res_firewire, le32toh(pkt_res_firewire->hdr.len));
                     free(pkt_res_firewire);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
                     // Packet only contains header so, dummy
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -661,7 +681,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_pcmcia = malloc(sizeof(DicPacketResGetPcmciaData));
@@ -674,19 +694,21 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_pcmcia, 0, sizeof(DicPacketResGetPcmciaData));
-                    pkt_res_pcmcia->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_pcmcia->hdr.id          = htole64(DICMOTE_PACKET_ID);
                     pkt_res_pcmcia->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_pcmcia->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA;
-                    pkt_res_pcmcia->hdr.len         = sizeof(DicPacketResGetPcmciaData);
+                    pkt_res_pcmcia->hdr.len         = htole32(sizeof(DicPacketResGetPcmciaData));
                     pkt_res_pcmcia->is_pcmcia =
                         GetPcmciaData(device_path, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
 
-                    NetWrite(cli_sock, pkt_res_pcmcia, pkt_res_pcmcia->hdr.len);
+                    pkt_res_pcmcia->cis_len = htole32(pkt_res_pcmcia->cis_len);
+
+                    NetWrite(cli_sock, pkt_res_pcmcia, le32toh(pkt_res_pcmcia->hdr.len));
                     free(pkt_res_pcmcia);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
                     // Packet contains data after
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -696,17 +718,19 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_ata_chs = (DicPacketCmdAtaChs*)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(pkt_cmd_ata_chs->buf_len > 0) buffer = in_buf + sizeof(DicPacketCmdAtaChs);
+                    if(le32toh(pkt_cmd_ata_chs->buf_len) > 0) buffer = in_buf + sizeof(DicPacketCmdAtaChs);
                     else
                         buffer = NULL;
 
                     memset(&ata_chs_error_regs, 0, sizeof(AtaErrorRegistersChs));
+
+                    pkt_cmd_ata_chs->buf_len = le32toh(pkt_cmd_ata_chs->buf_len);
 
                     duration = 0;
                     sense    = 1;
@@ -716,13 +740,15 @@ void* WorkingLoop(void* arguments)
                                             pkt_cmd_ata_chs->protocol,
                                             pkt_cmd_ata_chs->transfer_register,
                                             buffer,
-                                            pkt_cmd_ata_chs->timeout,
+                                            le32toh(pkt_cmd_ata_chs->timeout),
                                             pkt_cmd_ata_chs->transfer_blocks,
                                             &duration,
                                             &sense,
                                             &pkt_cmd_ata_chs->buf_len);
 
                     out_buf = malloc(sizeof(DicPacketResAtaChs) + pkt_cmd_ata_chs->buf_len);
+
+                    pkt_cmd_ata_chs->buf_len = htole32(pkt_cmd_ata_chs->buf_len);
 
                     if(!out_buf)
                     {
@@ -734,26 +760,26 @@ void* WorkingLoop(void* arguments)
                     }
 
                     pkt_res_ata_chs = (DicPacketResAtaChs*)out_buf;
-                    if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaChs), buffer, pkt_cmd_ata_chs->buf_len);
+                    if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaChs), buffer, htole32(pkt_cmd_ata_chs->buf_len));
 
-                    pkt_res_ata_chs->hdr.len         = sizeof(DicPacketResAtaChs) + pkt_cmd_ata_chs->buf_len;
+                    pkt_res_ata_chs->hdr.len = htole32(sizeof(DicPacketResAtaChs) + htole32(pkt_cmd_ata_chs->buf_len));
                     pkt_res_ata_chs->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS;
                     pkt_res_ata_chs->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_chs->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_ata_chs->hdr.id          = htole64(DICMOTE_PACKET_ID);
 
                     pkt_res_ata_chs->registers = ata_chs_error_regs;
                     pkt_res_ata_chs->buf_len   = pkt_cmd_ata_chs->buf_len;
-                    pkt_res_ata_chs->duration  = duration;
-                    pkt_res_ata_chs->sense     = sense;
-                    pkt_res_ata_chs->error_no  = ret;
+                    pkt_res_ata_chs->duration  = htole32(duration);
+                    pkt_res_ata_chs->sense     = htole32(sense);
+                    pkt_res_ata_chs->error_no  = htole32(ret);
 
-                    NetWrite(cli_sock, pkt_res_ata_chs, pkt_res_ata_chs->hdr.len);
+                    NetWrite(cli_sock, pkt_res_ata_chs, le32toh(pkt_res_ata_chs->hdr.len));
                     free(pkt_cmd_ata_chs);
                     free(pkt_res_ata_chs);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA_28:
                     // Packet contains data after
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -763,17 +789,19 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_ata_lba28 = (DicPacketCmdAtaLba28*)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(pkt_cmd_ata_lba28->buf_len > 0) buffer = in_buf + sizeof(DicPacketCmdAtaLba28);
+                    if(le32toh(pkt_cmd_ata_lba28->buf_len) > 0) buffer = in_buf + sizeof(DicPacketCmdAtaLba28);
                     else
                         buffer = NULL;
 
                     memset(&ata_lba28_error_regs, 0, sizeof(AtaErrorRegistersLba28));
+
+                    pkt_cmd_ata_lba28->buf_len = le32toh(pkt_cmd_ata_lba28->buf_len);
 
                     duration = 0;
                     sense    = 1;
@@ -783,13 +811,14 @@ void* WorkingLoop(void* arguments)
                                               pkt_cmd_ata_lba28->protocol,
                                               pkt_cmd_ata_lba28->transfer_register,
                                               buffer,
-                                              pkt_cmd_ata_lba28->timeout,
+                                              le32toh(pkt_cmd_ata_lba28->timeout),
                                               pkt_cmd_ata_lba28->transfer_blocks,
                                               &duration,
                                               &sense,
                                               &pkt_cmd_ata_lba28->buf_len);
 
-                    out_buf = malloc(sizeof(DicPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len);
+                    out_buf                    = malloc(sizeof(DicPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len);
+                    pkt_cmd_ata_lba28->buf_len = htole32(pkt_cmd_ata_lba28->buf_len);
 
                     if(!out_buf)
                     {
@@ -801,26 +830,28 @@ void* WorkingLoop(void* arguments)
                     }
 
                     pkt_res_ata_lba28 = (DicPacketResAtaLba28*)out_buf;
-                    if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaLba28), buffer, pkt_cmd_ata_lba28->buf_len);
+                    if(buffer)
+                        memcpy(out_buf + sizeof(DicPacketResAtaLba28), buffer, le32toh(pkt_cmd_ata_lba28->buf_len));
 
-                    pkt_res_ata_lba28->hdr.len         = sizeof(DicPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len;
+                    pkt_res_ata_lba28->hdr.len =
+                        htole32(sizeof(DicPacketResAtaLba28) + le32toh(pkt_cmd_ata_lba28->buf_len));
                     pkt_res_ata_lba28->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_28;
                     pkt_res_ata_lba28->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_lba28->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_ata_lba28->hdr.id          = htole64(DICMOTE_PACKET_ID);
 
                     pkt_res_ata_lba28->registers = ata_lba28_error_regs;
                     pkt_res_ata_lba28->buf_len   = pkt_cmd_ata_lba28->buf_len;
-                    pkt_res_ata_lba28->duration  = duration;
-                    pkt_res_ata_lba28->sense     = sense;
-                    pkt_res_ata_lba28->error_no  = ret;
+                    pkt_res_ata_lba28->duration  = le32toh(duration);
+                    pkt_res_ata_lba28->sense     = le32toh(sense);
+                    pkt_res_ata_lba28->error_no  = le32toh(ret);
 
-                    NetWrite(cli_sock, pkt_res_ata_lba28, pkt_res_ata_lba28->hdr.len);
+                    NetWrite(cli_sock, pkt_res_ata_lba28, le32toh(pkt_res_ata_lba28->hdr.len));
                     free(pkt_cmd_ata_lba28);
                     free(pkt_res_ata_lba28);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA_48:
                     // Packet contains data after
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -830,17 +861,24 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_ata_lba48 = (DicPacketCmdAtaLba48*)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(pkt_cmd_ata_lba48->buf_len > 0) buffer = in_buf + sizeof(DicPacketCmdAtaLba48);
+                    if(le32toh(pkt_cmd_ata_lba48->buf_len) > 0) buffer = in_buf + sizeof(DicPacketCmdAtaLba48);
                     else
                         buffer = NULL;
 
                     memset(&ata_lba48_error_regs, 0, sizeof(AtaErrorRegistersLba48));
+                    pkt_cmd_ata_lba48->buf_len = le32toh(pkt_cmd_ata_lba48->buf_len);
+
+                    // Swapping
+                    pkt_cmd_ata_lba48->registers.lba_high     = le16toh(pkt_cmd_ata_lba48->registers.lba_high);
+                    pkt_cmd_ata_lba48->registers.lba_mid      = le16toh(pkt_cmd_ata_lba48->registers.lba_mid);
+                    pkt_cmd_ata_lba48->registers.lba_low      = le16toh(pkt_cmd_ata_lba48->registers.lba_low);
+                    pkt_cmd_ata_lba48->registers.sector_count = le16toh(pkt_cmd_ata_lba48->registers.sector_count);
 
                     duration = 0;
                     sense    = 1;
@@ -850,13 +888,14 @@ void* WorkingLoop(void* arguments)
                                               pkt_cmd_ata_lba48->protocol,
                                               pkt_cmd_ata_lba48->transfer_register,
                                               buffer,
-                                              pkt_cmd_ata_lba48->timeout,
+                                              le32toh(pkt_cmd_ata_lba48->timeout),
                                               pkt_cmd_ata_lba48->transfer_blocks,
                                               &duration,
                                               &sense,
                                               &pkt_cmd_ata_lba48->buf_len);
 
-                    out_buf = malloc(sizeof(DicPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len);
+                    out_buf                    = malloc(sizeof(DicPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len);
+                    pkt_cmd_ata_lba48->buf_len = htole32(pkt_cmd_ata_lba48->buf_len);
 
                     if(!out_buf)
                     {
@@ -868,26 +907,34 @@ void* WorkingLoop(void* arguments)
                     }
 
                     pkt_res_ata_lba48 = (DicPacketResAtaLba48*)out_buf;
-                    if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaLba48), buffer, pkt_cmd_ata_lba48->buf_len);
+                    if(buffer)
+                        memcpy(out_buf + sizeof(DicPacketResAtaLba48), buffer, le32toh(pkt_cmd_ata_lba48->buf_len));
 
-                    pkt_res_ata_lba48->hdr.len         = sizeof(DicPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len;
+                    pkt_res_ata_lba48->hdr.len =
+                        htole32(sizeof(DicPacketResAtaLba48) + le32toh(pkt_cmd_ata_lba48->buf_len));
                     pkt_res_ata_lba48->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_48;
                     pkt_res_ata_lba48->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_lba48->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_ata_lba48->hdr.id          = htole64(DICMOTE_PACKET_ID);
+
+                    // Swapping
+                    ata_lba48_error_regs.lba_high     = htole16(ata_lba48_error_regs.lba_high);
+                    ata_lba48_error_regs.lba_mid      = htole16(ata_lba48_error_regs.lba_mid);
+                    ata_lba48_error_regs.lba_low      = htole16(ata_lba48_error_regs.lba_low);
+                    ata_lba48_error_regs.sector_count = htole16(ata_lba48_error_regs.sector_count);
 
                     pkt_res_ata_lba48->registers = ata_lba48_error_regs;
                     pkt_res_ata_lba48->buf_len   = pkt_cmd_ata_lba48->buf_len;
-                    pkt_res_ata_lba48->duration  = duration;
-                    pkt_res_ata_lba48->sense     = sense;
-                    pkt_res_ata_lba48->error_no  = ret;
+                    pkt_res_ata_lba48->duration  = le32toh(duration);
+                    pkt_res_ata_lba48->sense     = le32toh(sense);
+                    pkt_res_ata_lba48->error_no  = le32toh(ret);
 
-                    NetWrite(cli_sock, pkt_res_ata_lba48, pkt_res_ata_lba48->hdr.len);
+                    NetWrite(cli_sock, pkt_res_ata_lba48, le32toh(pkt_res_ata_lba48->hdr.len));
                     free(pkt_cmd_ata_lba48);
                     free(pkt_res_ata_lba48);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
                     // Packet contains data after
-                    in_buf = malloc(pkt_hdr->len);
+                    in_buf = malloc(le32toh(pkt_hdr->len));
 
                     if(!in_buf)
                     {
@@ -897,13 +944,13 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, pkt_hdr->len, 0);
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_sdhci = (DicPacketCmdSdhci*)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(pkt_cmd_sdhci->buf_len > 0) buffer = in_buf + sizeof(DicPacketCmdSdhci);
+                    if(le32toh(pkt_cmd_sdhci->buf_len) > 0) buffer = in_buf + sizeof(DicPacketCmdSdhci);
                     else
                         buffer = NULL;
 
@@ -915,18 +962,18 @@ void* WorkingLoop(void* arguments)
                                            pkt_cmd_sdhci->command,
                                            pkt_cmd_sdhci->write,
                                            pkt_cmd_sdhci->application,
-                                           pkt_cmd_sdhci->flags,
-                                           pkt_cmd_sdhci->argument,
-                                           pkt_cmd_sdhci->block_size,
-                                           pkt_cmd_sdhci->blocks,
+                                           le32toh(pkt_cmd_sdhci->flags),
+                                           le32toh(pkt_cmd_sdhci->argument),
+                                           le32toh(pkt_cmd_sdhci->block_size),
+                                           le32toh(pkt_cmd_sdhci->blocks),
                                            buffer,
-                                           pkt_cmd_sdhci->buf_len,
-                                           pkt_cmd_sdhci->timeout,
+                                           le32toh(pkt_cmd_sdhci->buf_len),
+                                           le32toh(pkt_cmd_sdhci->timeout),
                                            (uint32_t*)&sdhci_response,
                                            &duration,
                                            &sense);
 
-                    out_buf = malloc(sizeof(DicPacketResSdhci) + pkt_cmd_sdhci->buf_len);
+                    out_buf = malloc(sizeof(DicPacketResSdhci) + le32toh(pkt_cmd_sdhci->buf_len));
 
                     if(!out_buf)
                     {
@@ -938,20 +985,25 @@ void* WorkingLoop(void* arguments)
                     }
 
                     pkt_res_sdhci = (DicPacketResSdhci*)out_buf;
-                    if(buffer) memcpy(out_buf + sizeof(DicPacketResSdhci), buffer, pkt_cmd_sdhci->buf_len);
+                    if(buffer) memcpy(out_buf + sizeof(DicPacketResSdhci), buffer, le32toh(pkt_cmd_sdhci->buf_len));
 
-                    pkt_res_sdhci->hdr.len         = sizeof(DicPacketResSdhci) + pkt_cmd_sdhci->buf_len;
+                    pkt_res_sdhci->hdr.len = htole32(sizeof(DicPacketResSdhci) + le32toh(pkt_cmd_sdhci->buf_len));
                     pkt_res_sdhci->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SDHCI;
                     pkt_res_sdhci->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_sdhci->hdr.id          = DICMOTE_PACKET_ID;
+                    pkt_res_sdhci->hdr.id          = htole64(DICMOTE_PACKET_ID);
+
+                    sdhci_response[0] = htole32(sdhci_response[0]);
+                    sdhci_response[1] = htole32(sdhci_response[1]);
+                    sdhci_response[2] = htole32(sdhci_response[2]);
+                    sdhci_response[3] = htole32(sdhci_response[3]);
 
                     memcpy((char*)&pkt_res_sdhci->response, (char*)&sdhci_response, sizeof(uint32_t) * 4);
                     pkt_res_sdhci->buf_len  = pkt_cmd_sdhci->buf_len;
-                    pkt_res_sdhci->duration = duration;
-                    pkt_res_sdhci->sense    = sense;
-                    pkt_res_sdhci->error_no = ret;
+                    pkt_res_sdhci->duration = htole32(duration);
+                    pkt_res_sdhci->sense    = htole32(sense);
+                    pkt_res_sdhci->error_no = htole32(ret);
 
-                    NetWrite(cli_sock, pkt_res_sdhci, pkt_res_sdhci->hdr.len);
+                    NetWrite(cli_sock, pkt_res_sdhci, le32toh(pkt_res_sdhci->hdr.len));
                     free(pkt_cmd_sdhci);
                     free(pkt_res_sdhci);
                     continue;
