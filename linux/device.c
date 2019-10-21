@@ -123,6 +123,7 @@ int32_t LinuxGetDeviceType(const char* device_path)
     udev_unref(udev);
 
     return device_type;
+#endif
 }
 
 int32_t LinuxGetSdhciRegisters(const char* device_path,
@@ -278,5 +279,4 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
     free(tmp_string);
 
     return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
-#endif
 }
