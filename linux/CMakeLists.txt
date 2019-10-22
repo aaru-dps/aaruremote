@@ -5,7 +5,7 @@ if (NOT "${CMAKE_SYSTEM}" MATCHES "Linux")
 endif ()
 
 set(PLATFORM_SOURCES list_devices.c linux.h device.c scsi.c usb.c ieee1394.c pcmcia.c ata.c sdhci.c ../unix/hello.c
-        ../unix/network.c ../unix/unix.c)
+        ../unix/network.c ../unix/unix.c mmc/ioctl.h)
 CHECK_LIBRARY_EXISTS("udev" udev_new "" HAS_UDEV)
 CHECK_INCLUDE_FILES("linux/mmc/ioctl.h" HAVE_MMC_IOCTL_H)
 
