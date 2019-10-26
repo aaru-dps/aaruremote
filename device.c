@@ -28,7 +28,7 @@ void* DeviceOpen(const char* device_path)
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxOpenDevice(device_path);
 #else
-    return -1;
+    return NULL;
 #endif
 }
 
@@ -36,8 +36,6 @@ void DeviceClose(void* device_ctx)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxCloseDevice(device_ctx);
-#else
-    return -1;
 #endif
 }
 
