@@ -37,7 +37,7 @@ else ()
 endif ()
 
 
-set(DIC_PORTS "linux;wii" CACHE STRING "List of ports to build")
+set(DIC_PORTS "linux;wii;win32" CACHE STRING "List of ports to build")
 foreach (PORT IN LISTS DIC_PORTS)
     add_subdirectory(${PORT})
 endforeach (PORT)
