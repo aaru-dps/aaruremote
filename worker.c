@@ -16,8 +16,8 @@
  */
 
 #include "dicmote.h"
+#include "endian.h"
 
-#include <endian.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
