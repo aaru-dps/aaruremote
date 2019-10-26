@@ -39,6 +39,8 @@ int LinuxOpenDevice(const char* device_path)
     return fd;
 }
 
+void LinuxCloseDevice(int device_fd) { close(device_fd); }
+
 int32_t LinuxGetDeviceType(const char* device_path)
 {
 #ifdef HAS_UDEV

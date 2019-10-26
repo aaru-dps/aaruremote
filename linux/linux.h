@@ -24,7 +24,8 @@
 
 DeviceInfoList* LinuxListDevices();
 
-int LinuxOpenDevice(const char* device_path);
+int  LinuxOpenDevice(const char* device_path);
+void LinuxCloseDevice(int device_fd);
 
 int32_t LinuxGetDeviceType(const char* device_path);
 

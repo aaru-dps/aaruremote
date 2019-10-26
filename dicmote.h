@@ -62,6 +62,7 @@
 #define DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA 22
 #define DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA 23
 #define DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA 24
+#define DICMOTE_PACKET_TYPE_COMMAND_CLOSE_DEVICE 25
 #define DICMOTE_PROTOCOL_MAX 1
 #define DICMOTE_PACKET_NOP_REASON_OOO 0
 #define DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -418,12 +419,18 @@ typedef struct
     char            cis[65536];
 } DicPacketResGetPcmciaData;
 
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdClose;
+
 #pragma pack(pop)
 
 DeviceInfoList* ListDevices();
 void            FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t        DeviceInfoListCount(DeviceInfoList* start);
 int             DeviceOpen(const char* device_path);
+void            DeviceClose(int device_fd);
 int32_t         GetDeviceType(const char* device_path);
 int32_t         SendScsiCommand(int       device_fd,
                                 char*     cdb,

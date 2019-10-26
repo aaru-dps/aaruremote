@@ -1019,6 +1019,10 @@ void* WorkingLoop(void* arguments)
                     free(pkt_cmd_sdhci);
                     free(pkt_res_sdhci);
                     continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_CLOSE_DEVICE:
+                    DeviceClose(device_fd);
+                    skip_next_hdr = 1;
+                    continue;
                 default:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);

@@ -32,6 +32,15 @@ int DeviceOpen(const char* device_path)
 #endif
 }
 
+void DeviceClose(int device_fd)
+{
+#if defined(__linux__) && !defined(__ANDROID__)
+    return LinuxCloseDevice(device_fd);
+#else
+    return -1;
+#endif
+}
+
 int32_t GetDeviceType(const char* device_path)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
