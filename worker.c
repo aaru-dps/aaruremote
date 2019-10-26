@@ -60,7 +60,6 @@ void* WorkingLoop(void* arguments)
     DicPacketResScsi*              pkt_res_scsi;
     DicPacketResSdhci*             pkt_res_sdhci;
     int                            skip_next_hdr;
-    int                            cli_sock, sock_fd;
     int                            ret;
     socklen_t                      cli_len;
     ssize_t                        recv_size;
@@ -72,6 +71,8 @@ void* WorkingLoop(void* arguments)
     uint32_t                       sense_len;
     uint64_t                       n;
     void*                          device_ctx = NULL;
+    void*                          net_ctx    = NULL;
+    void*                          cli_ctx    = NULL;
 
     if(!arguments)
     {
@@ -82,8 +83,8 @@ void* WorkingLoop(void* arguments)
     pkt_server_hello = (DicPacketHello*)arguments;
 
     printf("Opening socket.\n");
-    sock_fd = NetSocket(AF_INET, SOCK_STREAM, 0);
-    if(sock_fd < 0)
+    net_ctx = NetSocket(AF_INET, SOCK_STREAM, 0);
+    if(!net_ctx)
     {
         printf("Error %d opening socket.\n", errno);
         return NULL;
@@ -93,19 +94,19 @@ void* WorkingLoop(void* arguments)
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port        = htons(DICMOTE_PORT);
 
-    if(NetBind(sock_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    if(NetBind(net_ctx, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
     {
         printf("Error %d binding socket.\n", errno);
-        NetClose(sock_fd);
+        NetClose(net_ctx);
         return NULL;
     }
 
-    ret = NetListen(sock_fd, 1);
+    ret = NetListen(net_ctx, 1);
 
     if(ret)
     {
         printf("Error %d listening.\n", errno);
-        NetClose(sock_fd);
+        NetClose(net_ctx);
         return NULL;
     }
 
@@ -114,7 +115,7 @@ void* WorkingLoop(void* arguments)
     if(!pkt_nop)
     {
         printf("Fatal error %d allocating memory.\n", errno);
-        NetClose(sock_fd);
+        NetClose(net_ctx);
         return NULL;
     }
 
@@ -131,38 +132,38 @@ void* WorkingLoop(void* arguments)
         printf("\n");
         printf("Waiting for a client...\n");
 
-        cli_len  = sizeof(cli_addr);
-        cli_sock = NetAccept(sock_fd, (struct sockaddr*)&cli_addr, &cli_len);
+        cli_len = sizeof(cli_addr);
+        cli_ctx = NetAccept(net_ctx, (struct sockaddr*)&cli_addr, &cli_len);
 
-        if(cli_sock < 0)
+        if(!cli_ctx)
         {
             printf("Error %d accepting incoming connection.\n", errno);
-            NetClose(sock_fd);
+            NetClose(net_ctx);
             return NULL;
         }
 
         printf("Client %s connected successfully.\n", PrintIpv4Address(cli_addr.sin_addr));
 
-        NetWrite(cli_sock, pkt_server_hello, sizeof(DicPacketHello));
+        NetWrite(cli_ctx, pkt_server_hello, sizeof(DicPacketHello));
 
         pkt_hdr = malloc(sizeof(DicPacketHeader));
 
         if(!pkt_hdr)
         {
             printf("Fatal error %d allocating memory.\n", errno);
-            NetClose(cli_sock);
-            NetClose(sock_fd);
+            NetClose(cli_ctx);
+            NetClose(net_ctx);
             free(pkt_server_hello);
             return NULL;
         }
 
-        recv_size = NetRecv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
+        recv_size = NetRecv(cli_ctx, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
 
         if(recv_size < 0)
         {
             printf("Error %d reading response from client.\n", errno);
             free(pkt_hdr);
-            NetClose(cli_sock);
+            NetClose(cli_ctx);
             continue;
         }
 
@@ -170,7 +171,7 @@ void* WorkingLoop(void* arguments)
         {
             printf("Client closed connection.\n");
             free(pkt_hdr);
-            NetClose(cli_sock);
+            NetClose(cli_ctx);
             continue;
         }
 
@@ -178,7 +179,7 @@ void* WorkingLoop(void* arguments)
         {
             printf("Received data is not a correct dicremote packet, closing connection...\n");
             free(pkt_hdr);
-            NetClose(cli_sock);
+            NetClose(cli_ctx);
             continue;
         }
 
@@ -186,7 +187,7 @@ void* WorkingLoop(void* arguments)
         {
             printf("Unrecognized packet version, closing connection...\n");
             free(pkt_hdr);
-            NetClose(cli_sock);
+            NetClose(cli_ctx);
             continue;
         }
 
@@ -194,7 +195,7 @@ void* WorkingLoop(void* arguments)
         {
             printf("Expecting hello packet type, received type %d, closing connection...\n", pkt_hdr->packet_type);
             free(pkt_hdr);
-            NetClose(cli_sock);
+            NetClose(cli_ctx);
             continue;
         }
 
@@ -204,16 +205,16 @@ void* WorkingLoop(void* arguments)
         {
             printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
             free(pkt_hdr);
-            NetClose(cli_sock);
+            NetClose(cli_ctx);
             continue;
         }
 
-        recv_size = NetRecv(cli_sock, pkt_client_hello, le32toh(pkt_hdr->len), 0);
+        recv_size = NetRecv(cli_ctx, pkt_client_hello, le32toh(pkt_hdr->len), 0);
 
         if(recv_size != le32toh(pkt_hdr->len))
         {
             printf("Expected %d bytes of packet, got %ld, closing connection...\n", le32toh(pkt_hdr->len), recv_size);
-            NetClose(cli_sock);
+            NetClose(cli_ctx);
             free(pkt_hdr);
             free(pkt_client_hello);
             continue;
@@ -240,21 +241,21 @@ void* WorkingLoop(void* arguments)
                 {
                     printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                     free(pkt_hdr);
-                    NetClose(cli_sock);
+                    NetClose(cli_ctx);
                     continue;
                 }
 
-                NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                 free(in_buf);
                 skip_next_hdr = 0;
             }
 
-            recv_size = NetRecv(cli_sock, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
+            recv_size = NetRecv(cli_ctx, pkt_hdr, sizeof(DicPacketHeader), MSG_PEEK);
 
             if(recv_size < 0)
             {
                 printf("Error %d reading response from client, closing connection...\n", errno);
-                NetClose(cli_sock);
+                NetClose(cli_ctx);
                 free(pkt_hdr);
                 break;
             }
@@ -262,7 +263,7 @@ void* WorkingLoop(void* arguments)
             if(recv_size == 0)
             {
                 printf("Client closed connection, closing connection...\n");
-                NetClose(cli_sock);
+                NetClose(cli_ctx);
                 free(pkt_hdr);
                 break;
             }
@@ -270,7 +271,7 @@ void* WorkingLoop(void* arguments)
             if(pkt_hdr->remote_id != htole32(DICMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(DICMOTE_PACKET_ID))
             {
                 printf("Received data is not a correct dicremote packet, closing connection...\n");
-                NetClose(cli_sock);
+                NetClose(cli_ctx);
                 free(pkt_hdr);
                 break;
             }
@@ -288,7 +289,7 @@ void* WorkingLoop(void* arguments)
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Received hello packet out of order, skipping...", 256);
-                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
@@ -302,11 +303,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     if(!device_info_list)
@@ -314,7 +315,7 @@ void* WorkingLoop(void* arguments)
                         pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES;
                         memset(&pkt_nop->reason, 0, 256);
                         strncpy(pkt_nop->reason, "Could not get device list, continuing...", 256);
-                        NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                        NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
                         printf("%s...\n", pkt_nop->reason);
                         continue;
                     }
@@ -348,7 +349,7 @@ void* WorkingLoop(void* arguments)
                     device_info_list = (struct DeviceInfoList*)in_buf;
                     FreeDeviceInfoList(device_info_list);
 
-                    NetWrite(cli_sock, pkt_res_devinfo, le32toh(pkt_res_devinfo->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_devinfo, le32toh(pkt_res_devinfo->hdr.len));
                     free(pkt_res_devinfo);
                     continue;
                 case DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
@@ -365,7 +366,7 @@ void* WorkingLoop(void* arguments)
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Received response packet?! You should certainly not do that...", 256);
-                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
@@ -376,11 +377,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, pkt_dev_open, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, pkt_dev_open, le32toh(pkt_hdr->len), 0);
 
                     device_ctx = DeviceOpen(pkt_dev_open->device_path);
 
@@ -388,7 +389,7 @@ void* WorkingLoop(void* arguments)
                         device_ctx == NULL ? DICMOTE_PACKET_NOP_REASON_OPEN_ERROR : DICMOTE_PACKET_NOP_REASON_OPEN_OK;
                     pkt_nop->error_no = errno;
                     memset(&pkt_nop->reason, 0, 256);
-                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
 
                     free(pkt_dev_open);
                     continue;
@@ -400,11 +401,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_dev_type = malloc(sizeof(DicPacketResGetDeviceType));
@@ -413,7 +414,7 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -426,7 +427,7 @@ void* WorkingLoop(void* arguments)
                     pkt_dev_type->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
                     pkt_dev_type->device_type     = htole32(GetDeviceType(device_ctx));
 
-                    NetWrite(cli_sock, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
+                    NetWrite(cli_ctx, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
                     free(pkt_dev_type);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_SCSI:
@@ -437,11 +438,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_scsi = (DicPacketCmdScsi*)in_buf;
 
@@ -481,7 +482,7 @@ void* WorkingLoop(void* arguments)
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -501,7 +502,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_scsi->sense     = htole32(sense);
                     pkt_res_scsi->error_no  = htole32(ret);
 
-                    NetWrite(cli_sock, pkt_res_scsi, le32toh(pkt_res_scsi->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_scsi, le32toh(pkt_res_scsi->hdr.len));
                     free(pkt_cmd_scsi);
                     free(pkt_res_scsi);
                     if(sense_buf) free(sense_buf);
@@ -514,11 +515,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_sdhci_registers = malloc(sizeof(DicPacketResGetSdhciRegisters));
@@ -526,7 +527,7 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -582,7 +583,7 @@ void* WorkingLoop(void* arguments)
                     free(scr);
                     free(ocr);
 
-                    NetWrite(cli_sock, pkt_res_sdhci_registers, le32toh(pkt_res_sdhci_registers->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_sdhci_registers, le32toh(pkt_res_sdhci_registers->hdr.len));
                     free(pkt_res_sdhci_registers);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
@@ -593,11 +594,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_usb = malloc(sizeof(DicPacketResGetUsbData));
@@ -605,7 +606,7 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -628,7 +629,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_usb->desc_len = htole32(pkt_res_usb->desc_len);
                     // TODO: Need to swap vendor, product?
 
-                    NetWrite(cli_sock, pkt_res_usb, le32toh(pkt_res_usb->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_usb, le32toh(pkt_res_usb->hdr.len));
                     free(pkt_res_usb);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
@@ -639,11 +640,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_firewire = malloc(sizeof(DicPacketResGetFireWireData));
@@ -651,7 +652,7 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -670,7 +671,7 @@ void* WorkingLoop(void* arguments)
 
                     // TODO: Need to swap IDs?
 
-                    NetWrite(cli_sock, pkt_res_firewire, le32toh(pkt_res_firewire->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_firewire, le32toh(pkt_res_firewire->hdr.len));
                     free(pkt_res_firewire);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
@@ -681,11 +682,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_pcmcia = malloc(sizeof(DicPacketResGetPcmciaData));
@@ -693,7 +694,7 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -708,7 +709,7 @@ void* WorkingLoop(void* arguments)
 
                     pkt_res_pcmcia->cis_len = htole32(pkt_res_pcmcia->cis_len);
 
-                    NetWrite(cli_sock, pkt_res_pcmcia, le32toh(pkt_res_pcmcia->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_pcmcia, le32toh(pkt_res_pcmcia->hdr.len));
                     free(pkt_res_pcmcia);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
@@ -719,11 +720,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_ata_chs = (DicPacketCmdAtaChs*)in_buf;
 
@@ -760,7 +761,7 @@ void* WorkingLoop(void* arguments)
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -779,7 +780,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_ata_chs->sense     = htole32(sense);
                     pkt_res_ata_chs->error_no  = htole32(ret);
 
-                    NetWrite(cli_sock, pkt_res_ata_chs, le32toh(pkt_res_ata_chs->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_ata_chs, le32toh(pkt_res_ata_chs->hdr.len));
                     free(pkt_cmd_ata_chs);
                     free(pkt_res_ata_chs);
                     continue;
@@ -791,11 +792,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_ata_lba28 = (DicPacketCmdAtaLba28*)in_buf;
 
@@ -831,7 +832,7 @@ void* WorkingLoop(void* arguments)
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -852,7 +853,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_ata_lba28->sense     = le32toh(sense);
                     pkt_res_ata_lba28->error_no  = le32toh(ret);
 
-                    NetWrite(cli_sock, pkt_res_ata_lba28, le32toh(pkt_res_ata_lba28->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_ata_lba28, le32toh(pkt_res_ata_lba28->hdr.len));
                     free(pkt_cmd_ata_lba28);
                     free(pkt_res_ata_lba28);
                     continue;
@@ -864,11 +865,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_ata_lba48 = (DicPacketCmdAtaLba48*)in_buf;
 
@@ -909,7 +910,7 @@ void* WorkingLoop(void* arguments)
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -936,7 +937,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_ata_lba48->sense     = le32toh(sense);
                     pkt_res_ata_lba48->error_no  = le32toh(ret);
 
-                    NetWrite(cli_sock, pkt_res_ata_lba48, le32toh(pkt_res_ata_lba48->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_ata_lba48, le32toh(pkt_res_ata_lba48->hdr.len));
                     free(pkt_cmd_ata_lba48);
                     free(pkt_res_ata_lba48);
                     continue;
@@ -948,11 +949,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
                     pkt_cmd_sdhci = (DicPacketCmdSdhci*)in_buf;
 
@@ -988,7 +989,7 @@ void* WorkingLoop(void* arguments)
                         printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
                         free(pkt_hdr);
                         free(in_buf);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -1012,7 +1013,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_sdhci->sense    = htole32(sense);
                     pkt_res_sdhci->error_no = htole32(ret);
 
-                    NetWrite(cli_sock, pkt_res_sdhci, le32toh(pkt_res_sdhci->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_sdhci, le32toh(pkt_res_sdhci->hdr.len));
                     free(pkt_cmd_sdhci);
                     free(pkt_res_sdhci);
                     continue;
@@ -1029,11 +1030,11 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
-                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
                     free(in_buf);
 
                     pkt_res_am_i_root = malloc(sizeof(DicPacketResAmIRoot));
@@ -1041,7 +1042,7 @@ void* WorkingLoop(void* arguments)
                     {
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
-                        NetClose(cli_sock);
+                        NetClose(cli_ctx);
                         continue;
                     }
 
@@ -1053,7 +1054,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_am_i_root->hdr.len         = htole32(sizeof(DicPacketResAmIRoot));
                     pkt_res_am_i_root->am_i_root       = AmIRoot();
 
-                    NetWrite(cli_sock, pkt_res_am_i_root, le32toh(pkt_res_am_i_root->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_am_i_root, le32toh(pkt_res_am_i_root->hdr.len));
                     free(pkt_res_am_i_root);
                     continue;
                 default:
@@ -1063,7 +1064,7 @@ void* WorkingLoop(void* arguments)
                              256,
                              "Received unrecognized packet with type %d, skipping...",
                              pkt_hdr->packet_type);
-                    NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
+                    NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;

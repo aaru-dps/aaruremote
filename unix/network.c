@@ -16,6 +16,7 @@
  */
 
 #include "../dicmote.h"
+#include "../unix/unix.h"
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
@@ -52,19 +53,79 @@ int PrintNetworkAddresses()
     return 0;
 }
 
-char*   PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
-int32_t NetSocket(uint32_t domain, uint32_t type, uint32_t protocol) { return socket(domain, type, protocol); }
-int32_t NetBind(int32_t sockfd, struct sockaddr* addr, socklen_t addrlen) { return bind(sockfd, addr, addrlen); }
-int32_t NetListen(int32_t sockfd, uint32_t backlog) { return listen(sockfd, backlog); }
-int32_t NetAccept(int32_t sockfd, struct sockaddr* addr, socklen_t* addrlen) { return accept(sockfd, addr, addrlen); }
-int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags)
+char* PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
+
+void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 {
+    UnixNetworkContext* ctx;
+
+    ctx = malloc(sizeof(UnixNetworkContext));
+
+    if(!ctx) return NULL;
+
+    ctx->fd = socket(domain, type, protocol);
+
+    if(ctx->fd < 0)
+    {
+        free(ctx);
+        return NULL;
+    }
+
+    return ctx;
+}
+
+int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
+{
+    UnixNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    return bind(ctx->fd, addr, addrlen);
+}
+
+int32_t NetListen(void* net_ctx, uint32_t backlog)
+{
+    UnixNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    return listen(ctx->fd, backlog);
+}
+
+void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
+{
+    UnixNetworkContext* ctx = net_ctx;
+    UnixNetworkContext* cli_ctx;
+
+    if(!ctx) return NULL;
+
+    cli_ctx = malloc(sizeof(UnixNetworkContext));
+
+    if(!cli_ctx) return NULL;
+
+    cli_ctx->fd = accept(ctx->fd, addr, addrlen);
+
+    if(cli_ctx->fd < 0)
+    {
+        free(cli_ctx);
+        return NULL;
+    }
+
+    return cli_ctx;
+}
+
+int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
+{
+    UnixNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
     int32_t got_once;
     int32_t got_total = 0;
 
     while(len > 0)
     {
-        got_once = recv(sockfd, buf, len, flags);
+        got_once = recv(ctx->fd, buf, len, flags);
 
         if(got_once <= 0) break;
 
@@ -75,5 +136,24 @@ int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags)
 
     return got_total;
 }
-int32_t NetWrite(int32_t fd, const void* buf, int32_t size) { return write(fd, buf, size); }
-int32_t NetClose(int32_t fd) { return close(fd); }
+
+int32_t NetWrite(void* net_ctx, const void* buf, int32_t size)
+{
+    UnixNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    return write(ctx->fd, buf, size);
+}
+
+int32_t NetClose(void* net_ctx)
+{
+    int                 ret;
+    UnixNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    ret = close(ctx->fd);
+    free(ctx);
+    return ret;
+}

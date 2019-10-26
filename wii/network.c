@@ -16,6 +16,7 @@
  */
 
 #include "../dicmote.h"
+#include "wii.h"
 
 #include <network.h>
 #include <stdio.h>
@@ -37,22 +38,78 @@ int PrintNetworkAddresses()
     return 0;
 }
 
-char*   PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
-int32_t NetSocket(uint32_t domain, uint32_t type, uint32_t protocol) { return net_socket(domain, type, protocol); }
-int32_t NetBind(int32_t sockfd, struct sockaddr* addr, socklen_t addrlen) { return net_bind(sockfd, addr, addrlen); }
-int32_t NetListen(int32_t sockfd, uint32_t backlog) { return net_listen(sockfd, backlog); }
-int32_t NetAccept(int32_t sockfd, struct sockaddr* addr, socklen_t* addrlen)
+char* PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
+void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 {
-    return net_accept(sockfd, addr, addrlen);
+    WiiNetworkContext* ctx;
+
+    ctx = malloc(sizeof(UnixNetworkContext));
+
+    if(!ctx) return NULL;
+
+    ctx->fd = net_socket(domain, type, protocol);
+
+    if(ctx->fd < 0)
+    {
+        free(ctx);
+        return NULL;
+    }
+
+    ctx->fd = ret;
 }
-int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags)
+
+int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
 {
+    WiiNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    return net_bind(ctx->fd, addr, addrlen);
+}
+
+int32_t NetListen(void* net_ctx, uint32_t backlog)
+{
+    WiiNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    return net_listen(ctx->fd, backlog);
+}
+
+void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
+{
+    WiiNetworkContext* ctx = net_ctx;
+    WiiNetworkContext* cli_ctx;
+
+    if(!ctx) return NULL;
+
+    cli_ctx = malloc(sizeof(WiiNetworkContext));
+
+    if(!cli_ctx) return NULL;
+
+    cli_ctx->fd = net_accept(ctx->fd, addr, addrlen);
+
+    if(cli_ctx->fd < 0)
+    {
+        free(cli_ctx);
+        return NULL;
+    }
+
+    return cli_ctx;
+}
+
+int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
+{
+    WiiNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
     int32_t got_once;
     int32_t got_total = 0;
 
     while(len > 0)
     {
-        got_once = net_recv(sockfd, buf, len, flags);
+        got_once = net_recv(ctx->fd, buf, len, flags);
 
         if(got_once <= 0) break;
 
@@ -63,5 +120,24 @@ int32_t NetRecv(int32_t sockfd, void* buf, int32_t len, uint32_t flags)
 
     return got_total;
 }
-int32_t NetWrite(int32_t fd, const void* buf, int32_t size) { return net_write(fd, buf, size); }
-int32_t NetClose(int32_t fd) { return net_close(fd); }
+
+int32_t NetWrite(void* net_ctx, const void* buf, int32_t size)
+{
+    WiiNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    return net_write(ctx->fd, buf, size);
+}
+
+int32_t NetClose(void* net_ctx)
+{
+    int                ret;
+    WiiNetworkContext* ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    ret = net_close(ctx->fd);
+    free(ctx);
+    return ret;
+}

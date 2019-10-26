@@ -41,6 +41,11 @@ typedef struct
     s32 dev_type;
 } WiiDeviceContext;
 
+typedef struct
+{
+    s32 fd;
+} WiiNetworkContext;
+
 DeviceInfoList* WiiListDevices();
 
 #endif // DICREMOTE_WII_WII_H_
