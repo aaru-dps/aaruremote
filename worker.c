@@ -69,7 +69,7 @@ void* WorkingLoop(void* arguments)
     uint32_t                       sdhci_response[4];
     uint32_t                       sense;
     uint32_t                       sense_len;
-    uint64_t                       n;
+    uint32_t                       n;
     void*                          device_ctx = NULL;
     void*                          net_ctx    = NULL;
     void*                          cli_ctx    = NULL;
