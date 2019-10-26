@@ -41,27 +41,27 @@ void DeviceClose(void* device_ctx)
 #endif
 }
 
-int32_t GetDeviceType(const char* device_path)
+int32_t GetDeviceType(void* device_ctx)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxGetDeviceType(device_path);
+    return LinuxGetDeviceType(device_ctx);
 #else
     return DICMOTE_DEVICE_TYPE_UNKNOWN;
 #endif
 }
 
-int32_t GetSdhciRegisters(const char* device_path,
-                          char**      csd,
-                          char**      cid,
-                          char**      ocr,
-                          char**      scr,
-                          uint32_t*   csd_len,
-                          uint32_t*   cid_len,
-                          uint32_t*   ocr_len,
-                          uint32_t*   scr_len)
+int32_t GetSdhciRegisters(void*     device_ctx,
+                          char**    csd,
+                          char**    cid,
+                          char**    ocr,
+                          char**    scr,
+                          uint32_t* csd_len,
+                          uint32_t* cid_len,
+                          uint32_t* ocr_len,
+                          uint32_t* scr_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxGetSdhciRegisters(device_path, csd, cid, ocr, scr, csd_len, cid_len, ocr_len, scr_len);
+    return LinuxGetSdhciRegisters(device_ctx, csd, cid, ocr, scr, csd_len, cid_len, ocr_len, scr_len);
 #else
     return 0;
 #endif
