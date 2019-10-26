@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 90)
 
 set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c usb.c ieee1394.c pcmcia.c ata.c sdhci.c worker.c endian.h)
 
-add_library(dicremote ${MAIN_SOURCES})
+add_library(dicremotecore ${MAIN_SOURCES})
 
 CHECK_INCLUDE_FILES("endian.h" HAVE_ENDIAN_H)
 CHECK_INCLUDE_FILES("sys/endian.h" HAVE_SYS_ENDIAN_H)
