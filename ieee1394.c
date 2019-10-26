@@ -21,15 +21,15 @@
 #include "linux/linux.h"
 #endif
 
-uint8_t GetFireWireData(const char* device_path,
-                        uint32_t*   id_model,
-                        uint32_t*   id_vendor,
-                        uint64_t*   guid,
-                        char*       vendor,
-                        char*       model)
+uint8_t GetFireWireData(void*     device_ctx,
+                        uint32_t* id_model,
+                        uint32_t* id_vendor,
+                        uint64_t* guid,
+                        char*     vendor,
+                        char*     model)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxGetIeee1394Data(device_path, id_model, id_vendor, guid, vendor, model);
+    return LinuxGetIeee1394Data(device_ctx, id_model, id_vendor, guid, vendor, model);
 #else
     return 0;
 #endif
