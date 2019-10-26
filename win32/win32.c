@@ -15,12 +15,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE_WIN32_WIN32_H_
-#define DICREMOTE_WIN32_WIN32_H_
+#include "../dicmote.h"
 
-typedef struct
+void Initialize()
 {
-    SOCKET socket;
-} Win32NetworkContext;
+    // Do nothing
+}
 
-#endif // DICREMOTE_WIN32_WIN32_H_
+void PlatformLoop(DicPacketHello* pkt_server_hello) { WorkingLoop(pkt_server_hello); }
+
+uint8_t AmIRoot()
+{
+    // TODO: Check administrative privileges
+    return 0;
+}
