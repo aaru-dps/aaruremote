@@ -22,53 +22,8 @@
 
 int main()
 {
-    AtaErrorRegistersChs           ata_chs_error_regs;
-    AtaErrorRegistersLba28         ata_lba28_error_regs;
-    AtaErrorRegistersLba48         ata_lba48_error_regs;
-    char                           device_path[1024];
-    char*                          buffer;
-    char*                          cdb_buf;
-    char*                          cid;
-    char*                          csd;
-    char*                          in_buf;
-    char*                          ocr;
-    char*                          out_buf;
-    char*                          scr;
-    char*                          sense_buf;
-    DicPacketCmdAtaChs*            pkt_cmd_ata_chs;
-    DicPacketCmdAtaLba28*          pkt_cmd_ata_lba28;
-    DicPacketCmdAtaLba48*          pkt_cmd_ata_lba48;
-    DicPacketCmdOpen*              pkt_dev_open;
-    DicPacketCmdScsi*              pkt_cmd_scsi;
-    DicPacketCmdSdhci*             pkt_cmd_sdhci;
-    DicPacketHeader*               pkt_hdr;
     DicPacketHello*                pkt_server_hello;
-    DicPacketHello*                pkt_client_hello;
-    DicPacketNop*                  pkt_nop;
-    DicPacketResAtaChs*            pkt_res_ata_chs;
-    DicPacketResAtaLba28*          pkt_res_ata_lba28;
-    DicPacketResAtaLba48*          pkt_res_ata_lba48;
-    DicPacketResGetDeviceType*     pkt_dev_type;
-    DicPacketResGetFireWireData*   pkt_res_firewire;
-    DicPacketResGetPcmciaData*     pkt_res_pcmcia;
-    DicPacketResGetSdhciRegisters* pkt_res_sdhci_registers;
-    DicPacketResGetUsbData*        pkt_res_usb;
-    DicPacketResListDevs*          pkt_res_devinfo;
-    DicPacketResScsi*              pkt_res_scsi;
-    DicPacketResSdhci*             pkt_res_sdhci;
-    int                            device_fd = -1;
-    int                            skip_next_hdr;
-    int                            cli_sock, sock_fd;
     int                            ret;
-    socklen_t                      cli_len;
-    ssize_t                        recv_size;
-    struct DeviceInfoList*         device_info_list;
-    struct sockaddr_in             cli_addr, serv_addr;
-    uint32_t                       duration;
-    uint32_t                       sdhci_response[4];
-    uint32_t                       sense;
-    uint32_t                       sense_len;
-    uint64_t                       n;
 
     Initialize();
 
