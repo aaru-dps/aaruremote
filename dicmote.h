@@ -34,7 +34,8 @@
 #define DICMOTE_NAME "DiscImageChef Remote Server"
 #define DICMOTE_VERSION "0.99"
 #define DICMOTE_PORT 6666
-#define DICMOTE_PACKET_ID 0x6873678065677584 // "DICPACKT"
+#define DICMOTE_REMOTE_ID 0x52434944 // "DICR"
+#define DICMOTE_PACKET_ID 0x544B4350 // "PCKT"
 #define DICMOTE_PACKET_VERSION 1
 #define DICMOTE_PACKET_TYPE_NOP -1
 #define DICMOTE_PACKET_TYPE_HELLO 1
@@ -102,7 +103,8 @@
 
 typedef struct
 {
-    uint64_t id;
+    uint32_t remote_id;
+    uint32_t packet_id;
     uint32_t len;
     uint8_t  version;
     int8_t   packet_type;

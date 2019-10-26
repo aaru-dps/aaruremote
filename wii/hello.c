@@ -33,7 +33,8 @@ DicPacketHello* GetHello()
 
     memset(pkt_server_hello, 0, sizeof(DicPacketHello));
 
-    pkt_server_hello->hdr.id          = htole64(DICMOTE_PACKET_ID);
+    pkt_server_hello->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+    pkt_server_hello->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
     pkt_server_hello->hdr.len         = htole32(sizeof(DicPacketHello));
     pkt_server_hello->hdr.version     = DICMOTE_PACKET_VERSION;
     pkt_server_hello->hdr.packet_type = DICMOTE_PACKET_TYPE_HELLO;

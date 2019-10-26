@@ -120,7 +120,8 @@ void* WorkingLoop(void* arguments)
 
     memset(pkt_nop, 0, sizeof(DicPacketNop));
 
-    pkt_nop->hdr.id          = htole64(DICMOTE_PACKET_ID);
+    pkt_nop->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+    pkt_nop->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
     pkt_nop->hdr.len         = htole32(sizeof(DicPacketNop));
     pkt_nop->hdr.version     = DICMOTE_PACKET_VERSION;
     pkt_nop->hdr.packet_type = DICMOTE_PACKET_TYPE_NOP;
@@ -173,7 +174,7 @@ void* WorkingLoop(void* arguments)
             continue;
         }
 
-        if(pkt_hdr->id != htole64(DICMOTE_PACKET_ID))
+        if(pkt_hdr->remote_id != htole32(DICMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(DICMOTE_PACKET_ID))
         {
             printf("Received data is not a correct dicremote packet, closing connection...\n");
             free(pkt_hdr);
@@ -266,7 +267,7 @@ void* WorkingLoop(void* arguments)
                 break;
             }
 
-            if(pkt_hdr->id != htole64(DICMOTE_PACKET_ID))
+            if(pkt_hdr->remote_id != htole32(DICMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(DICMOTE_PACKET_ID))
             {
                 printf("Received data is not a correct dicremote packet, closing connection...\n");
                 NetClose(cli_sock);
@@ -328,7 +329,8 @@ void* WorkingLoop(void* arguments)
                     free(pkt_res_devinfo);
                     pkt_res_devinfo = (DicPacketResListDevs*)in_buf;
 
-                    pkt_res_devinfo->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_devinfo->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_devinfo->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
                     pkt_res_devinfo->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_devinfo->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
 
@@ -423,7 +425,8 @@ void* WorkingLoop(void* arguments)
                     pkt_dev_type->hdr.len         = htole32(sizeof(DicPacketResGetDeviceType));
                     pkt_dev_type->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE;
                     pkt_dev_type->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_dev_type->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_dev_type->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_dev_type->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
                     pkt_dev_type->device_type     = htole32(GetDeviceType(device_path));
 
                     NetWrite(cli_sock, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
@@ -492,7 +495,8 @@ void* WorkingLoop(void* arguments)
                     pkt_res_scsi->hdr.len = htole32(sizeof(DicPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len);
                     pkt_res_scsi->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SCSI;
                     pkt_res_scsi->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_scsi->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_scsi->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_scsi->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
 
                     pkt_res_scsi->sense_len = htole32(sense_len);
                     pkt_res_scsi->buf_len   = pkt_cmd_scsi->buf_len;
@@ -530,7 +534,8 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_sdhci_registers, 0, sizeof(DicPacketResGetSdhciRegisters));
-                    pkt_res_sdhci_registers->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_sdhci_registers->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_sdhci_registers->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
                     pkt_res_sdhci_registers->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_sdhci_registers->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
                     pkt_res_sdhci_registers->hdr.len         = htole32(sizeof(DicPacketResGetSdhciRegisters));
@@ -608,7 +613,8 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_usb, 0, sizeof(DicPacketResGetUsbData));
-                    pkt_res_usb->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_usb->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_usb->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
                     pkt_res_usb->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_usb->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
                     pkt_res_usb->hdr.len         = htole32(sizeof(DicPacketResGetUsbData));
@@ -653,7 +659,8 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_firewire, 0, sizeof(DicPacketResGetFireWireData));
-                    pkt_res_firewire->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_firewire->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_firewire->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
                     pkt_res_firewire->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_firewire->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA;
                     pkt_res_firewire->hdr.len         = htole32(sizeof(DicPacketResGetFireWireData));
@@ -694,7 +701,8 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_pcmcia, 0, sizeof(DicPacketResGetPcmciaData));
-                    pkt_res_pcmcia->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_pcmcia->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_pcmcia->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
                     pkt_res_pcmcia->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_pcmcia->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA;
                     pkt_res_pcmcia->hdr.len         = htole32(sizeof(DicPacketResGetPcmciaData));
@@ -765,7 +773,8 @@ void* WorkingLoop(void* arguments)
                     pkt_res_ata_chs->hdr.len = htole32(sizeof(DicPacketResAtaChs) + htole32(pkt_cmd_ata_chs->buf_len));
                     pkt_res_ata_chs->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS;
                     pkt_res_ata_chs->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_chs->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_ata_chs->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_ata_chs->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
 
                     pkt_res_ata_chs->registers = ata_chs_error_regs;
                     pkt_res_ata_chs->buf_len   = pkt_cmd_ata_chs->buf_len;
@@ -837,7 +846,8 @@ void* WorkingLoop(void* arguments)
                         htole32(sizeof(DicPacketResAtaLba28) + le32toh(pkt_cmd_ata_lba28->buf_len));
                     pkt_res_ata_lba28->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_28;
                     pkt_res_ata_lba28->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_lba28->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_ata_lba28->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_ata_lba28->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
 
                     pkt_res_ata_lba28->registers = ata_lba28_error_regs;
                     pkt_res_ata_lba28->buf_len   = pkt_cmd_ata_lba28->buf_len;
@@ -914,7 +924,8 @@ void* WorkingLoop(void* arguments)
                         htole32(sizeof(DicPacketResAtaLba48) + le32toh(pkt_cmd_ata_lba48->buf_len));
                     pkt_res_ata_lba48->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_48;
                     pkt_res_ata_lba48->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_lba48->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_ata_lba48->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_ata_lba48->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
 
                     // Swapping
                     ata_lba48_error_regs.lba_high     = htole16(ata_lba48_error_regs.lba_high);
@@ -990,7 +1001,8 @@ void* WorkingLoop(void* arguments)
                     pkt_res_sdhci->hdr.len = htole32(sizeof(DicPacketResSdhci) + le32toh(pkt_cmd_sdhci->buf_len));
                     pkt_res_sdhci->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SDHCI;
                     pkt_res_sdhci->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_sdhci->hdr.id          = htole64(DICMOTE_PACKET_ID);
+                    pkt_res_sdhci->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_sdhci->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
 
                     sdhci_response[0] = htole32(sdhci_response[0]);
                     sdhci_response[1] = htole32(sdhci_response[1]);
