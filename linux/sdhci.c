@@ -15,14 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdint.h>
+#include "linux.h"
+#include "mmc/ioctl.h"
 
 #include <errno.h>
-#include "mmc/ioctl.h"
+#include <stdint.h>
 #include <string.h>
 #include <sys/ioctl.h>
 
-int32_t LinuxSendSdhciCommand(int       device_fd,
+int32_t LinuxSendSdhciCommand(void*     device_ctx,
                               uint8_t   command,
                               uint8_t   write,
                               uint8_t   application,
@@ -36,10 +37,13 @@ int32_t LinuxSendSdhciCommand(int       device_fd,
                               uint32_t* duration,
                               uint32_t* sense)
 {
-    struct mmc_ioc_cmd mmc_ioc_cmd;
-    int32_t            error;
+    LinuxDeviceContext* ctx = device_ctx;
+    struct mmc_ioc_cmd  mmc_ioc_cmd;
+    int32_t             error;
     *duration = 0;
     *sense    = 0;
+
+    if(!ctx) return -1;
 
     memset(response, 0, sizeof(uint32_t) * 4);
     memset(&mmc_ioc_cmd, 0, sizeof(struct mmc_ioc_cmd));
@@ -59,7 +63,7 @@ int32_t LinuxSendSdhciCommand(int       device_fd,
     mmc_ioc_cmd.data_ptr = (uint64_t)buffer;
 
     // TODO: Timing
-    error = ioctl(device_fd, MMC_IOC_CMD, &mmc_ioc_cmd);
+    error = ioctl(ctx->fd, MMC_IOC_CMD, &mmc_ioc_cmd);
 
     if(error < 0) error = errno;
 

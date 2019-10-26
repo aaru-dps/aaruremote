@@ -21,10 +21,10 @@
 #include "linux/linux.h"
 #endif
 
-uint8_t GetPcmciaData(const char* device_path, uint16_t* cis_len, char* cis)
+uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxGetPcmciaData(device_path, cis_len, cis);
+    return LinuxGetPcmciaData(device_ctx, cis_len, cis);
 #else
     return 0;
 #endif

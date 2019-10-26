@@ -35,6 +35,12 @@
 #define DICREMOTE_WII_DEVICE_PATH_GCMM_A "/dev/gcmm/slota"
 #define DICREMOTE_WII_DEVICE_PATH_GCMM_B "/dev/gcmm/slotb"
 
+typedef struct
+{
+    s32 ios_fd;
+    s32 dev_type;
+} WiiDeviceContext;
+
 DeviceInfoList* WiiListDevices();
 
 #endif // DICREMOTE_WII_WII_H_

@@ -24,12 +24,12 @@
 
 DeviceInfoList* LinuxListDevices();
 
-int  LinuxOpenDevice(const char* device_path);
-void LinuxCloseDevice(int device_fd);
+void* LinuxOpenDevice(const char* device_path);
+void  LinuxCloseDevice(void* device_ctx);
 
-int32_t LinuxGetDeviceType(const char* device_path);
+int32_t LinuxGetDeviceType(void* device_ctx);
 
-int32_t LinuxSendScsiCommand(int       device_fd,
+int32_t LinuxSendScsiCommand(void*     device_ctx,
                              char*     cdb,
                              char*     buffer,
                              char**    sense_buffer,
@@ -41,35 +41,35 @@ int32_t LinuxSendScsiCommand(int       device_fd,
                              uint32_t* buf_len,
                              uint32_t* sense_len);
 
-int32_t LinuxGetSdhciRegisters(const char* device_path,
-                               char**      csd,
-                               char**      cid,
-                               char**      ocr,
-                               char**      scr,
-                               uint32_t*   csd_len,
-                               uint32_t*   cid_len,
-                               uint32_t*   ocr_len,
-                               uint32_t*   scr_len);
+int32_t LinuxGetSdhciRegisters(void*     device_ctx,
+                               char**    csd,
+                               char**    cid,
+                               char**    ocr,
+                               char**    scr,
+                               uint32_t* csd_len,
+                               uint32_t* cid_len,
+                               uint32_t* ocr_len,
+                               uint32_t* scr_len);
 
-uint8_t LinuxGetUsbData(const char* device_path,
-                        uint16_t*   desc_len,
-                        char*       descriptors,
-                        uint16_t*   id_vendor,
-                        uint16_t*   id_product,
-                        char*       manufacturer,
-                        char*       product,
-                        char*       serial);
+uint8_t LinuxGetUsbData(void*     device_ctx,
+                        uint16_t* desc_len,
+                        char*     descriptors,
+                        uint16_t* id_vendor,
+                        uint16_t* id_product,
+                        char*     manufacturer,
+                        char*     product,
+                        char*     serial);
 
-uint8_t LinuxGetIeee1394Data(const char* device_path,
-                             uint32_t*   id_model,
-                             uint32_t*   id_vendor,
-                             uint64_t*   guid,
-                             char*       vendor,
-                             char*       model);
+uint8_t LinuxGetIeee1394Data(void*     device_ctx,
+                             uint32_t* id_model,
+                             uint32_t* id_vendor,
+                             uint64_t* guid,
+                             char*     vendor,
+                             char*     model);
 
-uint8_t LinuxGetPcmciaData(const char* device_path, uint16_t* cis_len, char* cis);
+uint8_t LinuxGetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis);
 
-int32_t LinuxSendAtaChsCommand(int                   device_fd,
+int32_t LinuxSendAtaChsCommand(void*                 device_ctx,
                                AtaRegistersChs       registers,
                                AtaErrorRegistersChs* error_registers,
                                uint8_t               protocol,
@@ -81,7 +81,7 @@ int32_t LinuxSendAtaChsCommand(int                   device_fd,
                                uint32_t*             sense,
                                uint32_t*             buf_len);
 
-int32_t LinuxSendAtaLba28Command(int                     device_fd,
+int32_t LinuxSendAtaLba28Command(void*                   device_ctx,
                                  AtaRegistersLba28       registers,
                                  AtaErrorRegistersLba28* error_registers,
                                  uint8_t                 protocol,
@@ -93,7 +93,7 @@ int32_t LinuxSendAtaLba28Command(int                     device_fd,
                                  uint32_t*               sense,
                                  uint32_t*               buf_len);
 
-int32_t LinuxSendAtaLba48Command(int                     device_fd,
+int32_t LinuxSendAtaLba48Command(void*                   device_ctx,
                                  AtaRegistersLba48       registers,
                                  AtaErrorRegistersLba48* error_registers,
                                  uint8_t                 protocol,
@@ -105,7 +105,7 @@ int32_t LinuxSendAtaLba48Command(int                     device_fd,
                                  uint32_t*               sense,
                                  uint32_t*               buf_len);
 
-int32_t LinuxSendSdhciCommand(int       device_fd,
+int32_t LinuxSendSdhciCommand(void*     device_ctx,
                               uint8_t   command,
                               uint8_t   write,
                               uint8_t   application,
@@ -118,5 +118,11 @@ int32_t LinuxSendSdhciCommand(int       device_fd,
                               uint32_t* response,
                               uint32_t* duration,
                               uint32_t* sense);
+
+typedef struct
+{
+    int  fd;
+    char device_path[4096];
+} LinuxDeviceContext;
 
 #endif // DICREMOTE_LINUX_LINUX_H_

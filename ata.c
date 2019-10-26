@@ -21,7 +21,7 @@
 #include "linux/linux.h"
 #endif
 
-int32_t SendAtaChsCommand(int                   device_fd,
+int32_t SendAtaChsCommand(void*                 device_ctx,
                           AtaRegistersChs       registers,
                           AtaErrorRegistersChs* error_registers,
                           uint8_t               protocol,
@@ -34,7 +34,7 @@ int32_t SendAtaChsCommand(int                   device_fd,
                           uint32_t*             buf_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxSendAtaChsCommand(device_fd,
+    return LinuxSendAtaChsCommand(device_ctx,
                                   registers,
                                   error_registers,
                                   protocol,
@@ -50,7 +50,7 @@ int32_t SendAtaChsCommand(int                   device_fd,
 #endif
 }
 
-int32_t SendAtaLba28Command(int                     device_fd,
+int32_t SendAtaLba28Command(void*                   device_ctx,
                             AtaRegistersLba28       registers,
                             AtaErrorRegistersLba28* error_registers,
                             uint8_t                 protocol,
@@ -63,7 +63,7 @@ int32_t SendAtaLba28Command(int                     device_fd,
                             uint32_t*               buf_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxSendAtaLba28Command(device_fd,
+    return LinuxSendAtaLba28Command(device_ctx,
                                     registers,
                                     error_registers,
                                     protocol,
@@ -79,7 +79,7 @@ int32_t SendAtaLba28Command(int                     device_fd,
 #endif
 }
 
-int32_t SendAtaLba48Command(int                     device_fd,
+int32_t SendAtaLba48Command(void*                   device_ctx,
                             AtaRegistersLba48       registers,
                             AtaErrorRegistersLba48* error_registers,
                             uint8_t                 protocol,
@@ -92,7 +92,7 @@ int32_t SendAtaLba48Command(int                     device_fd,
                             uint32_t*               buf_len)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxSendAtaLba48Command(device_fd,
+    return LinuxSendAtaLba48Command(device_ctx,
                                     registers,
                                     error_registers,
                                     protocol,

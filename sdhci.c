@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 
-int32_t SendSdhciCommand(int       device_fd,
+int32_t SendSdhciCommand(void*     device_ctx,
                          uint8_t   command,
                          uint8_t   write,
                          uint8_t   application,
@@ -37,7 +37,7 @@ int32_t SendSdhciCommand(int       device_fd,
                          uint32_t* sense)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxSendSdhciCommand(device_fd,
+    return LinuxSendSdhciCommand(device_ctx,
                                  command,
                                  write,
                                  application,

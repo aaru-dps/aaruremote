@@ -28,21 +28,48 @@
 #include <libudev.h>
 #endif
 
-int LinuxOpenDevice(const char* device_path)
+void* LinuxOpenDevice(const char* device_path)
 {
-    int fd;
+    LinuxDeviceContext* ctx;
 
-    fd = open(device_path, O_RDWR | O_NONBLOCK | O_CREAT);
+    ctx = malloc(sizeof(LinuxDeviceContext));
 
-    if((fd < 0) && (errno == EACCES || errno == EROFS)) { fd = open(device_path, O_RDONLY | O_NONBLOCK); }
+    if(!ctx) return NULL;
 
-    return fd;
+    memset(ctx, 0, sizeof(LinuxDeviceContext));
+
+    ctx->fd = open(device_path, O_RDWR | O_NONBLOCK | O_CREAT);
+
+    if((ctx->fd < 0) && (errno == EACCES || errno == EROFS)) { ctx->fd = open(device_path, O_RDONLY | O_NONBLOCK); }
+
+    if(ctx->fd <= 0)
+    {
+        free(ctx);
+        return NULL;
+    }
+
+    strncpy(ctx->device_path, device_path, 4096);
+
+    return ctx;
 }
 
-void LinuxCloseDevice(int device_fd) { close(device_fd); }
-
-int32_t LinuxGetDeviceType(const char* device_path)
+void LinuxCloseDevice(void* device_ctx)
 {
+    LinuxDeviceContext* ctx = device_ctx;
+
+    if(!ctx) return;
+
+    close(ctx->fd);
+
+    free(ctx);
+}
+
+int32_t LinuxGetDeviceType(void* device_ctx)
+{
+    LinuxDeviceContext* ctx = device_ctx;
+
+    if(!ctx) return -1;
+
 #ifdef HAS_UDEV
     struct udev*        udev;
     struct udev_device* udev_device;
@@ -54,7 +81,7 @@ int32_t LinuxGetDeviceType(const char* device_path)
 
     if(!udev) return DICMOTE_DEVICE_TYPE_UNKNOWN;
 
-    chrptr = strrchr(device_path, '/');
+    chrptr = strrchr(ctx->device_path, '/');
     if(chrptr == 0) return DICMOTE_DEVICE_TYPE_UNKNOWN;
 
     chrptr++;
@@ -140,13 +167,13 @@ int32_t LinuxGetDeviceType(const char* device_path)
     FILE*       file;
     size_t      len = 4096;
 
-    if(strlen(device_path) <= 5) return dev_type;
+    if(strlen(ctx->device_path) <= 5) return dev_type;
 
-    if(strstr(device_path, "nvme")) return DICMOTE_DEVICE_TYPE_NVME;
+    if(strstr(ctx->device_path, "nvme")) return DICMOTE_DEVICE_TYPE_NVME;
 
-    dev_name = device_path + 5;
+    dev_name = ctx->device_path + 5;
 
-    if(strstr(device_path, "mmcblk"))
+    if(strstr(ctx->device_path, "mmcblk"))
     {
         dev_type = DICMOTE_DEVICE_TYPE_MMC;
 
@@ -293,23 +320,24 @@ int32_t LinuxGetDeviceType(const char* device_path)
 #endif
 }
 
-int32_t LinuxGetSdhciRegisters(const char* device_path,
-                               char**      csd,
-                               char**      cid,
-                               char**      ocr,
-                               char**      scr,
-                               uint32_t*   csd_len,
-                               uint32_t*   cid_len,
-                               uint32_t*   ocr_len,
-                               uint32_t*   scr_len)
+int32_t LinuxGetSdhciRegisters(void*     device_ctx,
+                               char**    csd,
+                               char**    cid,
+                               char**    ocr,
+                               char**    scr,
+                               uint32_t* csd_len,
+                               uint32_t* cid_len,
+                               uint32_t* ocr_len,
+                               uint32_t* scr_len)
 {
-    char*  tmp_string;
-    char*  sysfs_path_csd;
-    char*  sysfs_path_cid;
-    char*  sysfs_path_scr;
-    char*  sysfs_path_ocr;
-    size_t len;
-    FILE*  file;
+    LinuxDeviceContext* ctx = device_ctx;
+    char*               tmp_string;
+    char*               sysfs_path_csd;
+    char*               sysfs_path_cid;
+    char*               sysfs_path_scr;
+    char*               sysfs_path_ocr;
+    size_t              len;
+    FILE*               file;
     *csd     = NULL;
     *cid     = NULL;
     *ocr     = NULL;
@@ -320,9 +348,11 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
     *scr_len = 0;
     size_t n = 1026;
 
-    if(strncmp(device_path, "/dev/mmcblk", 11) != 0) return 0;
+    if(!ctx) return -1;
 
-    len            = strlen(device_path) + 19;
+    if(strncmp(ctx->device_path, "/dev/mmcblk", 11) != 0) return 0;
+
+    len            = strlen(ctx->device_path) + 19;
     sysfs_path_csd = malloc(len);
     sysfs_path_cid = malloc(len);
     sysfs_path_scr = malloc(len);
@@ -343,9 +373,9 @@ int32_t LinuxGetSdhciRegisters(const char* device_path,
     memset(sysfs_path_cid, 0, len);
     memset(sysfs_path_scr, 0, len);
     memset(sysfs_path_ocr, 0, len);
-    memset(tmp_string, 0, strlen(device_path) - 5);
+    memset(tmp_string, 0, strlen(ctx->device_path) - 5);
 
-    memcpy(tmp_string, device_path + 5, strlen(device_path) - 5);
+    memcpy(tmp_string, ctx->device_path + 5, strlen(ctx->device_path) - 5);
     snprintf(sysfs_path_csd, len, "/sys/block/%s/device/csd", tmp_string);
     snprintf(sysfs_path_cid, len, "/sys/block/%s/device/cid", tmp_string);
     snprintf(sysfs_path_scr, len, "/sys/block/%s/device/scr", tmp_string);

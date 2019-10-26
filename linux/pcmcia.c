@@ -15,6 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "linux.h"
+
 #include <dirent.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -22,27 +24,30 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-uint8_t LinuxGetPcmciaData(const char* device_path, uint16_t* cis_len, char* cis)
+uint8_t LinuxGetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
 {
-    char*          dev_path;
-    char           tmp_path[4096];
-    char           resolved_link[4096];
-    struct stat    sb;
-    ssize_t        len;
-    char*          rchr;
-    FILE*          file;
-    DIR*           dir;
-    struct dirent* dent;
+    LinuxDeviceContext* ctx = device_ctx;
+    char*               dev_path;
+    char                tmp_path[4096];
+    char                resolved_link[4096];
+    struct stat         sb;
+    ssize_t             len;
+    char*               rchr;
+    FILE*               file;
+    DIR*                dir;
+    struct dirent*      dent;
     *cis_len = 0;
+
+    if(!ctx) return 0;
 
     memset(tmp_path, 0, 4096);
     memset(resolved_link, 0, 4096);
 
-    if(strncmp(device_path, "/dev/sd", 7) != 0 && strncmp(device_path, "/dev/sr", 7) != 0 &&
-       strncmp(device_path, "/dev/st", 7) != 0)
+    if(strncmp(ctx->device_path, "/dev/sd", 7) != 0 && strncmp(ctx->device_path, "/dev/sr", 7) != 0 &&
+       strncmp(ctx->device_path, "/dev/st", 7) != 0)
         return 0;
 
-    dev_path = (char*)device_path + 5;
+    dev_path = (char*)ctx->device_path + 5;
 
     snprintf(tmp_path, 4096, "/sys/block/%s", dev_path);
 

@@ -16,6 +16,7 @@
  */
 
 #include "../dicmote.h"
+#include "linux.h"
 
 #include <malloc.h>
 #include <scsi/sg.h>
@@ -23,7 +24,7 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
-int32_t LinuxSendScsiCommand(int       device_fd,
+int32_t LinuxSendScsiCommand(void*     device_ctx,
                              char*     cdb,
                              char*     buffer,
                              char**    sense_buffer,
@@ -35,9 +36,12 @@ int32_t LinuxSendScsiCommand(int       device_fd,
                              uint32_t* buf_len,
                              uint32_t* sense_len)
 {
-    sg_io_hdr_t hdr;
-    int         dir, ret;
+    LinuxDeviceContext* ctx = device_ctx;
+    sg_io_hdr_t         hdr;
+    int                 dir, ret;
     *sense_len = 32;
+
+    if(!ctx) return -1;
 
     memset(&hdr, 0, sizeof(sg_io_hdr_t));
     *sense_buffer = malloc(*sense_len);
@@ -65,7 +69,7 @@ int32_t LinuxSendScsiCommand(int       device_fd,
     hdr.timeout         = timeout;
     hdr.flags           = SG_FLAG_DIRECT_IO;
 
-    ret = ioctl(device_fd, SG_IO, &hdr);
+    ret = ioctl(ctx->fd, SG_IO, &hdr);
 
     *sense = (hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK;
     // TODO: Manual timing if duration is 0

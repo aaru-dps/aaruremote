@@ -28,7 +28,6 @@ void* WorkingLoop(void* arguments)
     AtaErrorRegistersChs           ata_chs_error_regs;
     AtaErrorRegistersLba28         ata_lba28_error_regs;
     AtaErrorRegistersLba48         ata_lba48_error_regs;
-    char                           device_path[1024];
     char*                          buffer;
     char*                          cdb_buf;
     char*                          cid;
@@ -59,7 +58,6 @@ void* WorkingLoop(void* arguments)
     DicPacketResListDevs*          pkt_res_devinfo;
     DicPacketResScsi*              pkt_res_scsi;
     DicPacketResSdhci*             pkt_res_sdhci;
-    int                            device_fd = -1;
     int                            skip_next_hdr;
     int                            cli_sock, sock_fd;
     int                            ret;
@@ -72,6 +70,7 @@ void* WorkingLoop(void* arguments)
     uint32_t                       sense;
     uint32_t                       sense_len;
     uint64_t                       n;
+    void*                          device_ctx = NULL;
 
     if(!arguments)
     {
@@ -382,16 +381,13 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_sock, pkt_dev_open, le32toh(pkt_hdr->len), 0);
 
-                    device_fd = DeviceOpen(pkt_dev_open->device_path);
+                    device_ctx = DeviceOpen(pkt_dev_open->device_path);
 
                     pkt_nop->reason_code =
-                        device_fd == -1 ? DICMOTE_PACKET_NOP_REASON_OPEN_ERROR : DICMOTE_PACKET_NOP_REASON_OPEN_OK;
+                        device_ctx == NULL ? DICMOTE_PACKET_NOP_REASON_OPEN_ERROR : DICMOTE_PACKET_NOP_REASON_OPEN_OK;
                     pkt_nop->error_no = errno;
                     memset(&pkt_nop->reason, 0, 256);
                     NetWrite(cli_sock, pkt_nop, sizeof(DicPacketNop));
-
-                    if(pkt_nop->reason_code == DICMOTE_PACKET_NOP_REASON_OPEN_OK)
-                        strncpy(device_path, pkt_dev_open->device_path, 1024);
 
                     free(pkt_dev_open);
                     continue;
@@ -427,7 +423,7 @@ void* WorkingLoop(void* arguments)
                     pkt_dev_type->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_dev_type->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
                     pkt_dev_type->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
-                    pkt_dev_type->device_type     = htole32(GetDeviceType(device_path));
+                    pkt_dev_type->device_type     = htole32(GetDeviceType(device_ctx));
 
                     NetWrite(cli_sock, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
                     free(pkt_dev_type);
@@ -462,7 +458,7 @@ void* WorkingLoop(void* arguments)
                     // Swap buf_len
                     pkt_cmd_scsi->buf_len = le32toh(pkt_cmd_scsi->buf_len);
 
-                    ret = SendScsiCommand(device_fd,
+                    ret = SendScsiCommand(device_ctx,
                                           cdb_buf,
                                           buffer,
                                           &sense_buf,
@@ -539,7 +535,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_sdhci_registers->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_sdhci_registers->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
                     pkt_res_sdhci_registers->hdr.len         = htole32(sizeof(DicPacketResGetSdhciRegisters));
-                    pkt_res_sdhci_registers->is_sdhci        = GetSdhciRegisters(device_path,
+                    pkt_res_sdhci_registers->is_sdhci        = GetSdhciRegisters(device_ctx,
                                                                           &csd,
                                                                           &cid,
                                                                           &ocr,
@@ -618,7 +614,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_usb->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_usb->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
                     pkt_res_usb->hdr.len         = htole32(sizeof(DicPacketResGetUsbData));
-                    pkt_res_usb->is_usb          = GetUsbData(device_path,
+                    pkt_res_usb->is_usb          = GetUsbData(device_ctx,
                                                      &pkt_res_usb->desc_len,
                                                      pkt_res_usb->descriptors,
                                                      &pkt_res_usb->id_vendor,
@@ -664,7 +660,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_firewire->hdr.version     = DICMOTE_PACKET_VERSION;
                     pkt_res_firewire->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA;
                     pkt_res_firewire->hdr.len         = htole32(sizeof(DicPacketResGetFireWireData));
-                    pkt_res_firewire->is_firewire     = GetFireWireData(device_path,
+                    pkt_res_firewire->is_firewire     = GetFireWireData(device_ctx,
                                                                     &pkt_res_firewire->id_model,
                                                                     &pkt_res_firewire->id_vendor,
                                                                     &pkt_res_firewire->guid,
@@ -707,7 +703,7 @@ void* WorkingLoop(void* arguments)
                     pkt_res_pcmcia->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA;
                     pkt_res_pcmcia->hdr.len         = htole32(sizeof(DicPacketResGetPcmciaData));
                     pkt_res_pcmcia->is_pcmcia =
-                        GetPcmciaData(device_path, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
+                        GetPcmciaData(device_ctx, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
 
                     pkt_res_pcmcia->cis_len = htole32(pkt_res_pcmcia->cis_len);
 
@@ -742,7 +738,7 @@ void* WorkingLoop(void* arguments)
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendAtaChsCommand(device_fd,
+                    ret      = SendAtaChsCommand(device_ctx,
                                             pkt_cmd_ata_chs->registers,
                                             &ata_chs_error_regs,
                                             pkt_cmd_ata_chs->protocol,
@@ -814,7 +810,7 @@ void* WorkingLoop(void* arguments)
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendAtaLba28Command(device_fd,
+                    ret      = SendAtaLba28Command(device_ctx,
                                               pkt_cmd_ata_lba28->registers,
                                               &ata_lba28_error_regs,
                                               pkt_cmd_ata_lba28->protocol,
@@ -892,7 +888,7 @@ void* WorkingLoop(void* arguments)
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendAtaLba48Command(device_fd,
+                    ret      = SendAtaLba48Command(device_ctx,
                                               pkt_cmd_ata_lba48->registers,
                                               &ata_lba48_error_regs,
                                               pkt_cmd_ata_lba48->protocol,
@@ -969,7 +965,7 @@ void* WorkingLoop(void* arguments)
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendSdhciCommand(device_fd,
+                    ret      = SendSdhciCommand(device_ctx,
                                            pkt_cmd_sdhci->command,
                                            pkt_cmd_sdhci->write,
                                            pkt_cmd_sdhci->application,
@@ -1020,7 +1016,8 @@ void* WorkingLoop(void* arguments)
                     free(pkt_res_sdhci);
                     continue;
                 case DICMOTE_PACKET_TYPE_COMMAND_CLOSE_DEVICE:
-                    DeviceClose(device_fd);
+                    DeviceClose(device_ctx);
+                    device_ctx    = NULL;
                     skip_next_hdr = 1;
                     continue;
                 default:

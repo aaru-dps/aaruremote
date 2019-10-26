@@ -429,10 +429,10 @@ typedef struct
 DeviceInfoList* ListDevices();
 void            FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t        DeviceInfoListCount(DeviceInfoList* start);
-int             DeviceOpen(const char* device_path);
-void            DeviceClose(int device_fd);
-int32_t         GetDeviceType(const char* device_path);
-int32_t         SendScsiCommand(int       device_fd,
+void*           DeviceOpen(const char* device_path);
+void            DeviceClose(void* device_ctx);
+int32_t         GetDeviceType(void* device_ctx);
+int32_t         SendScsiCommand(void*     device_ctx,
                                 char*     cdb,
                                 char*     buffer,
                                 char**    sense_buffer,
@@ -445,31 +445,31 @@ int32_t         SendScsiCommand(int       device_fd,
                                 uint32_t* sense_len);
 int             Hexchr2Bin(const char hex, char* out);
 size_t          Hexs2Bin(const char* hex, unsigned char** out);
-int32_t         GetSdhciRegisters(const char* device_path,
-                                  char**      csd,
-                                  char**      cid,
-                                  char**      ocr,
-                                  char**      scr,
-                                  uint32_t*   csd_len,
-                                  uint32_t*   cid_len,
-                                  uint32_t*   ocr_len,
-                                  uint32_t*   scr_len);
-uint8_t         GetUsbData(const char* device_path,
-                           uint16_t*   desc_len,
-                           char*       descriptors,
-                           uint16_t*   id_vendor,
-                           uint16_t*   id_product,
-                           char*       manufacturer,
-                           char*       product,
-                           char*       serial);
-uint8_t         GetFireWireData(const char* device_path,
-                                uint32_t*   id_model,
-                                uint32_t*   id_vendor,
-                                uint64_t*   guid,
-                                char*       vendor,
-                                char*       model);
-uint8_t         GetPcmciaData(const char* device_path, uint16_t* cis_len, char* cis);
-int32_t         SendAtaChsCommand(int                   device_fd,
+int32_t         GetSdhciRegisters(void*     device_ctx,
+                                  char**    csd,
+                                  char**    cid,
+                                  char**    ocr,
+                                  char**    scr,
+                                  uint32_t* csd_len,
+                                  uint32_t* cid_len,
+                                  uint32_t* ocr_len,
+                                  uint32_t* scr_len);
+uint8_t         GetUsbData(void*     device_ctx,
+                           uint16_t* desc_len,
+                           char*     descriptors,
+                           uint16_t* id_vendor,
+                           uint16_t* id_product,
+                           char*     manufacturer,
+                           char*     product,
+                           char*     serial);
+uint8_t         GetFireWireData(void*     device_ctx,
+                                uint32_t* id_model,
+                                uint32_t* id_vendor,
+                                uint64_t* guid,
+                                char*     vendor,
+                                char*     model);
+uint8_t         GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis);
+int32_t         SendAtaChsCommand(void*                 device_ctx,
                                   AtaRegistersChs       registers,
                                   AtaErrorRegistersChs* error_registers,
                                   uint8_t               protocol,
@@ -480,7 +480,7 @@ int32_t         SendAtaChsCommand(int                   device_fd,
                                   uint32_t*             duration,
                                   uint32_t*             sense,
                                   uint32_t*             buf_len);
-int32_t         SendAtaLba28Command(int                     device_fd,
+int32_t         SendAtaLba28Command(void*                   device_ctx,
                                     AtaRegistersLba28       registers,
                                     AtaErrorRegistersLba28* error_registers,
                                     uint8_t                 protocol,
@@ -491,7 +491,7 @@ int32_t         SendAtaLba28Command(int                     device_fd,
                                     uint32_t*               duration,
                                     uint32_t*               sense,
                                     uint32_t*               buf_len);
-int32_t         SendAtaLba48Command(int                     device_fd,
+int32_t         SendAtaLba48Command(void*                   device_ctx,
                                     AtaRegistersLba48       registers,
                                     AtaErrorRegistersLba48* error_registers,
                                     uint8_t                 protocol,
@@ -502,7 +502,7 @@ int32_t         SendAtaLba48Command(int                     device_fd,
                                     uint32_t*               duration,
                                     uint32_t*               sense,
                                     uint32_t*               buf_len);
-int32_t         SendSdhciCommand(int       device_fd,
+int32_t         SendSdhciCommand(void*     device_ctx,
                                  uint8_t   command,
                                  uint8_t   write,
                                  uint8_t   application,

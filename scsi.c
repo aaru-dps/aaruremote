@@ -21,7 +21,7 @@
 
 #include <stdint.h>
 
-int32_t SendScsiCommand(int       device_fd,
+int32_t SendScsiCommand(void*     device_ctx,
                         char*     cdb,
                         char*     buffer,
                         char**    sense_buffer,
@@ -35,7 +35,7 @@ int32_t SendScsiCommand(int       device_fd,
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxSendScsiCommand(
-        device_fd, cdb, buffer, sense_buffer, timeout, direction, duration, sense, cdb_len, buf_len, sense_len);
+        device_ctx, cdb, buffer, sense_buffer, timeout, direction, duration, sense, cdb_len, buf_len, sense_len);
 #else
     return -1;
 #endif

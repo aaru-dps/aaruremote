@@ -23,7 +23,7 @@
 
 #include <stdint.h>
 
-int DeviceOpen(const char* device_path)
+void* DeviceOpen(const char* device_path)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxOpenDevice(device_path);
@@ -32,10 +32,10 @@ int DeviceOpen(const char* device_path)
 #endif
 }
 
-void DeviceClose(int device_fd)
+void DeviceClose(void* device_ctx)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxCloseDevice(device_fd);
+    return LinuxCloseDevice(device_ctx);
 #else
     return -1;
 #endif
