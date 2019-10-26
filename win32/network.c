@@ -23,8 +23,6 @@
 #include <stdlib.h>
 #include <winsock2.h>
 
-#pragma comment(lib, "IPHLPAPI.lib")
-
 int PrintNetworkAddresses()
 {
     ULONG                       ret;
