@@ -63,3 +63,5 @@ void PlatformLoop(DicPacketHello* pkt_server_hello)
         if(buttonsDown & WPAD_BUTTON_HOME) { return; }
     }
 }
+
+uint8_t AmIRoot() { return 1; }

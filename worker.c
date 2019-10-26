@@ -47,6 +47,7 @@ void* WorkingLoop(void* arguments)
     DicPacketHello*                pkt_server_hello;
     DicPacketHello*                pkt_client_hello;
     DicPacketNop*                  pkt_nop;
+    DicPacketResAmIRoot*           pkt_res_am_i_root;
     DicPacketResAtaChs*            pkt_res_ata_chs;
     DicPacketResAtaLba28*          pkt_res_ata_lba28;
     DicPacketResAtaLba48*          pkt_res_ata_lba48;
@@ -1019,6 +1020,41 @@ void* WorkingLoop(void* arguments)
                     DeviceClose(device_ctx);
                     device_ctx    = NULL;
                     skip_next_hdr = 1;
+                    continue;
+                case DICMOTE_PACKET_TYPE_COMMAND_AM_I_ROOT:
+                    // Packet only contains header so, dummy
+                    in_buf = malloc(le32toh(pkt_hdr->len));
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        NetClose(cli_sock);
+                        continue;
+                    }
+
+                    NetRecv(cli_sock, in_buf, le32toh(pkt_hdr->len), 0);
+                    free(in_buf);
+
+                    pkt_res_am_i_root = malloc(sizeof(DicPacketResAmIRoot));
+                    if(!pkt_res_am_i_root)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        NetClose(cli_sock);
+                        continue;
+                    }
+
+                    memset(pkt_res_am_i_root, 0, sizeof(DicPacketResAmIRoot));
+                    pkt_res_am_i_root->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
+                    pkt_res_am_i_root->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+                    pkt_res_am_i_root->hdr.version     = DICMOTE_PACKET_VERSION;
+                    pkt_res_am_i_root->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_AM_I_ROOT;
+                    pkt_res_am_i_root->hdr.len         = htole32(sizeof(DicPacketResAmIRoot));
+                    pkt_res_am_i_root->am_i_root       = AmIRoot();
+
+                    NetWrite(cli_sock, pkt_res_am_i_root, le32toh(pkt_res_am_i_root->hdr.len));
+                    free(pkt_res_am_i_root);
                     continue;
                 default:
                     pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;

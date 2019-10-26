@@ -63,6 +63,8 @@
 #define DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA 23
 #define DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA 24
 #define DICMOTE_PACKET_TYPE_COMMAND_CLOSE_DEVICE 25
+#define DICMOTE_PACKET_TYPE_COMMAND_AM_I_ROOT 26
+#define DICMOTE_PACKET_TYPE_RESPONSE_AM_I_ROOT 27
 #define DICMOTE_PROTOCOL_MAX 1
 #define DICMOTE_PACKET_NOP_REASON_OOO 0
 #define DICMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -424,6 +426,17 @@ typedef struct
     DicPacketHeader hdr;
 } DicPacketCmdClose;
 
+typedef struct
+{
+    DicPacketHeader hdr;
+} DicPacketCmdAmIRoot;
+
+typedef struct
+{
+    DicPacketHeader hdr;
+    uint32_t        am_i_root;
+} DicPacketResAmIRoot;
+
 #pragma pack(pop)
 
 DeviceInfoList* ListDevices();
@@ -529,4 +542,5 @@ int32_t         NetClose(int32_t fd);
 void            Initialize();
 void            PlatformLoop(DicPacketHello* pkt_server_hello);
 void*           WorkingLoop(void* arguments);
+uint8_t         AmIRoot();
 #endif
