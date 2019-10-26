@@ -20,7 +20,9 @@
 
 #include <arpa/inet.h>
 #include <ifaddrs.h>
+#include <stddef.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 int PrintNetworkAddresses()
