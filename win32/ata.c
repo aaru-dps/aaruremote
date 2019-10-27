@@ -16,34 +16,11 @@
  */
 
 #include "../dicmote.h"
+#include "ntioctl.h"
 #include "win32.h"
 
-#include <ntddscsi.h>
+#include <stdint.h>
 #include <windows.h>
-
-#ifndef ATA_FLAGS_DRDY_REQUIRED
-#define ATA_FLAGS_DRDY_REQUIRED (1 << 0)
-#endif
-
-#ifndef ATA_FLAGS_DATA_IN
-#define ATA_FLAGS_DATA_IN (1 << 1)
-#endif
-
-#ifndef ATA_FLAGS_DATA_OUT
-#define ATA_FLAGS_DATA_OUT (1 << 2)
-#endif
-
-#ifndef ATA_FLAGS_48BIT_COMMAND
-#define ATA_FLAGS_48BIT_COMMAND (1 << 3)
-#endif
-
-#ifndef ATA_FLAGS_USE_DMA
-#define ATA_FLAGS_USE_DMA (1 << 4)
-#endif
-
-#ifndef IOCTL_ATA_PASS_THROUGH
-#define IOCTL_ATA_PASS_THROUGH 0x4D02C
-#endif
 
 // TODO: Check if we can live without copying buffer in and out
 int32_t Win32SendAtaChsCommand(void*                 device_ctx,

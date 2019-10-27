@@ -16,30 +16,11 @@
  */
 
 #include "../dicmote.h"
+#include "ntioctl.h"
 #include "win32.h"
 
-#include <ntddscsi.h>
 #include <stdint.h>
-
-#ifndef SCSI_IOCTL_DATA_OUT
-#define SCSI_IOCTL_DATA_OUT 0
-#endif
-
-#ifndef SCSI_IOCTL_DATA_IN
-#define SCSI_IOCTL_DATA_IN 1
-#endif
-
-#ifndef SCSI_IOCTL_DATA_UNSPECIFIED
-#define SCSI_IOCTL_DATA_UNSPECIFIED 2
-#endif
-
-#ifndef SCSI_IOCTL_DATA_BIDIRECTIONAL
-#define SCSI_IOCTL_DATA_BIDIRECTIONAL 3
-#endif
-
-#ifndef IOCTL_SCSI_PASS_THROUGH_DIRECT
-#define IOCTL_SCSI_PASS_THROUGH_DIRECT 0x4D014
-#endif
+#include <windows.h>
 
 int32_t Win32SendScsiCommand(void*     device_ctx,
                              char*     cdb,
