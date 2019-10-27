@@ -20,6 +20,7 @@
 
 #include <network.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int PrintNetworkAddresses()
 {
@@ -43,7 +44,7 @@ void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 {
     WiiNetworkContext* ctx;
 
-    ctx = malloc(sizeof(UnixNetworkContext));
+    ctx = malloc(sizeof(WiiNetworkContext));
 
     if(!ctx) return NULL;
 
@@ -55,7 +56,7 @@ void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
         return NULL;
     }
 
-    ctx->fd = ret;
+    return ctx;
 }
 
 int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
