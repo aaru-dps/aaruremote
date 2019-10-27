@@ -21,6 +21,8 @@
 #include "linux/linux.h"
 #elif defined(GEKKO)
 #include "wii/wii.h"
+#elif defined(WIN32)
+#include "win32/win32.h"
 #endif
 
 #include <stdlib.h>
@@ -31,6 +33,8 @@ DeviceInfoList* ListDevices()
     return LinuxListDevices();
 #elif defined(GEKKO)
     return WiiListDevices();
+#elif defined(WIN32)
+    return Win32ListDevices();
 #else
     return NULL;
 #endif

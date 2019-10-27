@@ -38,4 +38,6 @@ typedef struct
     SOCKET socket;
 } Win32NetworkContext;
 
+DeviceInfoList* Win32ListDevices();
+
 #endif // DICREMOTE_WIN32_WIN32_H_
