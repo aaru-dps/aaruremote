@@ -24,6 +24,14 @@
 #include <ntddscsi.h>
 #endif
 
+#ifdef HAVE_SFFDISK_H
+#include <sffdisk.h>
+#endif
+
+#ifdef HAVE_SDDEF_H
+#include <sddef.h>
+#endif
+
 #ifndef ATA_FLAGS_DRDY_REQUIRED
 #define ATA_FLAGS_DRDY_REQUIRED (1 << 0)
 #endif
@@ -68,6 +76,10 @@
 #define IOCTL_SCSI_PASS_THROUGH_DIRECT 0x4D014
 #endif
 
+#ifndef IOCTL_SFFDISK_DEVICE_COMMAND
+#define IOCTL_SFFDISK_DEVICE_COMMAND 0x79E84
+#endif
+
 #ifndef HAS_SPTD
 typedef struct _SCSI_PASS_THROUGH_DIRECT
 {
@@ -103,6 +115,76 @@ typedef struct _ATA_PASS_THROUGH_EX
     UCHAR     PreviousTaskFile[8];
     UCHAR     CurrentTaskFile[8];
 } ATA_PASS_THROUGH_EX, *PATA_PASS_THROUGH_EX;
+#endif
+
+#ifndef HAS_SDCD
+typedef enum
+{
+    SFFDISK_DC_GET_VERSION,
+    SFFDISK_DC_LOCK_CHANNEL,
+    SFFDISK_DC_UNLOCK_CHANNEL,
+    SFFDISK_DC_DEVICE_COMMAND
+} SFFDISK_DCMD;
+
+typedef struct _SFFDISK_DEVICE_COMMAND_DATA
+{
+    USHORT       HeaderSize;
+    USHORT       Reserved;
+    SFFDISK_DCMD Command;
+    USHORT       ProtocolArgumentSize;
+    ULONG        DeviceDataBufferSize;
+    ULONG_PTR    Information;
+    UCHAR        Data[];
+} SFFDISK_DEVICE_COMMAND_DATA, *PSFFDISK_DEVICE_COMMAND_DATA;
+#endif
+
+#ifndef SDCMDD
+typedef UCHAR SD_COMMAND_CODE;
+
+typedef enum
+{
+    SDCC_STANDARD,
+    SDCC_APP_CMD
+} SD_COMMAND_CLASS;
+
+typedef enum
+{
+    SDTD_UNSPECIFIED = 0,
+    SDTD_READ        = 1,
+    SDTD_WRITE       = 2
+} SD_TRANSFER_DIRECTION;
+
+typedef enum
+{
+    SDTT_UNSPECIFIED,
+    SDTT_CMD_ONLY,
+    SDTT_SINGLE_BLOCK,
+    SDTT_MULTI_BLOCK,
+    SDTT_MULTI_BLOCK_NO_CMD12
+} SD_TRANSFER_TYPE;
+
+typedef enum
+{
+    SDRT_UNSPECIFIED,
+    SDRT_NONE,
+    SDRT_1,
+    SDRT_1B,
+    SDRT_2,
+    SDRT_3,
+    SDRT_4,
+    SDRT_5,
+    SDRT_5B,
+    SDRT_6
+} SD_RESPONSE_TYPE;
+
+typedef struct _SDCMD_DESCRIPTOR
+{
+    SD_COMMAND_CODE       Cmd;
+    SD_COMMAND_CLASS      CmdClass;
+    SD_TRANSFER_DIRECTION TransferDirection;
+    SD_TRANSFER_TYPE      TransferType;
+    SD_RESPONSE_TYPE      ResponseType;
+} SDCMD_DESCRIPTOR, *PSDCMD_DESCRIPTOR;
 #endif
 
 #endif // DICREMOTE_WIN32_NTIOCTL_H_

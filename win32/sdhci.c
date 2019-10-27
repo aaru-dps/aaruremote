@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "ntioctl.h"
 #include "win32.h"
 
 #include <stdint.h>
@@ -33,10 +34,70 @@ int32_t Win32SendSdhciCommand(void*     device_ctx,
                               uint32_t* duration,
                               uint32_t* sense)
 {
-    Win32DeviceContext* ctx = device_ctx;
+    Win32DeviceContext*          ctx = device_ctx;
+    DWORD                        cmdbuf_len;
+    PCHAR                        cmdbuf;
+    DWORD                        buf_len;
+    PSFFDISK_DEVICE_COMMAND_DATA cmd_data;
+    PSDCMD_DESCRIPTOR            cmd_descriptor;
+    PCHAR                        data_buf;
+    DWORD                        error = 0;
+    DWORD                        k     = 0;
+    LARGE_INTEGER                frequency;
+    LARGE_INTEGER                start;
+    LARGE_INTEGER                end;
+    DOUBLE                       interval;
 
     if(!ctx) return -1;
 
-    // TODO: Implement
-    return -1;
+    buf_len    = blocks * block_size;
+    cmdbuf_len = sizeof(SFFDISK_DEVICE_COMMAND_DATA) + sizeof(SDCMD_DESCRIPTOR) + buf_len;
+
+    cmdbuf = malloc(cmdbuf_len);
+
+    if(!cmdbuf) return -1;
+
+    memset(cmdbuf, 0, cmdbuf_len);
+    cmd_data       = (PSFFDISK_DEVICE_COMMAND_DATA)cmdbuf;
+    cmd_descriptor = (PSDCMD_DESCRIPTOR)(cmdbuf + sizeof(SFFDISK_DEVICE_COMMAND_DATA));
+    data_buf       = cmdbuf + sizeof(SFFDISK_DEVICE_COMMAND_DATA) + sizeof(SDCMD_DESCRIPTOR);
+
+    memcpy(data_buf, buffer, buf_len);
+
+    cmd_data->HeaderSize              = sizeof(SFFDISK_DEVICE_COMMAND_DATA);
+    cmd_data->Command                 = SFFDISK_DC_DEVICE_COMMAND;
+    cmd_data->ProtocolArgumentSize    = sizeof(SDCMD_DESCRIPTOR);
+    cmd_data->DeviceDataBufferSize    = buf_len;
+    cmd_descriptor->Cmd               = command;
+    cmd_descriptor->CmdClass          = application ? SDCC_APP_CMD : SDCC_STANDARD;
+    cmd_descriptor->TransferDirection = write ? SDTD_WRITE : SDTD_READ;
+    cmd_descriptor->TransferType      = (flags & DICMOTE_MMC_COMMAND_ADTC) ? SDTT_SINGLE_BLOCK : SDTT_CMD_ONLY;
+    cmd_descriptor->ResponseType      = 0;
+
+    if((flags & DICMOTE_MMC_RESPONSE_R1) || (flags & DICMOTE_MMC_RESPONSE_SPI_R1))
+        cmd_descriptor->ResponseType = SDRT_1;
+    if((flags & DICMOTE_MMC_RESPONSE_R1B) || (flags & DICMOTE_MMC_RESPONSE_SPI_R1B))
+        cmd_descriptor->ResponseType = SDRT_1B;
+    if((flags & DICMOTE_MMC_RESPONSE_R2) || (flags & DICMOTE_MMC_RESPONSE_SPI_R2))
+        cmd_descriptor->ResponseType = SDRT_2;
+    if((flags & DICMOTE_MMC_RESPONSE_R3) || (flags & DICMOTE_MMC_RESPONSE_SPI_R3))
+        cmd_descriptor->ResponseType = SDRT_3;
+    if((flags & DICMOTE_MMC_RESPONSE_R4) || (flags & DICMOTE_MMC_RESPONSE_SPI_R4))
+        cmd_descriptor->ResponseType = SDRT_4;
+    if((flags & DICMOTE_MMC_RESPONSE_R5) || (flags & DICMOTE_MMC_RESPONSE_SPI_R5))
+        cmd_descriptor->ResponseType = SDRT_5;
+    if((flags & DICMOTE_MMC_RESPONSE_R6)) cmd_descriptor->ResponseType = SDRT_6;
+
+    QueryPerformanceFrequency(&frequency);
+    QueryPerformanceCounter(&start);
+    *sense =
+        !DeviceIoControl(ctx->handle, IOCTL_SFFDISK_DEVICE_COMMAND, cmdbuf, cmdbuf_len, cmdbuf, cmdbuf_len, &k, NULL);
+    QueryPerformanceCounter(&end);
+
+    if(*sense) error = GetLastError();
+
+    memcpy(buffer, data_buf, buf_len);
+
+    free(cmdbuf);
+    return error;
 }
