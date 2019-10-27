@@ -164,12 +164,102 @@ int32_t Win32SendAtaLba28Command(void*                   device_ctx,
                                  uint32_t*               sense,
                                  uint32_t*               buf_len)
 {
-    Win32DeviceContext* ctx = device_ctx;
+    Win32DeviceContext*  ctx = device_ctx;
+    PATA_PASS_THROUGH_EX apte;
+    PVOID                apte_and_buffer;
+    ULONG_PTR            offsetForBuffer;
+    PCHAR                data_buffer;
+    DWORD                k     = 0;
+    DWORD                error = 0;
+    LARGE_INTEGER        frequency;
+    LARGE_INTEGER        start;
+    LARGE_INTEGER        end;
+    DOUBLE               interval;
+    DWORD                apte_and_buffer_len;
+
+    *duration           = 0;
+    *sense              = FALSE;
+    offsetForBuffer     = sizeof(ATA_PASS_THROUGH_EX) + sizeof(uint32_t);
+    apte_and_buffer_len = sizeof(ATA_PASS_THROUGH_EX) + sizeof(uint32_t) + 64 * 512;
 
     if(!ctx) return -1;
+    if(!buffer) return -1;
+    if(*buf_len > 64 * 512) return -1;
 
-    // TODO: Implement
-    return -1;
+    apte_and_buffer = malloc(apte_and_buffer_len);
+
+    if(!apte_and_buffer) return -1;
+
+    memset(apte_and_buffer, 0, apte_and_buffer_len);
+    data_buffer = (PCHAR)apte_and_buffer + offsetForBuffer;
+    apte        = (PATA_PASS_THROUGH_EX)apte_and_buffer;
+
+    apte->TimeOutValue       = timeout;
+    apte->DataBufferOffset   = offsetForBuffer;
+    apte->Length             = sizeof(ATA_PASS_THROUGH_EX);
+    apte->CurrentTaskFile[0] = registers.feature;
+    apte->CurrentTaskFile[1] = registers.sector_count;
+    apte->CurrentTaskFile[2] = registers.lba_low;
+    apte->CurrentTaskFile[3] = registers.lba_mid;
+    apte->CurrentTaskFile[4] = registers.lba_high;
+    apte->CurrentTaskFile[5] = registers.device_head;
+    apte->CurrentTaskFile[6] = registers.command;
+
+    switch(protocol)
+    {
+        case DICMOTE_ATA_PROTOCOL_PIO_IN:
+        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
+        case DICMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
+        case DICMOTE_ATA_PROTOCOL_PIO_OUT:
+        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
+    }
+
+    switch(protocol)
+    {
+        case DICMOTE_ATA_PROTOCOL_DMA:
+        case DICMOTE_ATA_PROTOCOL_DMA_QUEUED:
+        case DICMOTE_ATA_PROTOCOL_FPDMA:
+        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
+        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
+    }
+
+    // Unknown if needed
+    apte->AtaFlags |= ATA_FLAGS_DRDY_REQUIRED;
+
+    QueryPerformanceFrequency(&frequency);
+
+    memcpy(data_buffer, buffer, *buf_len);
+
+    QueryPerformanceCounter(&start);
+    *sense = !DeviceIoControl(ctx->handle,
+                              IOCTL_ATA_PASS_THROUGH,
+                              apte_and_buffer,
+                              apte_and_buffer_len,
+                              apte_and_buffer,
+                              apte_and_buffer_len,
+                              &k,
+                              NULL);
+    QueryPerformanceCounter(&end);
+
+    interval  = (DOUBLE)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
+    *duration = interval * 1000;
+
+    if(*sense) error = GetLastError();
+
+    memcpy(buffer, data_buffer, *buf_len);
+
+    error_registers->error        = apte->CurrentTaskFile[0];
+    error_registers->sector_count = apte->CurrentTaskFile[1];
+    error_registers->lba_low      = apte->CurrentTaskFile[2];
+    error_registers->lba_mid      = apte->CurrentTaskFile[3];
+    error_registers->lba_high     = apte->CurrentTaskFile[4];
+    error_registers->device_head  = apte->CurrentTaskFile[5];
+    error_registers->status       = apte->CurrentTaskFile[6];
+
+    *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
+
+    free(apte_and_buffer);
+    return error;
 }
 
 int32_t Win32SendAtaLba48Command(void*                   device_ctx,
