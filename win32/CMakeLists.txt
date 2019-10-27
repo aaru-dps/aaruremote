@@ -41,8 +41,8 @@ if (HAVE_SDCMDD)
     add_definitions(-DHAS_SDCMDD)
 endif ()
 
-set(PLATFORM_SOURCES "win32.h" network.c hello.c "win32.c" list_devices.c ata.c device.c ieee1394.c pcmcia.c scsi.c sdhci.c usb.c ntioctl.h)
+set(PLATFORM_SOURCES "win32.h" network.c hello.c "win32.c" list_devices.c ata.c device.c ieee1394.c pcmcia.c scsi.c sdhci.c usb.h usb.c ntioctl.h)
 
 add_executable(dicremote ${PLATFORM_SOURCES})
 
-target_link_libraries(dicremote dicremotecore ws2_32 iphlpapi version)
+target_link_libraries(dicremote dicremotecore ws2_32 iphlpapi version setupapi cfgmgr32)
