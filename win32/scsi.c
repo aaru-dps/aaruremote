@@ -61,6 +61,10 @@ int32_t Win32SendScsiCommand(void*     device_ctx,
     DWORD                     k     = 0;
     DWORD                     error = 0;
     BOOL                      hasError;
+    LARGE_INTEGER             frequency;
+    LARGE_INTEGER             start;
+    LARGE_INTEGER             end;
+    DOUBLE                    interval;
 
     *duration          = 0;
     *sense_len         = 32;
@@ -96,6 +100,8 @@ int32_t Win32SendScsiCommand(void*     device_ctx,
 
     sptd = sptd_and_sense;
 
+    QueryPerformanceFrequency(&frequency);
+
     if(cdb_len > 16) cdb_len = 16;
 
     memcpy(&sptd->Cdb, cdb, cdb_len);
@@ -108,7 +114,7 @@ int32_t Win32SendScsiCommand(void*     device_ctx,
     sptd->Length             = sizeof(SCSI_PASS_THROUGH_DIRECT);
     sptd->SenseInfoOffset    = sizeof(SCSI_PASS_THROUGH_DIRECT);
 
-    // TODO: Timing
+    QueryPerformanceCounter(&start);
     hasError = !DeviceIoControl(ctx->handle,
                                 IOCTL_SCSI_PASS_THROUGH_DIRECT,
                                 sptd_and_sense,
@@ -117,6 +123,10 @@ int32_t Win32SendScsiCommand(void*     device_ctx,
                                 sptd_and_sense_len,
                                 &k,
                                 NULL);
+    QueryPerformanceCounter(&end);
+
+    interval  = (DOUBLE)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
+    *duration = interval * 1000;
 
     if(hasError) error = GetLastError();
 
