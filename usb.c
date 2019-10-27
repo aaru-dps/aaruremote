@@ -19,6 +19,8 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"
+#elif defined(WIN32)
+#include "win32/win32.h"
 #endif
 
 uint8_t GetUsbData(void*     device_ctx,
@@ -32,6 +34,8 @@ uint8_t GetUsbData(void*     device_ctx,
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxGetUsbData(device_ctx, desc_len, descriptors, id_vendor, id_product, manufacturer, product, serial);
+#elif defined(WIN32)
+    return Win32GetUsbData(device_ctx, desc_len, descriptors, id_vendor, id_product, manufacturer, product, serial);
 #else
     return 0;
 #endif

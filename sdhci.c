@@ -17,6 +17,8 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"
+#elif defined(WIN32)
+#include "win32/win32.h"
 #endif
 
 #include <stdint.h>
@@ -38,6 +40,20 @@ int32_t SendSdhciCommand(void*     device_ctx,
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxSendSdhciCommand(device_ctx,
+                                 command,
+                                 write,
+                                 application,
+                                 flags,
+                                 argument,
+                                 block_size,
+                                 blocks,
+                                 buffer,
+                                 timeout,
+                                 response,
+                                 duration,
+                                 sense);
+#elif defined(WIN32)
+    return Win32SendSdhciCommand(device_ctx,
                                  command,
                                  write,
                                  application,

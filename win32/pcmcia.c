@@ -15,21 +15,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "win32.h"
+
 #include <stdint.h>
 
-#if defined(__linux__) && !defined(__ANDROID__)
-#include "linux/linux.h"
-#elif defined(WIN32)
-#include "win32/win32.h"
-#endif
-
-uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
+uint8_t Win32GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
 {
-#if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxGetPcmciaData(device_ctx, cis_len, cis);
-#elif defined(WIN32)
-    return Win32GetPcmciaData(device_ctx, cis_len, cis);
-#else
+    Win32DeviceContext* ctx = device_ctx;
+
+    if(!ctx) return 0;
+
+    // TODO: Implement
     return 0;
-#endif
 }

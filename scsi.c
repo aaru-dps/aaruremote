@@ -17,6 +17,8 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"
+#elif defined(WIN32)
+#include "win32/win32.h"
 #endif
 
 #include <stdint.h>
@@ -35,6 +37,9 @@ int32_t SendScsiCommand(void*     device_ctx,
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxSendScsiCommand(
+        device_ctx, cdb, buffer, sense_buffer, timeout, direction, duration, sense, cdb_len, buf_len, sense_len);
+#elif defined(WIN32)
+    return Win32SendScsiCommand(
         device_ctx, cdb, buffer, sense_buffer, timeout, direction, duration, sense, cdb_len, buf_len, sense_len);
 #else
     return -1;

@@ -19,6 +19,8 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"
+#elif defined(WIN32)
+#include "win32/win32.h"
 #endif
 
 int32_t SendAtaChsCommand(void*                 device_ctx,
@@ -35,6 +37,18 @@ int32_t SendAtaChsCommand(void*                 device_ctx,
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxSendAtaChsCommand(device_ctx,
+                                  registers,
+                                  error_registers,
+                                  protocol,
+                                  transfer_register,
+                                  buffer,
+                                  timeout,
+                                  transfer_blocks,
+                                  duration,
+                                  sense,
+                                  buf_len);
+#elif defined(WIN32)
+    return Win32SendAtaChsCommand(device_ctx,
                                   registers,
                                   error_registers,
                                   protocol,
@@ -74,6 +88,18 @@ int32_t SendAtaLba28Command(void*                   device_ctx,
                                     duration,
                                     sense,
                                     buf_len);
+#elif defined(WIN32)
+    return Win32SendAtaLba28Command(device_ctx,
+                                    registers,
+                                    error_registers,
+                                    protocol,
+                                    transfer_register,
+                                    buffer,
+                                    timeout,
+                                    transfer_blocks,
+                                    duration,
+                                    sense,
+                                    buf_len);
 #else
     return -1;
 #endif
@@ -93,6 +119,18 @@ int32_t SendAtaLba48Command(void*                   device_ctx,
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxSendAtaLba48Command(device_ctx,
+                                    registers,
+                                    error_registers,
+                                    protocol,
+                                    transfer_register,
+                                    buffer,
+                                    timeout,
+                                    transfer_blocks,
+                                    duration,
+                                    sense,
+                                    buf_len);
+#elif defined(WIN32)
+    return Win32SendAtaLba48Command(device_ctx,
                                     registers,
                                     error_registers,
                                     protocol,

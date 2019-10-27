@@ -15,26 +15,27 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../dicmote.h"
+#include "win32.h"
+
 #include <stdint.h>
 
-#if defined(__linux__) && !defined(__ANDROID__)
-#include "linux/linux.h"
-#elif defined(WIN32)
-#include "win32/win32.h"
-#endif
-
-uint8_t GetFireWireData(void*     device_ctx,
-                        uint32_t* id_model,
-                        uint32_t* id_vendor,
-                        uint64_t* guid,
-                        char*     vendor,
-                        char*     model)
+int32_t Win32SendScsiCommand(void*     device_ctx,
+                             char*     cdb,
+                             char*     buffer,
+                             char**    sense_buffer,
+                             uint32_t  timeout,
+                             int32_t   direction,
+                             uint32_t* duration,
+                             uint32_t* sense,
+                             uint32_t  cdb_len,
+                             uint32_t* buf_len,
+                             uint32_t* sense_len)
 {
-#if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxGetIeee1394Data(device_ctx, id_model, id_vendor, guid, vendor, model);
-#elif defined(WIN32)
-    return Win32GetIeee1394Data(device_ctx, id_model, id_vendor, guid, vendor, model);
-#else
-    return 0;
-#endif
+    Win32DeviceContext* ctx = device_ctx;
+
+    if(!ctx) return -1;
+
+    // TODO: Implement
+    return -1;
 }

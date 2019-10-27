@@ -17,6 +17,8 @@
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"
+#elif defined(WIN32)
+#include "win32/win32.h"
 #endif
 
 #include "dicmote.h"
@@ -27,6 +29,8 @@ void* DeviceOpen(const char* device_path)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxOpenDevice(device_path);
+#elif defined(WIN32)
+    return Win32OpenDevice(device_path);
 #else
     return NULL;
 #endif
@@ -36,6 +40,8 @@ void DeviceClose(void* device_ctx)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxCloseDevice(device_ctx);
+#elif defined(WIN32)
+    return Win32CloseDevice(device_ctx);
 #endif
 }
 
@@ -43,6 +49,8 @@ int32_t GetDeviceType(void* device_ctx)
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxGetDeviceType(device_ctx);
+#elif defined(WIN32)
+    return Win32GetDeviceType(device_ctx);
 #else
     return DICMOTE_DEVICE_TYPE_UNKNOWN;
 #endif
@@ -60,6 +68,8 @@ int32_t GetSdhciRegisters(void*     device_ctx,
 {
 #if defined(__linux__) && !defined(__ANDROID__)
     return LinuxGetSdhciRegisters(device_ctx, csd, cid, ocr, scr, csd_len, cid_len, ocr_len, scr_len);
+#elif defined(WIN32)
+    return Win32GetSdhciRegisters(device_ctx, csd, cid, ocr, scr, csd_len, cid_len, ocr_len, scr_len);
 #else
     return 0;
 #endif
