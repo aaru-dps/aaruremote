@@ -119,21 +119,3 @@ int32_t Win32GetDeviceType(void* device_ctx)
 
     return returned;
 }
-
-int32_t Win32GetSdhciRegisters(void*     device_ctx,
-                               char**    csd,
-                               char**    cid,
-                               char**    ocr,
-                               char**    scr,
-                               uint32_t* csd_len,
-                               uint32_t* cid_len,
-                               uint32_t* ocr_len,
-                               uint32_t* scr_len)
-{
-    Win32DeviceContext* ctx = device_ctx;
-
-    if(!ctx) return -1;
-
-    // TODO: Implement
-    return -1;
-}

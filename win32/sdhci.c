@@ -94,10 +94,155 @@ int32_t Win32SendSdhciCommand(void*     device_ctx,
         !DeviceIoControl(ctx->handle, IOCTL_SFFDISK_DEVICE_COMMAND, cmdbuf, cmdbuf_len, cmdbuf, cmdbuf_len, &k, NULL);
     QueryPerformanceCounter(&end);
 
+    interval  = (DOUBLE)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
+    *duration = interval * 1000;
+
     if(*sense) error = GetLastError();
 
     memcpy(buffer, data_buf, buf_len);
 
     free(cmdbuf);
     return error;
+}
+
+BOOL GuidEquals(GUID a, GUID b) { return memcmp(&a, &b, 16) == 0; }
+
+BOOL IsSdhci(HANDLE handle)
+{
+    SFFDISK_QUERY_DEVICE_PROTOCOL_DATA query;
+    DWORD                              k       = 0;
+    GUID                               sdGuid  = GUID_SFF_PROTOCOL_SD;
+    GUID                               mmcGuid = GUID_SFF_PROTOCOL_MMC;
+
+    DeviceIoControl(handle,
+                    IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL,
+                    NULL,
+                    0,
+                    &query,
+                    sizeof(SFFDISK_QUERY_DEVICE_PROTOCOL_DATA),
+                    &k,
+                    NULL);
+
+    return GuidEquals(query.ProtocolGUID, sdGuid) || GuidEquals(query.ProtocolGUID, mmcGuid);
+}
+
+int32_t Win32GetSdhciRegisters(void*     device_ctx,
+                               char**    csd,
+                               char**    cid,
+                               char**    ocr,
+                               char**    scr,
+                               uint32_t* csd_len,
+                               uint32_t* cid_len,
+                               uint32_t* ocr_len,
+                               uint32_t* scr_len)
+{
+    Win32DeviceContext* ctx = device_ctx;
+    uint32_t            duration;
+    uint32_t            sense;
+
+    if(!ctx) return -1;
+
+    if(!IsSdhci(ctx->handle)) return -1;
+
+    *csd = malloc(16);
+    if(*csd)
+    {
+        *csd_len = 16;
+        Win32SendSdhciCommand(device_ctx,
+                              9,
+                              0,
+                              0,
+                              DICMOTE_MMC_RESPONSE_SPI_R2 | DICMOTE_MMC_RESPONSE_R2 | DICMOTE_MMC_COMMAND_AC,
+                              0,
+                              16,
+                              1,
+                              *csd,
+                              1000,
+                              NULL,
+                              &duration,
+                              &sense);
+
+        if(sense)
+        {
+            *csd_len = 0;
+            free(*csd);
+        }
+    }
+
+    *cid = malloc(16);
+    if(*cid)
+    {
+        *cid_len = 16;
+        Win32SendSdhciCommand(device_ctx,
+                              10,
+                              0,
+                              0,
+                              DICMOTE_MMC_RESPONSE_SPI_R2 | DICMOTE_MMC_RESPONSE_R2 | DICMOTE_MMC_COMMAND_AC,
+                              0,
+                              16,
+                              1,
+                              *cid,
+                              1000,
+                              NULL,
+                              &duration,
+                              &sense);
+
+        if(sense)
+        {
+            *cid_len = 0;
+            free(*cid);
+        }
+    }
+
+    *scr = malloc(8);
+    if(*scr)
+    {
+        *scr_len = 8;
+        Win32SendSdhciCommand(device_ctx,
+                              10,
+                              0,
+                              0,
+                              DICMOTE_MMC_RESPONSE_SPI_R1 | DICMOTE_MMC_RESPONSE_R1 | DICMOTE_MMC_COMMAND_ADTC,
+                              0,
+                              8,
+                              1,
+                              *scr,
+                              1000,
+                              NULL,
+                              &duration,
+                              &sense);
+
+        if(sense)
+        {
+            *scr_len = 0;
+            free(*scr);
+        }
+    }
+
+    *ocr = malloc(4);
+    if(*ocr)
+    {
+        *ocr_len = 4;
+        Win32SendSdhciCommand(device_ctx,
+                              *scr_len > 0 ? 41 : 1,
+                              0,
+                              0,
+                              DICMOTE_MMC_RESPONSE_SPI_R1 | DICMOTE_MMC_RESPONSE_R1 | DICMOTE_MMC_COMMAND_ADTC,
+                              0,
+                              4,
+                              1,
+                              *ocr,
+                              1000,
+                              NULL,
+                              &duration,
+                              &sense);
+
+        if(sense)
+        {
+            *ocr_len = 0;
+            free(*ocr);
+        }
+    }
+
+    return *csd_len > 0 || *cid_len > 0 || *scr_len > 0 || *ocr_len > 0;
 }

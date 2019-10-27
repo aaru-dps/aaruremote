@@ -18,6 +18,7 @@
 #ifndef DICREMOTE_WIN32_NTIOCTL_H_
 #define DICREMOTE_WIN32_NTIOCTL_H_
 
+#include <winsock2.h>
 #include <windows.h>
 
 #ifdef HAS_NTDDSCSI_H
@@ -80,6 +81,24 @@
 #define IOCTL_SFFDISK_DEVICE_COMMAND 0x79E84
 #endif
 
+#ifndef IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL
+#define IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL 0x71E80
+#endif
+
+#ifndef GUID_SFF_PROTOCOL_SD
+#define GUID_SFF_PROTOCOL_SD                                                                                           \
+    {                                                                                                                  \
+        0xAD7536A8, 0xD055, 0x4c40, { 0xAA, 0x4D, 0x96, 0x31, 0x2D, 0xDB, 0x6B, 0x38 }                                 \
+    }
+#endif
+
+#ifndef GUID_SFF_PROTOCOL_MMC
+#define GUID_SFF_PROTOCOL_MMC                                                                                          \
+    {                                                                                                                  \
+        0x77274D3F, 0x2365, 0x4491, { 0xA0, 0x30, 0x8B, 0xB4, 0x4A, 0xE6, 0x00, 0x97 }                                 \
+    }
+#endif
+
 #ifndef HAS_SPTD
 typedef struct _SCSI_PASS_THROUGH_DIRECT
 {
@@ -136,6 +155,13 @@ typedef struct _SFFDISK_DEVICE_COMMAND_DATA
     ULONG_PTR    Information;
     UCHAR        Data[];
 } SFFDISK_DEVICE_COMMAND_DATA, *PSFFDISK_DEVICE_COMMAND_DATA;
+
+typedef struct _SFFDISK_QUERY_DEVICE_PROTOCOL_DATA
+{
+    USHORT Size;
+    USHORT Reserved;
+    GUID   ProtocolGUID;
+} SFFDISK_QUERY_DEVICE_PROTOCOL_DATA, *PSFFDISK_QUERY_DEVICE_PROTOCOL_DATA;
 #endif
 
 #ifndef SDCMDD
