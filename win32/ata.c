@@ -33,6 +33,10 @@
 #define ATA_FLAGS_DATA_OUT (1 << 2)
 #endif
 
+#ifndef ATA_FLAGS_48BIT_COMMAND
+#define ATA_FLAGS_48BIT_COMMAND (1 << 3)
+#endif
+
 #ifndef ATA_FLAGS_USE_DMA
 #define ATA_FLAGS_USE_DMA (1 << 4)
 #endif
@@ -274,10 +278,107 @@ int32_t Win32SendAtaLba48Command(void*                   device_ctx,
                                  uint32_t*               sense,
                                  uint32_t*               buf_len)
 {
-    Win32DeviceContext* ctx = device_ctx;
+    Win32DeviceContext*  ctx = device_ctx;
+    PATA_PASS_THROUGH_EX apte;
+    PVOID                apte_and_buffer;
+    ULONG_PTR            offsetForBuffer;
+    PCHAR                data_buffer;
+    DWORD                k     = 0;
+    DWORD                error = 0;
+    LARGE_INTEGER        frequency;
+    LARGE_INTEGER        start;
+    LARGE_INTEGER        end;
+    DOUBLE               interval;
+    DWORD                apte_and_buffer_len;
+
+    *duration           = 0;
+    *sense              = FALSE;
+    offsetForBuffer     = sizeof(ATA_PASS_THROUGH_EX) + sizeof(uint32_t);
+    apte_and_buffer_len = sizeof(ATA_PASS_THROUGH_EX) + sizeof(uint32_t) + 64 * 512;
 
     if(!ctx) return -1;
+    if(!buffer) return -1;
+    if(*buf_len > 64 * 512) return -1;
 
-    // TODO: Implement
-    return -1;
+    apte_and_buffer = malloc(apte_and_buffer_len);
+
+    if(!apte_and_buffer) return -1;
+
+    memset(apte_and_buffer, 0, apte_and_buffer_len);
+    data_buffer = (PCHAR)apte_and_buffer + offsetForBuffer;
+    apte        = (PATA_PASS_THROUGH_EX)apte_and_buffer;
+
+    apte->TimeOutValue        = timeout;
+    apte->DataBufferOffset    = offsetForBuffer;
+    apte->Length              = sizeof(ATA_PASS_THROUGH_EX);
+    apte->PreviousTaskFile[0] = ((registers.feature & 0xFF00) >> 8);
+    apte->PreviousTaskFile[1] = ((registers.sector_count & 0xFF00) >> 8);
+    apte->PreviousTaskFile[2] = ((registers.lba_low & 0xFF00) >> 8);
+    apte->PreviousTaskFile[3] = ((registers.lba_mid & 0xFF00) >> 8);
+    apte->PreviousTaskFile[4] = ((registers.lba_high & 0xFF00) >> 8);
+    apte->CurrentTaskFile[0]  = registers.feature & 0xFF;
+    apte->CurrentTaskFile[1]  = registers.sector_count & 0xFF;
+    apte->CurrentTaskFile[2]  = registers.lba_low & 0xFF;
+    apte->CurrentTaskFile[3]  = registers.lba_mid & 0xFF;
+    apte->CurrentTaskFile[4]  = registers.lba_mid & 0xFF;
+    apte->CurrentTaskFile[5]  = registers.device_head;
+    apte->CurrentTaskFile[6]  = registers.command;
+
+    switch(protocol)
+    {
+        case DICMOTE_ATA_PROTOCOL_PIO_IN:
+        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
+        case DICMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
+        case DICMOTE_ATA_PROTOCOL_PIO_OUT:
+        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
+    }
+
+    switch(protocol)
+    {
+        case DICMOTE_ATA_PROTOCOL_DMA:
+        case DICMOTE_ATA_PROTOCOL_DMA_QUEUED:
+        case DICMOTE_ATA_PROTOCOL_FPDMA:
+        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
+        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
+    }
+
+    apte->AtaFlags |= ATA_FLAGS_48BIT_COMMAND;
+
+    // Unknown if needed
+    apte->AtaFlags |= ATA_FLAGS_DRDY_REQUIRED;
+
+    QueryPerformanceFrequency(&frequency);
+
+    memcpy(data_buffer, buffer, *buf_len);
+
+    QueryPerformanceCounter(&start);
+    *sense = !DeviceIoControl(ctx->handle,
+                              IOCTL_ATA_PASS_THROUGH,
+                              apte_and_buffer,
+                              apte_and_buffer_len,
+                              apte_and_buffer,
+                              apte_and_buffer_len,
+                              &k,
+                              NULL);
+    QueryPerformanceCounter(&end);
+
+    interval  = (DOUBLE)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
+    *duration = interval * 1000;
+
+    if(*sense) error = GetLastError();
+
+    memcpy(buffer, data_buffer, *buf_len);
+
+    error_registers->error        = apte->CurrentTaskFile[0];
+    error_registers->sector_count = (apte->PreviousTaskFile[1] << 8) + apte->CurrentTaskFile[1];
+    error_registers->lba_low      = (apte->PreviousTaskFile[2] << 8) + apte->CurrentTaskFile[2];
+    error_registers->lba_mid      = (apte->PreviousTaskFile[3] << 8) + apte->CurrentTaskFile[3];
+    error_registers->lba_high     = (apte->PreviousTaskFile[4] << 8) + apte->CurrentTaskFile[4];
+    error_registers->device_head  = apte->CurrentTaskFile[5];
+    error_registers->status       = apte->CurrentTaskFile[6];
+
+    *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
+
+    free(apte_and_buffer);
+    return error;
 }
