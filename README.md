@@ -10,7 +10,7 @@ This creates a problem, as some people have old devices that do not work in mode
 This remote will be supported in older versions of Linux, and will in future versions be supported in FreeBSD, Windows, and possibly
 network-enabled game consoles (like PSP, Wii, etc).
 
-While some people will suggest porting the whole DiscImageChef to C or C++, that won't happen, and for the only situation that that
+While some people will suggest porting the whole DiscImageChef to C or C++, that won't happen, and for the only situation that
 would be needed (accessing devices where C# does not run) this slim is more than enough.
 
 The usage is very simple, just run the remote and it will listen for a connection over TCP/IP in port 6666, and print you
