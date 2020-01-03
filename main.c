@@ -1,6 +1,6 @@
 /*
  * This file is part of the DiscImageChef Remote Server.
- * Copyright (c) 2019 Natalia Portillo.
+ * Copyright (c) 2019-2020 Natalia Portillo.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ int main()
     Initialize();
 
     printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
-    printf("Copyright (C) 2019 Natalia Portillo\n");
+    printf("Copyright (C) 2019-2020 Natalia Portillo\n");
 
     pkt_server_hello = GetHello();
 
