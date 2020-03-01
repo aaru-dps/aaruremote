@@ -563,3 +563,9 @@ crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 !.idea/
+
+# CMake ignore
+Makefile
+cmake-build-*/
+cmake_install.cmake
+CMakeFiles/
