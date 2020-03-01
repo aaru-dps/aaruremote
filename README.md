@@ -21,7 +21,7 @@ connection. Similarly using the IP address as an argument for the *list-devices*
 remotely.
 
 All commands that support devices are supported, with a URI with the following schema:
-`dic://<IP ADDRESS>/<DEVICE PATH>`.
+`aaru://<IP ADDRESS>/<DEVICE PATH>`.
 
 TODO
 ====
