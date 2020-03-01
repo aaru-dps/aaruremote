@@ -1,7 +1,7 @@
-DiscImageChef Remote
+Aaru Remote
 ====================
 
-The DiscImageChef Remote is a slim miniature application designed to receive device commands from a remote [DiscImageChef](https://github.com/discimagechef/DiscImageChef)
+The Aaru Remote is a slim miniature application designed to receive device commands from a remote [Aaru](https://github.com/aaru-dps/Aaru)
 instance, sends it to a local device, and returns the data to the instance.
 
 The main motivation for this is the desire to update DiscImageChef to the latest and greatest features of .NET and C#.
