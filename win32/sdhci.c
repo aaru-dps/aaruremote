@@ -71,22 +71,22 @@ int32_t Win32SendSdhciCommand(void*     device_ctx,
     cmd_descriptor->Cmd               = command;
     cmd_descriptor->CmdClass          = application ? SDCC_APP_CMD : SDCC_STANDARD;
     cmd_descriptor->TransferDirection = write ? SDTD_WRITE : SDTD_READ;
-    cmd_descriptor->TransferType      = (flags & DICMOTE_MMC_COMMAND_ADTC) ? SDTT_SINGLE_BLOCK : SDTT_CMD_ONLY;
+    cmd_descriptor->TransferType      = (flags & AARUREMOTE_MMC_COMMAND_ADTC) ? SDTT_SINGLE_BLOCK : SDTT_CMD_ONLY;
     cmd_descriptor->ResponseType      = 0;
 
-    if((flags & DICMOTE_MMC_RESPONSE_R1) || (flags & DICMOTE_MMC_RESPONSE_SPI_R1))
+    if((flags & AARUREMOTE_MMC_RESPONSE_R1) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R1))
         cmd_descriptor->ResponseType = SDRT_1;
-    if((flags & DICMOTE_MMC_RESPONSE_R1B) || (flags & DICMOTE_MMC_RESPONSE_SPI_R1B))
+    if((flags & AARUREMOTE_MMC_RESPONSE_R1B) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R1B))
         cmd_descriptor->ResponseType = SDRT_1B;
-    if((flags & DICMOTE_MMC_RESPONSE_R2) || (flags & DICMOTE_MMC_RESPONSE_SPI_R2))
+    if((flags & AARUREMOTE_MMC_RESPONSE_R2) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R2))
         cmd_descriptor->ResponseType = SDRT_2;
-    if((flags & DICMOTE_MMC_RESPONSE_R3) || (flags & DICMOTE_MMC_RESPONSE_SPI_R3))
+    if((flags & AARUREMOTE_MMC_RESPONSE_R3) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R3))
         cmd_descriptor->ResponseType = SDRT_3;
-    if((flags & DICMOTE_MMC_RESPONSE_R4) || (flags & DICMOTE_MMC_RESPONSE_SPI_R4))
+    if((flags & AARUREMOTE_MMC_RESPONSE_R4) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R4))
         cmd_descriptor->ResponseType = SDRT_4;
-    if((flags & DICMOTE_MMC_RESPONSE_R5) || (flags & DICMOTE_MMC_RESPONSE_SPI_R5))
+    if((flags & AARUREMOTE_MMC_RESPONSE_R5) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R5))
         cmd_descriptor->ResponseType = SDRT_5;
-    if((flags & DICMOTE_MMC_RESPONSE_R6)) cmd_descriptor->ResponseType = SDRT_6;
+    if((flags & AARUREMOTE_MMC_RESPONSE_R6)) cmd_descriptor->ResponseType = SDRT_6;
 
     QueryPerformanceFrequency(&frequency);
     QueryPerformanceCounter(&start);
@@ -152,7 +152,7 @@ int32_t Win32GetSdhciRegisters(void*     device_ctx,
                               9,
                               0,
                               0,
-                              DICMOTE_MMC_RESPONSE_SPI_R2 | DICMOTE_MMC_RESPONSE_R2 | DICMOTE_MMC_COMMAND_AC,
+                              AARUREMOTE_MMC_RESPONSE_SPI_R2 | AARUREMOTE_MMC_RESPONSE_R2 | AARUREMOTE_MMC_COMMAND_AC,
                               0,
                               16,
                               1,
@@ -177,7 +177,7 @@ int32_t Win32GetSdhciRegisters(void*     device_ctx,
                               10,
                               0,
                               0,
-                              DICMOTE_MMC_RESPONSE_SPI_R2 | DICMOTE_MMC_RESPONSE_R2 | DICMOTE_MMC_COMMAND_AC,
+                              AARUREMOTE_MMC_RESPONSE_SPI_R2 | AARUREMOTE_MMC_RESPONSE_R2 | AARUREMOTE_MMC_COMMAND_AC,
                               0,
                               16,
                               1,
@@ -202,7 +202,7 @@ int32_t Win32GetSdhciRegisters(void*     device_ctx,
                               10,
                               0,
                               0,
-                              DICMOTE_MMC_RESPONSE_SPI_R1 | DICMOTE_MMC_RESPONSE_R1 | DICMOTE_MMC_COMMAND_ADTC,
+                              AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
                               0,
                               8,
                               1,
@@ -227,7 +227,7 @@ int32_t Win32GetSdhciRegisters(void*     device_ctx,
                               *scr_len > 0 ? 41 : 1,
                               0,
                               0,
-                              DICMOTE_MMC_RESPONSE_SPI_R1 | DICMOTE_MMC_RESPONSE_R1 | DICMOTE_MMC_COMMAND_ADTC,
+                              AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
                               0,
                               4,
                               1,

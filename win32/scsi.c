@@ -69,11 +69,11 @@ int32_t Win32SendScsiCommand(void*     device_ctx,
 
     switch(direction)
     {
-        case DICMOTE_SCSI_DIRECTION_IN: dir = SCSI_IOCTL_DATA_IN; break;
-        case DICMOTE_SCSI_DIRECTION_OUT: dir = SCSI_IOCTL_DATA_OUT; break;
-        case DICMOTE_SCSI_DIRECTION_INOUT:
-        case DICMOTE_SCSI_DIRECTION_UNSPECIFIED: dir = SCSI_IOCTL_DATA_BIDIRECTIONAL; break;
-        case DICMOTE_SCSI_DIRECTION_NONE:
+        case AARUREMOTE_SCSI_DIRECTION_IN: dir = SCSI_IOCTL_DATA_IN; break;
+        case AARUREMOTE_SCSI_DIRECTION_OUT: dir = SCSI_IOCTL_DATA_OUT; break;
+        case AARUREMOTE_SCSI_DIRECTION_INOUT:
+        case AARUREMOTE_SCSI_DIRECTION_UNSPECIFIED: dir = SCSI_IOCTL_DATA_BIDIRECTIONAL; break;
+        case AARUREMOTE_SCSI_DIRECTION_NONE:
         default: dir = SCSI_IOCTL_DATA_UNSPECIFIED; break;
     }
 

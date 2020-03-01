@@ -143,12 +143,12 @@ DeviceInfoList* LinuxListDevices()
 
             switch(GetDeviceType(tmp_string))
             {
-                case DICMOTE_DEVICE_TYPE_ATA: strncpy(list_next->this.bus, "ATA", 256); break;
-                case DICMOTE_DEVICE_TYPE_ATAPI: strncpy(list_next->this.bus, "ATAPI", 256); break;
-                case DICMOTE_DEVICE_TYPE_MMC:
-                case DICMOTE_DEVICE_TYPE_SECURE_DIGITAL: strncpy(list_next->this.bus, "MMC/SD", 256); break;
-                case DICMOTE_DEVICE_TYPE_NVME: strncpy(list_next->this.bus, "NVMe", 256); break;
-                case DICMOTE_DEVICE_TYPE_SCSI:
+                case AARUREMOTE_DEVICE_TYPE_ATA: strncpy(list_next->this.bus, "ATA", 256); break;
+                case AARUREMOTE_DEVICE_TYPE_ATAPI: strncpy(list_next->this.bus, "ATAPI", 256); break;
+                case AARUREMOTE_DEVICE_TYPE_MMC:
+                case AARUREMOTE_DEVICE_TYPE_SECURE_DIGITAL: strncpy(list_next->this.bus, "MMC/SD", 256); break;
+                case AARUREMOTE_DEVICE_TYPE_NVME: strncpy(list_next->this.bus, "NVMe", 256); break;
+                case AARUREMOTE_DEVICE_TYPE_SCSI:
                     memset((void*)tmp_string, 0, 1024);
                     snprintf((char*)tmp_string, 1024, "%s/%s/device", PATH_SYS_DEVBLOCK, dirent->d_name);
                     line_str = malloc(1024);

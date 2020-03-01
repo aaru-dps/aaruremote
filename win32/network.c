@@ -61,7 +61,7 @@ int PrintNetworkAddresses()
         while(pUnicast != NULL)
         {
             printf(
-                "%s port %d\n", inet_ntoa(((struct sockaddr_in*)pUnicast->Address.lpSockaddr)->sin_addr), DICMOTE_PORT);
+                "%s port %d\n", inet_ntoa(((struct sockaddr_in*)pUnicast->Address.lpSockaddr)->sin_addr), AARUREMOTE_PORT);
             pUnicast = pUnicast->Next;
         }
 

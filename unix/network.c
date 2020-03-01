@@ -44,7 +44,7 @@ int PrintNetworkAddresses()
         if(ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET)
         {
             inet_ntop(AF_INET, &((struct sockaddr_in*)ifa->ifa_addr)->sin_addr, ipv4_address, INET_ADDRSTRLEN);
-            printf("%s port %d\n", ipv4_address, DICMOTE_PORT);
+            printf("%s port %d\n", ipv4_address, AARUREMOTE_PORT);
         }
 
         ifa = ifa->ifa_next;

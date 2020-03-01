@@ -52,7 +52,7 @@ int32_t GetDeviceType(void* device_ctx)
 #elif defined(WIN32)
     return Win32GetDeviceType(device_ctx);
 #else
-    return DICMOTE_DEVICE_TYPE_UNKNOWN;
+    return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 #endif
 }
 

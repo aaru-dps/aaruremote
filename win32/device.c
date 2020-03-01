@@ -77,7 +77,7 @@ int32_t Win32GetDeviceType(void* device_ctx)
 
     buf = malloc(1000);
 
-    if(!buf) return DICMOTE_DEVICE_TYPE_UNKNOWN;
+    if(!buf) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     query.PropertyId = StorageDeviceProperty;
     query.QueryType  = PropertyStandardQuery;
@@ -92,27 +92,27 @@ int32_t Win32GetDeviceType(void* device_ctx)
     if(!ret && error != 0)
     {
         free(buf);
-        return DICMOTE_DEVICE_TYPE_UNKNOWN;
+        return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
     }
 
     descriptor = (PSTORAGE_DEVICE_DESCRIPTOR)buf;
 
     switch(descriptor->BusType)
     {
-        case 1: returned = DICMOTE_DEVICE_TYPE_SCSI; break;
-        case 2: returned = DICMOTE_DEVICE_TYPE_ATAPI; break;
-        case 3: returned = DICMOTE_DEVICE_TYPE_ATA; break;
-        case 4: returned = DICMOTE_DEVICE_TYPE_SCSI; break;
-        case 5: returned = DICMOTE_DEVICE_TYPE_SCSI; break;
-        case 6: returned = DICMOTE_DEVICE_TYPE_SCSI; break;
-        case 7: returned = DICMOTE_DEVICE_TYPE_SCSI; break;
-        case 9: returned = DICMOTE_DEVICE_TYPE_SCSI; break;
-        case 0xA: returned = DICMOTE_DEVICE_TYPE_SCSI; break;
-        case 0xB: returned = DICMOTE_DEVICE_TYPE_ATA; break;
-        case 0xC: returned = DICMOTE_DEVICE_TYPE_SECURE_DIGITAL; break;
-        case 0xD: returned = DICMOTE_DEVICE_TYPE_MMC; break;
-        case 0x11: returned = DICMOTE_DEVICE_TYPE_NVME; break;
-        default: returned = DICMOTE_DEVICE_TYPE_UNKNOWN; break;
+        case 1: returned = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case 2: returned = AARUREMOTE_DEVICE_TYPE_ATAPI; break;
+        case 3: returned = AARUREMOTE_DEVICE_TYPE_ATA; break;
+        case 4: returned = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case 5: returned = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case 6: returned = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case 7: returned = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case 9: returned = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case 0xA: returned = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case 0xB: returned = AARUREMOTE_DEVICE_TYPE_ATA; break;
+        case 0xC: returned = AARUREMOTE_DEVICE_TYPE_SECURE_DIGITAL; break;
+        case 0xD: returned = AARUREMOTE_DEVICE_TYPE_MMC; break;
+        case 0x11: returned = AARUREMOTE_DEVICE_TYPE_NVME; break;
+        default: returned = AARUREMOTE_DEVICE_TYPE_UNKNOWN; break;
     }
 
     free(buf);

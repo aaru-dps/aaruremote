@@ -96,7 +96,7 @@ void* WorkingLoop(void* arguments)
 
     serv_addr.sin_family      = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
-    serv_addr.sin_port        = htons(DICMOTE_PORT);
+    serv_addr.sin_port        = htons(AARUREMOTE_PORT);
 
     if(NetBind(net_ctx, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
     {
@@ -125,11 +125,11 @@ void* WorkingLoop(void* arguments)
 
     memset(pkt_nop, 0, sizeof(DicPacketNop));
 
-    pkt_nop->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-    pkt_nop->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+    pkt_nop->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+    pkt_nop->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
     pkt_nop->hdr.len         = htole32(sizeof(DicPacketNop));
-    pkt_nop->hdr.version     = DICMOTE_PACKET_VERSION;
-    pkt_nop->hdr.packet_type = DICMOTE_PACKET_TYPE_NOP;
+    pkt_nop->hdr.version     = AARUREMOTE_PACKET_VERSION;
+    pkt_nop->hdr.packet_type = AARUREMOTE_PACKET_TYPE_NOP;
 
     for(;;)
     {
@@ -179,7 +179,7 @@ void* WorkingLoop(void* arguments)
             continue;
         }
 
-        if(pkt_hdr->remote_id != htole32(DICMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(DICMOTE_PACKET_ID))
+        if(pkt_hdr->remote_id != htole32(AARUREMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(AARUREMOTE_PACKET_ID))
         {
             printf("Received data is not a correct dicremote packet, closing connection...\n");
             free(pkt_hdr);
@@ -187,7 +187,7 @@ void* WorkingLoop(void* arguments)
             continue;
         }
 
-        if(pkt_hdr->version != DICMOTE_PACKET_VERSION)
+        if(pkt_hdr->version != AARUREMOTE_PACKET_VERSION)
         {
             printf("Unrecognized packet version, closing connection...\n");
             free(pkt_hdr);
@@ -195,7 +195,7 @@ void* WorkingLoop(void* arguments)
             continue;
         }
 
-        if(pkt_hdr->packet_type != DICMOTE_PACKET_TYPE_HELLO)
+        if(pkt_hdr->packet_type != AARUREMOTE_PACKET_TYPE_HELLO)
         {
             printf("Expecting hello packet type, received type %d, closing connection...\n", pkt_hdr->packet_type);
             free(pkt_hdr);
@@ -272,7 +272,7 @@ void* WorkingLoop(void* arguments)
                 break;
             }
 
-            if(pkt_hdr->remote_id != htole32(DICMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(DICMOTE_PACKET_ID))
+            if(pkt_hdr->remote_id != htole32(AARUREMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(AARUREMOTE_PACKET_ID))
             {
                 printf("Received data is not a correct dicremote packet, closing connection...\n");
                 NetClose(cli_ctx);
@@ -280,7 +280,7 @@ void* WorkingLoop(void* arguments)
                 break;
             }
 
-            if(pkt_hdr->version != DICMOTE_PACKET_VERSION)
+            if(pkt_hdr->version != AARUREMOTE_PACKET_VERSION)
             {
                 printf("Unrecognized packet version, skipping...\n");
                 skip_next_hdr = 1;
@@ -289,15 +289,15 @@ void* WorkingLoop(void* arguments)
 
             switch(pkt_hdr->packet_type)
             {
-                case DICMOTE_PACKET_TYPE_HELLO:
-                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
+                case AARUREMOTE_PACKET_TYPE_HELLO:
+                    pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_OOO;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Received hello packet out of order, skipping...", 256);
                     NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES:
                     device_info_list = ListDevices();
 
                     // Packet only contains header so, dummy
@@ -316,7 +316,7 @@ void* WorkingLoop(void* arguments)
 
                     if(!device_info_list)
                     {
-                        pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES;
+                        pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES;
                         memset(&pkt_nop->reason, 0, 256);
                         strncpy(pkt_nop->reason, "Could not get device list, continuing...", 256);
                         NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
@@ -334,10 +334,10 @@ void* WorkingLoop(void* arguments)
                     free(pkt_res_devinfo);
                     pkt_res_devinfo = (DicPacketResListDevs*)in_buf;
 
-                    pkt_res_devinfo->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_devinfo->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
-                    pkt_res_devinfo->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_devinfo->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
+                    pkt_res_devinfo->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_devinfo->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_devinfo->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_devinfo->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
 
                     // Save list start
                     in_buf   = (char*)device_info_list;
@@ -356,25 +356,25 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_res_devinfo, le32toh(pkt_res_devinfo->hdr.len));
                     free(pkt_res_devinfo);
                     continue;
-                case DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
-                case DICMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
-                case DICMOTE_PACKET_TYPE_RESPONSE_SCSI:
-                case DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS:
-                case DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_28:
-                case DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_48:
-                case DICMOTE_PACKET_TYPE_RESPONSE_SDHCI:
-                case DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE:
-                case DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA:
-                case DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA:
-                case DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA:
-                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_OOO;
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_SCSI:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_ATA_CHS:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_28:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_48:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_SDHCI:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA:
+                case AARUREMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA:
+                    pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_OOO;
                     memset(&pkt_nop->reason, 0, 256);
                     strncpy(pkt_nop->reason, "Received response packet?! You should certainly not do that...", 256);
                     NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_OPEN_DEVICE:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_OPEN_DEVICE:
                     pkt_dev_open = malloc(le32toh(pkt_hdr->len));
 
                     if(!pkt_dev_open)
@@ -390,14 +390,14 @@ void* WorkingLoop(void* arguments)
                     device_ctx = DeviceOpen(pkt_dev_open->device_path);
 
                     pkt_nop->reason_code =
-                        device_ctx == NULL ? DICMOTE_PACKET_NOP_REASON_OPEN_ERROR : DICMOTE_PACKET_NOP_REASON_OPEN_OK;
+                        device_ctx == NULL ? AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR : AARUREMOTE_PACKET_NOP_REASON_OPEN_OK;
                     pkt_nop->error_no = errno;
                     memset(&pkt_nop->reason, 0, 256);
                     NetWrite(cli_ctx, pkt_nop, sizeof(DicPacketNop));
 
                     free(pkt_dev_open);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_GET_DEVTYPE:
                     // Packet only contains header so, dummy
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -425,16 +425,16 @@ void* WorkingLoop(void* arguments)
                     memset(pkt_dev_type, 0, sizeof(DicPacketResGetDeviceType));
 
                     pkt_dev_type->hdr.len         = htole32(sizeof(DicPacketResGetDeviceType));
-                    pkt_dev_type->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE;
-                    pkt_dev_type->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_dev_type->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_dev_type->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+                    pkt_dev_type->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_DEVTYPE;
+                    pkt_dev_type->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_dev_type->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_dev_type->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
                     pkt_dev_type->device_type     = htole32(GetDeviceType(device_ctx));
 
                     NetWrite(cli_ctx, pkt_dev_type, sizeof(DicPacketResGetDeviceType));
                     free(pkt_dev_type);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_SCSI:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_SCSI:
                     // Packet contains data after
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -495,10 +495,10 @@ void* WorkingLoop(void* arguments)
                     if(buffer) memcpy(out_buf + sizeof(DicPacketResScsi) + sense_len, buffer, pkt_cmd_scsi->buf_len);
 
                     pkt_res_scsi->hdr.len = htole32(sizeof(DicPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len);
-                    pkt_res_scsi->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SCSI;
-                    pkt_res_scsi->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_scsi->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_scsi->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+                    pkt_res_scsi->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_SCSI;
+                    pkt_res_scsi->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_scsi->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_scsi->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
 
                     pkt_res_scsi->sense_len = htole32(sense_len);
                     pkt_res_scsi->buf_len   = pkt_cmd_scsi->buf_len;
@@ -511,7 +511,7 @@ void* WorkingLoop(void* arguments)
                     free(pkt_res_scsi);
                     if(sense_buf) free(sense_buf);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
                     // Packet only contains header so, dummy
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -536,10 +536,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_sdhci_registers, 0, sizeof(DicPacketResGetSdhciRegisters));
-                    pkt_res_sdhci_registers->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_sdhci_registers->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
-                    pkt_res_sdhci_registers->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_sdhci_registers->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
+                    pkt_res_sdhci_registers->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_sdhci_registers->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_sdhci_registers->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_sdhci_registers->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
                     pkt_res_sdhci_registers->hdr.len         = htole32(sizeof(DicPacketResGetSdhciRegisters));
                     pkt_res_sdhci_registers->is_sdhci        = GetSdhciRegisters(device_ctx,
                                                                           &csd,
@@ -590,7 +590,7 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_res_sdhci_registers, le32toh(pkt_res_sdhci_registers->hdr.len));
                     free(pkt_res_sdhci_registers);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_GET_USB_DATA:
                     // Packet only contains header so, dummy
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -615,10 +615,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_usb, 0, sizeof(DicPacketResGetUsbData));
-                    pkt_res_usb->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_usb->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
-                    pkt_res_usb->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_usb->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
+                    pkt_res_usb->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_usb->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_usb->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_usb->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
                     pkt_res_usb->hdr.len         = htole32(sizeof(DicPacketResGetUsbData));
                     pkt_res_usb->is_usb          = GetUsbData(device_ctx,
                                                      &pkt_res_usb->desc_len,
@@ -636,7 +636,7 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_res_usb, le32toh(pkt_res_usb->hdr.len));
                     free(pkt_res_usb);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_GET_FIREWIRE_DATA:
                     // Packet only contains header so, dummy
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -661,10 +661,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_firewire, 0, sizeof(DicPacketResGetFireWireData));
-                    pkt_res_firewire->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_firewire->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
-                    pkt_res_firewire->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_firewire->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA;
+                    pkt_res_firewire->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_firewire->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_firewire->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_firewire->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA;
                     pkt_res_firewire->hdr.len         = htole32(sizeof(DicPacketResGetFireWireData));
                     pkt_res_firewire->is_firewire     = GetFireWireData(device_ctx,
                                                                     &pkt_res_firewire->id_model,
@@ -678,7 +678,7 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_res_firewire, le32toh(pkt_res_firewire->hdr.len));
                     free(pkt_res_firewire);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_GET_PCMCIA_DATA:
                     // Packet only contains header so, dummy
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -703,10 +703,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_pcmcia, 0, sizeof(DicPacketResGetPcmciaData));
-                    pkt_res_pcmcia->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_pcmcia->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
-                    pkt_res_pcmcia->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_pcmcia->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA;
+                    pkt_res_pcmcia->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_pcmcia->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_pcmcia->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_pcmcia->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA;
                     pkt_res_pcmcia->hdr.len         = htole32(sizeof(DicPacketResGetPcmciaData));
                     pkt_res_pcmcia->is_pcmcia =
                         GetPcmciaData(device_ctx, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
@@ -716,7 +716,7 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_res_pcmcia, le32toh(pkt_res_pcmcia->hdr.len));
                     free(pkt_res_pcmcia);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_ATA_CHS:
                     // Packet contains data after
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -773,10 +773,10 @@ void* WorkingLoop(void* arguments)
                     if(buffer) memcpy(out_buf + sizeof(DicPacketResAtaChs), buffer, htole32(pkt_cmd_ata_chs->buf_len));
 
                     pkt_res_ata_chs->hdr.len = htole32(sizeof(DicPacketResAtaChs) + htole32(pkt_cmd_ata_chs->buf_len));
-                    pkt_res_ata_chs->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_CHS;
-                    pkt_res_ata_chs->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_chs->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_ata_chs->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+                    pkt_res_ata_chs->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_ATA_CHS;
+                    pkt_res_ata_chs->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_ata_chs->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_ata_chs->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
 
                     pkt_res_ata_chs->registers = ata_chs_error_regs;
                     pkt_res_ata_chs->buf_len   = pkt_cmd_ata_chs->buf_len;
@@ -788,7 +788,7 @@ void* WorkingLoop(void* arguments)
                     free(pkt_cmd_ata_chs);
                     free(pkt_res_ata_chs);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA_28:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_ATA_LBA_28:
                     // Packet contains data after
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -846,10 +846,10 @@ void* WorkingLoop(void* arguments)
 
                     pkt_res_ata_lba28->hdr.len =
                         htole32(sizeof(DicPacketResAtaLba28) + le32toh(pkt_cmd_ata_lba28->buf_len));
-                    pkt_res_ata_lba28->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_28;
-                    pkt_res_ata_lba28->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_lba28->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_ata_lba28->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+                    pkt_res_ata_lba28->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_28;
+                    pkt_res_ata_lba28->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_ata_lba28->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_ata_lba28->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
 
                     pkt_res_ata_lba28->registers = ata_lba28_error_regs;
                     pkt_res_ata_lba28->buf_len   = pkt_cmd_ata_lba28->buf_len;
@@ -861,7 +861,7 @@ void* WorkingLoop(void* arguments)
                     free(pkt_cmd_ata_lba28);
                     free(pkt_res_ata_lba28);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_ATA_LBA_48:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_ATA_LBA_48:
                     // Packet contains data after
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -924,10 +924,10 @@ void* WorkingLoop(void* arguments)
 
                     pkt_res_ata_lba48->hdr.len =
                         htole32(sizeof(DicPacketResAtaLba48) + le32toh(pkt_cmd_ata_lba48->buf_len));
-                    pkt_res_ata_lba48->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_48;
-                    pkt_res_ata_lba48->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_ata_lba48->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_ata_lba48->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+                    pkt_res_ata_lba48->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_ATA_LBA_48;
+                    pkt_res_ata_lba48->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_ata_lba48->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_ata_lba48->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
 
                     // Swapping
                     ata_lba48_error_regs.lba_high     = htole16(ata_lba48_error_regs.lba_high);
@@ -945,7 +945,7 @@ void* WorkingLoop(void* arguments)
                     free(pkt_cmd_ata_lba48);
                     free(pkt_res_ata_lba48);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_SDHCI:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_SDHCI:
                     // Packet contains data after
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -1001,10 +1001,10 @@ void* WorkingLoop(void* arguments)
                     if(buffer) memcpy(out_buf + sizeof(DicPacketResSdhci), buffer, le32toh(pkt_cmd_sdhci->buf_len));
 
                     pkt_res_sdhci->hdr.len = htole32(sizeof(DicPacketResSdhci) + le32toh(pkt_cmd_sdhci->buf_len));
-                    pkt_res_sdhci->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_SDHCI;
-                    pkt_res_sdhci->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_sdhci->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_sdhci->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+                    pkt_res_sdhci->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_SDHCI;
+                    pkt_res_sdhci->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_sdhci->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_sdhci->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
 
                     sdhci_response[0] = htole32(sdhci_response[0]);
                     sdhci_response[1] = htole32(sdhci_response[1]);
@@ -1021,12 +1021,12 @@ void* WorkingLoop(void* arguments)
                     free(pkt_cmd_sdhci);
                     free(pkt_res_sdhci);
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_CLOSE_DEVICE:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_CLOSE_DEVICE:
                     DeviceClose(device_ctx);
                     device_ctx    = NULL;
                     skip_next_hdr = 1;
                     continue;
-                case DICMOTE_PACKET_TYPE_COMMAND_AM_I_ROOT:
+                case AARUREMOTE_PACKET_TYPE_COMMAND_AM_I_ROOT:
                     // Packet only contains header so, dummy
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -1051,10 +1051,10 @@ void* WorkingLoop(void* arguments)
                     }
 
                     memset(pkt_res_am_i_root, 0, sizeof(DicPacketResAmIRoot));
-                    pkt_res_am_i_root->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-                    pkt_res_am_i_root->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
-                    pkt_res_am_i_root->hdr.version     = DICMOTE_PACKET_VERSION;
-                    pkt_res_am_i_root->hdr.packet_type = DICMOTE_PACKET_TYPE_RESPONSE_AM_I_ROOT;
+                    pkt_res_am_i_root->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_am_i_root->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_am_i_root->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_am_i_root->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_AM_I_ROOT;
                     pkt_res_am_i_root->hdr.len         = htole32(sizeof(DicPacketResAmIRoot));
                     pkt_res_am_i_root->am_i_root       = AmIRoot();
 
@@ -1062,7 +1062,7 @@ void* WorkingLoop(void* arguments)
                     free(pkt_res_am_i_root);
                     continue;
                 default:
-                    pkt_nop->reason_code = DICMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
+                    pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);
                     snprintf(pkt_nop->reason,
                              256,

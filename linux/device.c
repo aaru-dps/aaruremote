@@ -75,17 +75,17 @@ int32_t LinuxGetDeviceType(void* device_ctx)
     struct udev_device* udev_device;
     const char*         tmp_string;
     char*               chrptr;
-    int32_t             device_type = DICMOTE_DEVICE_TYPE_UNKNOWN;
+    int32_t             device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     udev = udev_new();
 
-    if(!udev) return DICMOTE_DEVICE_TYPE_UNKNOWN;
+    if(!udev) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     chrptr = strrchr(ctx->device_path, '/');
-    if(chrptr == 0) return DICMOTE_DEVICE_TYPE_UNKNOWN;
+    if(chrptr == 0) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     chrptr++;
-    if(chrptr == 0) return DICMOTE_DEVICE_TYPE_UNKNOWN;
+    if(chrptr == 0) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     udev_device = udev_device_new_from_subsystem_sysname(udev, "block", chrptr);
     if(udev_device)
@@ -95,7 +95,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
         {
             if(strncmp(tmp_string, "ata", 3) == 0)
             {
-                device_type = DICMOTE_DEVICE_TYPE_ATA;
+                device_type = AARUREMOTE_DEVICE_TYPE_ATA;
 
                 free((void*)tmp_string);
                 tmp_string = udev_device_get_property_value(udev_device, "ID_TYPE");
@@ -103,7 +103,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
                 if(tmp_string)
                 {
                     // TODO: ATAPI removable non optical disks
-                    if(strncmp(tmp_string, "cd", 2) == 0) { device_type = DICMOTE_DEVICE_TYPE_ATAPI; }
+                    if(strncmp(tmp_string, "cd", 2) == 0) { device_type = AARUREMOTE_DEVICE_TYPE_ATAPI; }
 
                     free((void*)tmp_string);
                 }
@@ -113,14 +113,14 @@ int32_t LinuxGetDeviceType(void* device_ctx)
                 free((void*)tmp_string);
                 tmp_string = malloc(1024);
 
-                device_type = DICMOTE_DEVICE_TYPE_MMC;
+                device_type = AARUREMOTE_DEVICE_TYPE_MMC;
 
                 if(tmp_string)
                 {
                     memset((void*)tmp_string, 0, 1024);
                     snprintf((char*)tmp_string, 1024, "/sys/block/%s/device/scr", chrptr);
 
-                    if(access(tmp_string, R_OK) == 0) device_type = DICMOTE_DEVICE_TYPE_SECURE_DIGITAL;
+                    if(access(tmp_string, R_OK) == 0) device_type = AARUREMOTE_DEVICE_TYPE_SECURE_DIGITAL;
 
                     free((void*)tmp_string);
                 }
@@ -134,7 +134,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
                 if(tmp_string)
                 {
                     if(strncmp(tmp_string, "cd", 2) == 0 || strncmp(tmp_string, "disk", 4) == 0)
-                    { device_type = DICMOTE_DEVICE_TYPE_SCSI; }
+                    { device_type = AARUREMOTE_DEVICE_TYPE_SCSI; }
 
                     free((void*)tmp_string);
                 }
@@ -142,7 +142,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
             else if(strncmp(tmp_string, "nvme", 4) == 0)
             {
                 free((void*)tmp_string);
-                device_type = DICMOTE_DEVICE_TYPE_NVME;
+                device_type = AARUREMOTE_DEVICE_TYPE_NVME;
             }
         }
     }
@@ -151,7 +151,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
 
     return device_type;
 #else
-    int32_t     dev_type = DICMOTE_DEVICE_TYPE_UNKNOWN;
+    int32_t     dev_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
     const char* dev_name;
     const char* sysfs_path;
     char*       dev_path;
@@ -169,13 +169,13 @@ int32_t LinuxGetDeviceType(void* device_ctx)
 
     if(strlen(ctx->device_path) <= 5) return dev_type;
 
-    if(strstr(ctx->device_path, "nvme")) return DICMOTE_DEVICE_TYPE_NVME;
+    if(strstr(ctx->device_path, "nvme")) return AARUREMOTE_DEVICE_TYPE_NVME;
 
     dev_name = ctx->device_path + 5;
 
     if(strstr(ctx->device_path, "mmcblk"))
     {
-        dev_type = DICMOTE_DEVICE_TYPE_MMC;
+        dev_type = AARUREMOTE_DEVICE_TYPE_MMC;
 
         sysfs_path_scr = malloc(len);
 
@@ -183,7 +183,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
         {
             snprintf(sysfs_path_scr, len, "/sys/block/%s/device/scr", dev_name);
 
-            if(access(sysfs_path_scr, F_OK) == 0) dev_type = DICMOTE_DEVICE_TYPE_SECURE_DIGITAL;
+            if(access(sysfs_path_scr, F_OK) == 0) dev_type = AARUREMOTE_DEVICE_TYPE_SECURE_DIGITAL;
 
             free(sysfs_path_scr);
         }
@@ -264,10 +264,10 @@ int32_t LinuxGetDeviceType(void* device_ctx)
 
     if(access(spi_path, F_OK) == 0 || access(fc_path, F_OK) == 0 || access(sas_path, F_OK) == 0 ||
        access(iscsi_path, F_OK) == 0)
-        dev_type = DICMOTE_DEVICE_TYPE_SCSI;
+        dev_type = AARUREMOTE_DEVICE_TYPE_SCSI;
     else if(access(scsi_path, F_OK) == 0)
     {
-        dev_type = DICMOTE_DEVICE_TYPE_SCSI;
+        dev_type = AARUREMOTE_DEVICE_TYPE_SCSI;
         memset(scsi_path, 0, len);
         snprintf(scsi_path, len, "/sys/class/scsi_host/host%s/proc_name", host_no);
         if(access(scsi_path, F_OK) == 0)
@@ -287,7 +287,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
                     if(strncmp(scsi_path, "ata", 3) == 0 || strncmp(scsi_path, "sata", 4) == 0 ||
                        strncmp(scsi_path, "ahci", 4) == 0)
                     {
-                        dev_type = DICMOTE_DEVICE_TYPE_ATA;
+                        dev_type = AARUREMOTE_DEVICE_TYPE_ATA;
                         memset(scsi_path, 0, len);
                         snprintf(scsi_path, len, "%s/%s/removable", PATH_SYS_DEVBLOCK, dev_name);
 
@@ -297,7 +297,7 @@ int32_t LinuxGetDeviceType(void* device_ctx)
                             ret = (size_t)fread(scsi_path, 1, 1, file);
                             if(ret == 1)
                             {
-                                if(scsi_path[0] == '1') dev_type = DICMOTE_DEVICE_TYPE_ATAPI;
+                                if(scsi_path[0] == '1') dev_type = AARUREMOTE_DEVICE_TYPE_ATAPI;
                             }
                             fclose(file);
                         }

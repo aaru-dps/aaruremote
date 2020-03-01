@@ -78,20 +78,20 @@ int32_t Win32SendAtaChsCommand(void*                 device_ctx,
 
     switch(protocol)
     {
-        case DICMOTE_ATA_PROTOCOL_PIO_IN:
-        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
-        case DICMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
-        case DICMOTE_ATA_PROTOCOL_PIO_OUT:
-        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN:
+        case AARUREMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_OUT:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
     }
 
     switch(protocol)
     {
-        case DICMOTE_ATA_PROTOCOL_DMA:
-        case DICMOTE_ATA_PROTOCOL_DMA_QUEUED:
-        case DICMOTE_ATA_PROTOCOL_FPDMA:
-        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
-        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
+        case AARUREMOTE_ATA_PROTOCOL_DMA:
+        case AARUREMOTE_ATA_PROTOCOL_DMA_QUEUED:
+        case AARUREMOTE_ATA_PROTOCOL_FPDMA:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
     }
 
     // Unknown if needed
@@ -188,20 +188,20 @@ int32_t Win32SendAtaLba28Command(void*                   device_ctx,
 
     switch(protocol)
     {
-        case DICMOTE_ATA_PROTOCOL_PIO_IN:
-        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
-        case DICMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
-        case DICMOTE_ATA_PROTOCOL_PIO_OUT:
-        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN:
+        case AARUREMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_OUT:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
     }
 
     switch(protocol)
     {
-        case DICMOTE_ATA_PROTOCOL_DMA:
-        case DICMOTE_ATA_PROTOCOL_DMA_QUEUED:
-        case DICMOTE_ATA_PROTOCOL_FPDMA:
-        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
-        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
+        case AARUREMOTE_ATA_PROTOCOL_DMA:
+        case AARUREMOTE_ATA_PROTOCOL_DMA_QUEUED:
+        case AARUREMOTE_ATA_PROTOCOL_FPDMA:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
     }
 
     // Unknown if needed
@@ -303,20 +303,20 @@ int32_t Win32SendAtaLba48Command(void*                   device_ctx,
 
     switch(protocol)
     {
-        case DICMOTE_ATA_PROTOCOL_PIO_IN:
-        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
-        case DICMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
-        case DICMOTE_ATA_PROTOCOL_PIO_OUT:
-        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN:
+        case AARUREMOTE_ATA_PROTOCOL_DMA: apte->AtaFlags = ATA_FLAGS_DATA_IN; break;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_OUT:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags = ATA_FLAGS_DATA_OUT; break;
     }
 
     switch(protocol)
     {
-        case DICMOTE_ATA_PROTOCOL_DMA:
-        case DICMOTE_ATA_PROTOCOL_DMA_QUEUED:
-        case DICMOTE_ATA_PROTOCOL_FPDMA:
-        case DICMOTE_ATA_PROTOCOL_UDMA_IN:
-        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
+        case AARUREMOTE_ATA_PROTOCOL_DMA:
+        case AARUREMOTE_ATA_PROTOCOL_DMA_QUEUED:
+        case AARUREMOTE_ATA_PROTOCOL_FPDMA:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT: apte->AtaFlags |= ATA_FLAGS_USE_DMA; break;
     }
 
     apte->AtaFlags |= ATA_FLAGS_48BIT_COMMAND;

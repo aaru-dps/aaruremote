@@ -34,7 +34,7 @@ int PrintNetworkAddresses()
     if(ret < 0) return -1;
 
     printf("Available addresses:\n");
-    printf("%s port %d\n", localip, DICMOTE_PORT);
+    printf("%s port %d\n", localip, AARUREMOTE_PORT);
 
     return 0;
 }

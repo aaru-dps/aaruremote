@@ -63,14 +63,14 @@ DicPacketHello* GetHello()
 
     memset(pkt_server_hello, 0, sizeof(DicPacketHello));
 
-    pkt_server_hello->hdr.remote_id   = htole32(DICMOTE_REMOTE_ID);
-    pkt_server_hello->hdr.packet_id   = htole32(DICMOTE_PACKET_ID);
+    pkt_server_hello->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+    pkt_server_hello->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
     pkt_server_hello->hdr.len         = htole32(sizeof(DicPacketHello));
-    pkt_server_hello->hdr.version     = DICMOTE_PACKET_VERSION;
-    pkt_server_hello->hdr.packet_type = DICMOTE_PACKET_TYPE_HELLO;
-    strncpy(pkt_server_hello->application, DICMOTE_NAME, sizeof(DICMOTE_NAME));
-    strncpy(pkt_server_hello->version, DICMOTE_VERSION, sizeof(DICMOTE_VERSION));
-    pkt_server_hello->max_protocol = DICMOTE_PROTOCOL_MAX;
+    pkt_server_hello->hdr.version     = AARUREMOTE_PACKET_VERSION;
+    pkt_server_hello->hdr.packet_type = AARUREMOTE_PACKET_TYPE_HELLO;
+    strncpy(pkt_server_hello->application, AARUREMOTE_NAME, sizeof(AARUREMOTE_NAME));
+    strncpy(pkt_server_hello->version, AARUREMOTE_VERSION, sizeof(AARUREMOTE_VERSION));
+    pkt_server_hello->max_protocol = AARUREMOTE_PROTOCOL_MAX;
 
     ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);

@@ -23,17 +23,17 @@ int32_t AtaProtocolToScsiDirection(uint8_t protocol)
 {
     switch(protocol)
     {
-        case DICMOTE_ATA_PROTOCOL_DEVICE_DIAGNOSTIC:
-        case DICMOTE_ATA_PROTOCOL_DEVICE_RESET:
-        case DICMOTE_ATA_PROTOCOL_HARD_RESET:
-        case DICMOTE_ATA_PROTOCOL_NO_DATA:
-        case DICMOTE_ATA_PROTOCOL_SOFT_RESET:
-        case DICMOTE_ATA_PROTOCOL_RETURN_RESPONSE: return DICMOTE_SCSI_DIRECTION_NONE;
-        case DICMOTE_ATA_PROTOCOL_PIO_IN:
-        case DICMOTE_ATA_PROTOCOL_UDMA_IN: return DICMOTE_SCSI_DIRECTION_IN;
-        case DICMOTE_ATA_PROTOCOL_PIO_OUT:
-        case DICMOTE_ATA_PROTOCOL_UDMA_OUT: return DICMOTE_SCSI_DIRECTION_OUT;
-        default: return DICMOTE_SCSI_DIRECTION_UNSPECIFIED;
+        case AARUREMOTE_ATA_PROTOCOL_DEVICE_DIAGNOSTIC:
+        case AARUREMOTE_ATA_PROTOCOL_DEVICE_RESET:
+        case AARUREMOTE_ATA_PROTOCOL_HARD_RESET:
+        case AARUREMOTE_ATA_PROTOCOL_NO_DATA:
+        case AARUREMOTE_ATA_PROTOCOL_SOFT_RESET:
+        case AARUREMOTE_ATA_PROTOCOL_RETURN_RESPONSE: return AARUREMOTE_SCSI_DIRECTION_NONE;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN: return AARUREMOTE_SCSI_DIRECTION_IN;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_OUT:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT: return AARUREMOTE_SCSI_DIRECTION_OUT;
+        default: return AARUREMOTE_SCSI_DIRECTION_UNSPECIFIED;
     }
 }
 
@@ -62,12 +62,12 @@ int32_t LinuxSendAtaChsCommand(void*                 device_ctx,
 
     cdb[0] = 0x85;
     cdb[1] = (protocol << 1) & 0x1E;
-    if(transfer_register != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
+    if(transfer_register != AARUREMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != AARUREMOTE_ATA_PROTOCOL_NO_DATA)
     {
         switch(protocol)
         {
-            case DICMOTE_ATA_PROTOCOL_PIO_IN:
-            case DICMOTE_ATA_PROTOCOL_UDMA_IN: cdb[2] = 0x08; break;
+            case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+            case AARUREMOTE_ATA_PROTOCOL_UDMA_IN: cdb[2] = 0x08; break;
             default: cdb[2] = 0x00; break;
         }
 
@@ -137,12 +137,12 @@ int32_t LinuxSendAtaLba28Command(void*                   device_ctx,
 
     cdb[0] = 0x85;
     cdb[1] = (protocol << 1) & 0x1E;
-    if(transfer_register != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
+    if(transfer_register != AARUREMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != AARUREMOTE_ATA_PROTOCOL_NO_DATA)
     {
         switch(protocol)
         {
-            case DICMOTE_ATA_PROTOCOL_PIO_IN:
-            case DICMOTE_ATA_PROTOCOL_UDMA_IN: cdb[2] = 0x08; break;
+            case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+            case AARUREMOTE_ATA_PROTOCOL_UDMA_IN: cdb[2] = 0x08; break;
             default: cdb[2] = 0x00; break;
         }
 
@@ -215,12 +215,12 @@ int32_t LinuxSendAtaLba48Command(void*                   device_ctx,
     cdb[0] = 0x85;
     cdb[1] = (protocol << 1) & 0x1E;
     cdb[1] |= 0x01;
-    if(transfer_register != DICMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != DICMOTE_ATA_PROTOCOL_NO_DATA)
+    if(transfer_register != AARUREMOTE_ATA_TRANSFER_REGISTER_NONE && protocol != AARUREMOTE_ATA_PROTOCOL_NO_DATA)
     {
         switch(protocol)
         {
-            case DICMOTE_ATA_PROTOCOL_PIO_IN:
-            case DICMOTE_ATA_PROTOCOL_UDMA_IN: cdb[2] = 0x08; break;
+            case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+            case AARUREMOTE_ATA_PROTOCOL_UDMA_IN: cdb[2] = 0x08; break;
             default: cdb[2] = 0x00; break;
         }
 
