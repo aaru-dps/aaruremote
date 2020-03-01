@@ -145,11 +145,11 @@ typedef struct
     uint8_t  version;
     int8_t   packet_type;
     char     spare[2];
-} DicPacketHeader;
+} AaruPacketHeader;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     char            application[128];
     char            version[64];
     uint8_t         max_protocol;
@@ -157,18 +157,18 @@ typedef struct
     char            sysname[256];
     char            release[256];
     char            machine[256];
-} DicPacketHello;
+} AaruPacketHello;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdListDevs;
+    AaruPacketHeader hdr;
+} AaruPacketCmdListDevs;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint16_t        devices;
-} DicPacketResListDevs;
+} AaruPacketResListDevs;
 
 typedef struct
 {
@@ -189,37 +189,37 @@ typedef struct DeviceInfoList
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint8_t         reason_code;
     char            spare[3];
     char            reason[256];
     int32_t         error_no;
-} DicPacketNop;
+} AaruPacketNop;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     char            device_path[1024];
-} DicPacketCmdOpen;
+} AaruPacketCmdOpen;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint32_t        cdb_len;
     uint32_t        buf_len;
     int32_t         direction;
     uint32_t        timeout;
-} DicPacketCmdScsi;
+} AaruPacketCmdScsi;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint32_t        sense_len;
     uint32_t        buf_len;
     uint32_t        duration;
     uint32_t        sense;
     uint32_t        error_no;
-} DicPacketResScsi;
+} AaruPacketResScsi;
 
 typedef struct
 {
@@ -245,7 +245,7 @@ typedef struct
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint32_t        buf_len;
     AtaRegistersChs registers;
     uint8_t         protocol;
@@ -253,17 +253,17 @@ typedef struct
     uint8_t         transfer_blocks;
     uint8_t         spare;
     uint32_t        timeout;
-} DicPacketCmdAtaChs;
+} AaruPacketCmdAtaChs;
 
 typedef struct
 {
-    DicPacketHeader      hdr;
+    AaruPacketHeader      hdr;
     uint32_t             buf_len;
     AtaErrorRegistersChs registers;
     uint32_t             duration;
     uint32_t             sense;
     uint32_t             error_no;
-} DicPacketResAtaChs;
+} AaruPacketResAtaChs;
 
 typedef struct
 {
@@ -289,7 +289,7 @@ typedef struct
 
 typedef struct
 {
-    DicPacketHeader   hdr;
+    AaruPacketHeader   hdr;
     uint32_t          buf_len;
     AtaRegistersLba28 registers;
     uint8_t           protocol;
@@ -297,17 +297,17 @@ typedef struct
     uint8_t           transfer_blocks;
     uint8_t           spare;
     uint32_t          timeout;
-} DicPacketCmdAtaLba28;
+} AaruPacketCmdAtaLba28;
 
 typedef struct
 {
-    DicPacketHeader        hdr;
+    AaruPacketHeader        hdr;
     uint32_t               buf_len;
     AtaErrorRegistersLba28 registers;
     uint32_t               duration;
     uint32_t               sense;
     uint32_t               error_no;
-} DicPacketResAtaLba28;
+} AaruPacketResAtaLba28;
 
 typedef struct
 {
@@ -333,7 +333,7 @@ typedef struct
 
 typedef struct
 {
-    DicPacketHeader   hdr;
+    AaruPacketHeader   hdr;
     uint32_t          buf_len;
     AtaRegistersLba48 registers;
     uint8_t           protocol;
@@ -341,21 +341,21 @@ typedef struct
     uint8_t           transfer_blocks;
     uint8_t           spare;
     uint32_t          timeout;
-} DicPacketCmdAtaLba48;
+} AaruPacketCmdAtaLba48;
 
 typedef struct
 {
-    DicPacketHeader        hdr;
+    AaruPacketHeader        hdr;
     uint32_t               buf_len;
     AtaErrorRegistersLba48 registers;
     uint32_t               duration;
     uint32_t               sense;
     uint32_t               error_no;
-} DicPacketResAtaLba48;
+} AaruPacketResAtaLba48;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint8_t         command;
     uint8_t         write;
     uint8_t         application;
@@ -365,37 +365,37 @@ typedef struct
     uint32_t        blocks;
     uint32_t        buf_len;
     uint32_t        timeout;
-} DicPacketCmdSdhci;
+} AaruPacketCmdSdhci;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint32_t        buf_len;
     uint32_t        response[4];
     uint32_t        duration;
     uint32_t        sense;
     uint32_t        error_no;
-} DicPacketResSdhci;
+} AaruPacketResSdhci;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdGetDeviceType;
+    AaruPacketHeader hdr;
+} AaruPacketCmdGetDeviceType;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     int32_t         device_type;
-} DicPacketResGetDeviceType;
+} AaruPacketResGetDeviceType;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdGetSdhciRegisters;
+    AaruPacketHeader hdr;
+} AaruPacketCmdGetSdhciRegisters;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint8_t         is_sdhci;
     char            csd[16];
     char            cid[16];
@@ -405,16 +405,16 @@ typedef struct
     uint32_t        cid_len;
     uint32_t        ocr_len;
     uint32_t        scr_len;
-} DicPacketResGetSdhciRegisters;
+} AaruPacketResGetSdhciRegisters;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdGetUsbData;
+    AaruPacketHeader hdr;
+} AaruPacketCmdGetUsbData;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint8_t         is_usb;
     uint16_t        desc_len;
     char            descriptors[65536];
@@ -423,52 +423,52 @@ typedef struct
     char            manufacturer[256];
     char            product[256];
     char            serial[256];
-} DicPacketResGetUsbData;
+} AaruPacketResGetUsbData;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdGetFireWireData;
+    AaruPacketHeader hdr;
+} AaruPacketCmdGetFireWireData;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint8_t         is_firewire;
     uint32_t        id_model;
     uint32_t        id_vendor;
     uint64_t        guid;
     char            vendor[256];
     char            model[256];
-} DicPacketResGetFireWireData;
+} AaruPacketResGetFireWireData;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdGetPcmciaData;
+    AaruPacketHeader hdr;
+} AaruPacketCmdGetPcmciaData;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint8_t         is_pcmcia;
     uint16_t        cis_len;
     char            cis[65536];
-} DicPacketResGetPcmciaData;
+} AaruPacketResGetPcmciaData;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdClose;
+    AaruPacketHeader hdr;
+} AaruPacketCmdClose;
 
 typedef struct
 {
-    DicPacketHeader hdr;
-} DicPacketCmdAmIRoot;
+    AaruPacketHeader hdr;
+} AaruPacketCmdAmIRoot;
 
 typedef struct
 {
-    DicPacketHeader hdr;
+    AaruPacketHeader hdr;
     uint32_t        am_i_root;
-} DicPacketResAmIRoot;
+} AaruPacketResAmIRoot;
 
 #pragma pack(pop)
 
@@ -562,7 +562,7 @@ int32_t         SendSdhciCommand(void*     device_ctx,
                                  uint32_t* response,
                                  uint32_t* duration,
                                  uint32_t* sense);
-DicPacketHello* GetHello();
+AaruPacketHello* GetHello();
 int             PrintNetworkAddresses();
 char*           PrintIpv4Address(struct in_addr addr);
 void*           NetSocket(uint32_t domain, uint32_t type, uint32_t protocol);
@@ -573,7 +573,7 @@ int32_t         NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags);
 int32_t         NetWrite(void* net_ctx, const void* buf, int32_t size);
 int32_t         NetClose(void* net_ctx);
 void            Initialize();
-void            PlatformLoop(DicPacketHello* pkt_server_hello);
+void            PlatformLoop(AaruPacketHello* pkt_server_hello);
 void*           WorkingLoop(void* arguments);
 uint8_t         AmIRoot();
 #endif

@@ -24,9 +24,9 @@
 #include <string.h>
 #include <windows.h>
 
-DicPacketHello* GetHello()
+AaruPacketHello* GetHello()
 {
-    DicPacketHello*   pkt_server_hello;
+    AaruPacketHello*   pkt_server_hello;
     OSVERSIONINFOEX   osvi;
     SYSTEM_INFO       sysinfo;
     UINT              verSize;
@@ -57,15 +57,15 @@ DicPacketHello* GetHello()
     const char* w2k16   = "Windows Server 2016";
     const char* w10     = "Windows 10";
 
-    pkt_server_hello = malloc(sizeof(DicPacketHello));
+    pkt_server_hello = malloc(sizeof(AaruPacketHello));
 
     if(!pkt_server_hello) return 0;
 
-    memset(pkt_server_hello, 0, sizeof(DicPacketHello));
+    memset(pkt_server_hello, 0, sizeof(AaruPacketHello));
 
     pkt_server_hello->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
     pkt_server_hello->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
-    pkt_server_hello->hdr.len         = htole32(sizeof(DicPacketHello));
+    pkt_server_hello->hdr.len         = htole32(sizeof(AaruPacketHello));
     pkt_server_hello->hdr.version     = AARUREMOTE_PACKET_VERSION;
     pkt_server_hello->hdr.packet_type = AARUREMOTE_PACKET_TYPE_HELLO;
     strncpy(pkt_server_hello->application, AARUREMOTE_NAME, sizeof(AARUREMOTE_NAME));

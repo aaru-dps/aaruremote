@@ -23,7 +23,7 @@
 
 int main()
 {
-    DicPacketHello*                pkt_server_hello;
+    AaruPacketHello*                pkt_server_hello;
     int                            ret;
 
     Initialize();

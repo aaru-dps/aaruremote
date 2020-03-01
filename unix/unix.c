@@ -24,6 +24,6 @@ void Initialize()
     // Do nothing
 }
 
-void PlatformLoop(DicPacketHello* pkt_server_hello) { WorkingLoop(pkt_server_hello); }
+void PlatformLoop(AaruPacketHello* pkt_server_hello) { WorkingLoop(pkt_server_hello); }
 
 uint8_t AmIRoot() { return geteuid() == 0; }

@@ -42,7 +42,7 @@ void Initialize()
     if(rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
 
-void PlatformLoop(DicPacketHello* pkt_server_hello)
+void PlatformLoop(AaruPacketHello* pkt_server_hello)
 {
     static lwp_t worker = (lwp_t)NULL;
     int          buttonsDown;
