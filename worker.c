@@ -181,7 +181,7 @@ void* WorkingLoop(void* arguments)
 
         if(pkt_hdr->remote_id != htole32(AARUREMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(AARUREMOTE_PACKET_ID))
         {
-            printf("Received data is not a correct dicremote packet, closing connection...\n");
+            printf("Received data is not a correct aaruremote packet, closing connection...\n");
             free(pkt_hdr);
             NetClose(cli_ctx);
             continue;
@@ -274,7 +274,7 @@ void* WorkingLoop(void* arguments)
 
             if(pkt_hdr->remote_id != htole32(AARUREMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(AARUREMOTE_PACKET_ID))
             {
-                printf("Received data is not a correct dicremote packet, closing connection...\n");
+                printf("Received data is not a correct aaruremote packet, closing connection...\n");
                 NetClose(cli_ctx);
                 free(pkt_hdr);
                 break;
