@@ -33,8 +33,8 @@
 #include <sys/socket.h>
 #endif
 
-#define AARUREMOTE_NAME "DiscImageChef Remote Server"
-#define AARUREMOTE_VERSION "0.99"
+#define AARUREMOTE_NAME "Aaru Remote Server"
+#define AARUREMOTE_VERSION "0.991"
 #define AARUREMOTE_PORT 6666
 #define AARUREMOTE_REMOTE_ID 0x52434944 // "DICR"
 #define AARUREMOTE_PACKET_ID 0x544B4350 // "PCKT"
