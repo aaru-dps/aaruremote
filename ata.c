@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dicmote.h"
+#include "aaruremote.h"
 
 #if defined(__linux__) && !defined(__ANDROID__)
 #include "linux/linux.h"

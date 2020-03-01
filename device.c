@@ -21,7 +21,7 @@
 #include "win32/win32.h"
 #endif
 
-#include "dicmote.h"
+#include "aaruremote.h"
 
 #include <stdint.h>
 

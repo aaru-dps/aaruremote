@@ -18,7 +18,7 @@
 #ifndef DICREMOTE_WIN32_WIN32_H_
 #define DICREMOTE_WIN32_WIN32_H_
 
-#include "../dicmote.h"
+#include "../aaruremote.h"
 
 #define PROCESSOR_ARCHITECTURE_INTEL 0
 #define PROCESSOR_ARCHITECTURE_MIPS 1

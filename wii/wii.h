@@ -18,7 +18,7 @@
 #ifndef DICREMOTE_WII_WII_H_
 #define DICREMOTE_WII_WII_H_
 
-#include "../dicmote.h"
+#include "../aaruremote.h"
 
 #define DICREMOTE_WII_DEVICE_FD_NAND 1
 #define DICREMOTE_WII_DEVICE_FD_DVD 2

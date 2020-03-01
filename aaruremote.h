@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE__DICMOTE_H_
-#define DICREMOTE__DICMOTE_H_
+#ifndef DICREMOTE__AARUREMOTE_H_
+#define DICREMOTE__AARUREMOTE_H_
 
 #include <stddef.h>
 #include <stdint.h>

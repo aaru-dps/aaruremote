@@ -15,7 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../dicmote.h"
+#include "../aaruremote.h"
 #include "linux.h"
 
 #include <ctype.h>

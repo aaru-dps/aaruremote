@@ -18,7 +18,7 @@
 #ifndef DICREMOTE_LINUX_LINUX_H_
 #define DICREMOTE_LINUX_LINUX_H_
 
-#include "../dicmote.h"
+#include "../aaruremote.h"
 
 #define PATH_SYS_DEVBLOCK "/sys/block"
 
