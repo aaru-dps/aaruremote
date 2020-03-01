@@ -15,25 +15,25 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE_WII_WII_H_
-#define DICREMOTE_WII_WII_H_
+#ifndef AARUREMOTE_WII_WII_H_
+#define AARUREMOTE_WII_WII_H_
 
 #include "../aaruremote.h"
 
-#define DICREMOTE_WII_DEVICE_FD_NAND 1
-#define DICREMOTE_WII_DEVICE_FD_DVD 2
-#define DICREMOTE_WII_DEVICE_FD_SD 3
-#define DICREMOTE_WII_DEVICE_FD_GCMM_A 4
-#define DICREMOTE_WII_DEVICE_FD_GCMM_B 5
+#define AARUREMOTE_WII_DEVICE_FD_NAND 1
+#define AARUREMOTE_WII_DEVICE_FD_DVD 2
+#define AARUREMOTE_WII_DEVICE_FD_SD 3
+#define AARUREMOTE_WII_DEVICE_FD_GCMM_A 4
+#define AARUREMOTE_WII_DEVICE_FD_GCMM_B 5
 
-#define DICREMOTE_WII_IOCTL_SD_GET_DEVICE_STATUS 0x0B
-#define DICREMOTE_WII_SD_INSERTED 1
+#define AARUREMOTE_WII_IOCTL_SD_GET_DEVICE_STATUS 0x0B
+#define AARUREMOTE_WII_SD_INSERTED 1
 
-#define DICREMOTE_WII_DEVICE_PATH_NAND "/dev/flash"
-#define DICREMOTE_WII_DEVICE_PATH_DVD "/dev/di"
-#define DICREMOTE_WII_DEVICE_PATH_SD "/dev/sdio/slot0"
-#define DICREMOTE_WII_DEVICE_PATH_GCMM_A "/dev/gcmm/slota"
-#define DICREMOTE_WII_DEVICE_PATH_GCMM_B "/dev/gcmm/slotb"
+#define AARUREMOTE_WII_DEVICE_PATH_NAND "/dev/flash"
+#define AARUREMOTE_WII_DEVICE_PATH_DVD "/dev/di"
+#define AARUREMOTE_WII_DEVICE_PATH_SD "/dev/sdio/slot0"
+#define AARUREMOTE_WII_DEVICE_PATH_GCMM_A "/dev/gcmm/slota"
+#define AARUREMOTE_WII_DEVICE_PATH_GCMM_B "/dev/gcmm/slotb"
 
 typedef struct
 {
@@ -48,4 +48,4 @@ typedef struct
 
 DeviceInfoList* WiiListDevices();
 
-#endif // DICREMOTE_WII_WII_H_
+#endif // AARUREMOTE_WII_WII_H_

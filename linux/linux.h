@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE_LINUX_LINUX_H_
-#define DICREMOTE_LINUX_LINUX_H_
+#ifndef AARUREMOTE_LINUX_LINUX_H_
+#define AARUREMOTE_LINUX_LINUX_H_
 
 #include "../aaruremote.h"
 
@@ -125,4 +125,4 @@ typedef struct
     char device_path[4096];
 } LinuxDeviceContext;
 
-#endif // DICREMOTE_LINUX_LINUX_H_
+#endif // AARUREMOTE_LINUX_LINUX_H_

@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 
-#ifndef DICREMOTE_LINUX_MMC_IOCTL_H_
-#define DICREMOTE_LINUX_MMC_IOCTL_H_
+#ifndef AARUREMOTE_LINUX_MMC_IOCTL_H_
+#define AARUREMOTE_LINUX_MMC_IOCTL_H_
 
 #ifdef HAS_UAPI_MMC
 #include <linux/major.h>
@@ -88,4 +88,4 @@ struct mmc_ioc_multi_cmd
 #define MMC_IOC_MAX_CMDS 255
 
 #endif
-#endif // DICREMOTE_LINUX_MMC_IOCTL_H_
+#endif // AARUREMOTE_LINUX_MMC_IOCTL_H_

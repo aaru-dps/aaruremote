@@ -15,12 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE_UNIX_UNIX_H_
-#define DICREMOTE_UNIX_UNIX_H_
+#ifndef AARUREMOTE_UNIX_UNIX_H_
+#define AARUREMOTE_UNIX_UNIX_H_
 
 typedef struct
 {
     int fd;
 } UnixNetworkContext;
 
-#endif // DICREMOTE_UNIX_UNIX_H_
+#endif // AARUREMOTE_UNIX_UNIX_H_

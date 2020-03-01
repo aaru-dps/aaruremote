@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE_WIN32_WIN32_H_
-#define DICREMOTE_WIN32_WIN32_H_
+#ifndef AARUREMOTE_WIN32_WIN32_H_
+#define AARUREMOTE_WIN32_WIN32_H_
 
 #include "../aaruremote.h"
 
@@ -142,4 +142,4 @@ int32_t Win32SendSdhciCommand(void*     device_ctx,
                               uint32_t* duration,
                               uint32_t* sense);
 
-#endif // DICREMOTE_WIN32_WIN32_H_
+#endif // AARUREMOTE_WIN32_WIN32_H_

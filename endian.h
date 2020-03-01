@@ -10,8 +10,8 @@
  * information regarding copyright ownership.
  */
 
-#ifndef DICREMOTE__ENDIAN_H_
-#define DICREMOTE__ENDIAN_H_
+#ifndef AARUREMOTE__ENDIAN_H_
+#define AARUREMOTE__ENDIAN_H_
 
 #if HAVE_ENDIAN_H
 #include <endian.h>
@@ -100,4 +100,4 @@
 
 #endif
 
-#endif // DICREMOTE__ENDIAN_H_
+#endif // AARUREMOTE__ENDIAN_H_

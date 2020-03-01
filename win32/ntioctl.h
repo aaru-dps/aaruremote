@@ -15,8 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef DICREMOTE_WIN32_NTIOCTL_H_
-#define DICREMOTE_WIN32_NTIOCTL_H_
+#ifndef AARUREMOTE_WIN32_NTIOCTL_H_
+#define AARUREMOTE_WIN32_NTIOCTL_H_
 
 #include <winsock2.h>
 #include <windows.h>
@@ -213,4 +213,4 @@ typedef struct _SDCMD_DESCRIPTOR
 } SDCMD_DESCRIPTOR, *PSDCMD_DESCRIPTOR;
 #endif
 
-#endif // DICREMOTE_WIN32_NTIOCTL_H_
+#endif // AARUREMOTE_WIN32_NTIOCTL_H_
