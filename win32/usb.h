@@ -1,5 +1,5 @@
 /*
- * This file is part of the DiscImageChef Remote Server.
+ * This file is part of the Aaru Remote Server.
  * Copyright (c) 2019-2020 Natalia Portillo.
  *
  * This program is free software: you can redistribute it and/or modify
