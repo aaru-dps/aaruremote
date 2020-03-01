@@ -28,7 +28,7 @@ int main()
 
     Initialize();
 
-    printf("DiscImageChef Remote Server %s\n", DICMOTE_VERSION);
+    printf("Aaru Remote Server %s\n", DICMOTE_VERSION);
     printf("Copyright (C) 2019-2020 Natalia Portillo\n");
 
     pkt_server_hello = GetHello();
