@@ -31,7 +31,7 @@
 #include <libudev.h>
 #endif
 
-DeviceInfoList* LinuxListDevices()
+DeviceInfoList* ListDevices()
 {
     DIR*            dir;
     struct dirent*  dirent;

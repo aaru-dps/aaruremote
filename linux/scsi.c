@@ -24,21 +24,21 @@
 #include <string.h>
 #include <sys/ioctl.h>
 
-int32_t LinuxSendScsiCommand(void*     device_ctx,
-                             char*     cdb,
-                             char*     buffer,
-                             char**    sense_buffer,
-                             uint32_t  timeout,
-                             int32_t   direction,
-                             uint32_t* duration,
-                             uint32_t* sense,
-                             uint32_t  cdb_len,
-                             uint32_t* buf_len,
-                             uint32_t* sense_len)
+int32_t SendScsiCommand(void*     device_ctx,
+                        char*     cdb,
+                        char*     buffer,
+                        char**    sense_buffer,
+                        uint32_t  timeout,
+                        int32_t   direction,
+                        uint32_t* duration,
+                        uint32_t* sense,
+                        uint32_t  cdb_len,
+                        uint32_t* buf_len,
+                        uint32_t* sense_len)
 {
-    LinuxDeviceContext* ctx = device_ctx;
-    sg_io_hdr_t         hdr;
-    int                 dir, ret;
+    DeviceContext* ctx = device_ctx;
+    sg_io_hdr_t    hdr;
+    int            dir, ret;
     *sense_len = 32;
 
     if(!ctx) return -1;

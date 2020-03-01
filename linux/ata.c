@@ -37,24 +37,24 @@ int32_t AtaProtocolToScsiDirection(uint8_t protocol)
     }
 }
 
-int32_t LinuxSendAtaChsCommand(void*                 device_ctx,
-                               AtaRegistersChs       registers,
-                               AtaErrorRegistersChs* error_registers,
-                               uint8_t               protocol,
-                               uint8_t               transfer_register,
-                               char*                 buffer,
-                               uint32_t              timeout,
-                               uint8_t               transfer_blocks,
-                               uint32_t*             duration,
-                               uint32_t*             sense,
-                               uint32_t*             buf_len)
+int32_t SendAtaChsCommand(void*                 device_ctx,
+                          AtaRegistersChs       registers,
+                          AtaErrorRegistersChs* error_registers,
+                          uint8_t               protocol,
+                          uint8_t               transfer_register,
+                          char*                 buffer,
+                          uint32_t              timeout,
+                          uint8_t               transfer_blocks,
+                          uint32_t*             duration,
+                          uint32_t*             sense,
+                          uint32_t*             buf_len)
 {
     *duration = 0;
     *sense    = 0;
-    unsigned char       cdb[16];
-    char*               sense_buf;
-    uint32_t            sense_len;
-    LinuxDeviceContext* ctx = device_ctx;
+    unsigned char  cdb[16];
+    char*          sense_buf;
+    uint32_t       sense_len;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return -1;
 
@@ -84,17 +84,17 @@ int32_t LinuxSendAtaChsCommand(void*                 device_ctx,
     cdb[13] = registers.device_head;
     cdb[14] = registers.command;
 
-    int error = LinuxSendScsiCommand(ctx,
-                                     (char*)cdb,
-                                     buffer,
-                                     &sense_buf,
-                                     timeout,
-                                     AtaProtocolToScsiDirection(protocol),
-                                     duration,
-                                     sense,
-                                     16,
-                                     buf_len,
-                                     &sense_len);
+    int error = SendScsiCommand(ctx,
+                                (char*)cdb,
+                                buffer,
+                                &sense_buf,
+                                timeout,
+                                AtaProtocolToScsiDirection(protocol),
+                                duration,
+                                sense,
+                                16,
+                                buf_len,
+                                &sense_len);
 
     if(sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C)) return error;
 
@@ -112,24 +112,24 @@ int32_t LinuxSendAtaChsCommand(void*                 device_ctx,
     return error;
 }
 
-int32_t LinuxSendAtaLba28Command(void*                   device_ctx,
-                                 AtaRegistersLba28       registers,
-                                 AtaErrorRegistersLba28* error_registers,
-                                 uint8_t                 protocol,
-                                 uint8_t                 transfer_register,
-                                 char*                   buffer,
-                                 uint32_t                timeout,
-                                 uint8_t                 transfer_blocks,
-                                 uint32_t*               duration,
-                                 uint32_t*               sense,
-                                 uint32_t*               buf_len)
+int32_t SendAtaLba28Command(void*                   device_ctx,
+                            AtaRegistersLba28       registers,
+                            AtaErrorRegistersLba28* error_registers,
+                            uint8_t                 protocol,
+                            uint8_t                 transfer_register,
+                            char*                   buffer,
+                            uint32_t                timeout,
+                            uint8_t                 transfer_blocks,
+                            uint32_t*               duration,
+                            uint32_t*               sense,
+                            uint32_t*               buf_len)
 {
     *duration = 0;
     *sense    = 0;
-    unsigned char       cdb[16];
-    char*               sense_buf;
-    uint32_t            sense_len;
-    LinuxDeviceContext* ctx = device_ctx;
+    unsigned char  cdb[16];
+    char*          sense_buf;
+    uint32_t       sense_len;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return -1;
 
@@ -161,17 +161,17 @@ int32_t LinuxSendAtaLba28Command(void*                   device_ctx,
     cdb[13] = registers.device_head;
     cdb[14] = registers.command;
 
-    int error = LinuxSendScsiCommand(ctx,
-                                     (char*)cdb,
-                                     buffer,
-                                     &sense_buf,
-                                     timeout,
-                                     AtaProtocolToScsiDirection(protocol),
-                                     duration,
-                                     sense,
-                                     16,
-                                     buf_len,
-                                     &sense_len);
+    int error = SendScsiCommand(ctx,
+                                (char*)cdb,
+                                buffer,
+                                &sense_buf,
+                                timeout,
+                                AtaProtocolToScsiDirection(protocol),
+                                duration,
+                                sense,
+                                16,
+                                buf_len,
+                                &sense_len);
 
     if(sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C)) return error;
 
@@ -189,24 +189,24 @@ int32_t LinuxSendAtaLba28Command(void*                   device_ctx,
     return error;
 }
 
-int32_t LinuxSendAtaLba48Command(void*                   device_ctx,
-                                 AtaRegistersLba48       registers,
-                                 AtaErrorRegistersLba48* error_registers,
-                                 uint8_t                 protocol,
-                                 uint8_t                 transfer_register,
-                                 char*                   buffer,
-                                 uint32_t                timeout,
-                                 uint8_t                 transfer_blocks,
-                                 uint32_t*               duration,
-                                 uint32_t*               sense,
-                                 uint32_t*               buf_len)
+int32_t SendAtaLba48Command(void*                   device_ctx,
+                            AtaRegistersLba48       registers,
+                            AtaErrorRegistersLba48* error_registers,
+                            uint8_t                 protocol,
+                            uint8_t                 transfer_register,
+                            char*                   buffer,
+                            uint32_t                timeout,
+                            uint8_t                 transfer_blocks,
+                            uint32_t*               duration,
+                            uint32_t*               sense,
+                            uint32_t*               buf_len)
 {
     *duration = 0;
     *sense    = 0;
-    unsigned char       cdb[16];
-    char*               sense_buf;
-    uint32_t            sense_len;
-    LinuxDeviceContext* ctx = device_ctx;
+    unsigned char  cdb[16];
+    char*          sense_buf;
+    uint32_t       sense_len;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return -1;
 
@@ -244,17 +244,17 @@ int32_t LinuxSendAtaLba48Command(void*                   device_ctx,
     cdb[13] = registers.device_head;
     cdb[14] = registers.command;
 
-    int error = LinuxSendScsiCommand(ctx,
-                                     (char*)cdb,
-                                     buffer,
-                                     &sense_buf,
-                                     timeout,
-                                     AtaProtocolToScsiDirection(protocol),
-                                     duration,
-                                     sense,
-                                     16,
-                                     buf_len,
-                                     &sense_len);
+    int error = SendScsiCommand(ctx,
+                                (char*)cdb,
+                                buffer,
+                                &sense_buf,
+                                timeout,
+                                AtaProtocolToScsiDirection(protocol),
+                                duration,
+                                sense,
+                                16,
+                                buf_len,
+                                &sense_len);
 
     if(sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C)) return error;
 

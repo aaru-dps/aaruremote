@@ -17,28 +17,7 @@
 
 #include "aaruremote.h"
 
-#if defined(__linux__) && !defined(__ANDROID__)
-#include "linux/linux.h"
-#elif defined(GEKKO)
-#include "wii/wii.h"
-#elif defined(WIN32)
-#include "win32/win32.h"
-#endif
-
 #include <stdlib.h>
-
-DeviceInfoList* ListDevices()
-{
-#if defined(__linux__) && !defined(__ANDROID__)
-    return LinuxListDevices();
-#elif defined(GEKKO)
-    return WiiListDevices();
-#elif defined(WIN32)
-    return Win32ListDevices();
-#else
-    return NULL;
-#endif
-}
 
 void FreeDeviceInfoList(DeviceInfoList* start)
 {

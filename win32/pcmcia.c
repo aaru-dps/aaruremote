@@ -19,9 +19,9 @@
 
 #include <stdint.h>
 
-uint8_t Win32GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
+uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
 {
-    Win32DeviceContext* ctx = device_ctx;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return 0;
 

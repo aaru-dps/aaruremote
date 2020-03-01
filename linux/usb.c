@@ -23,24 +23,24 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-uint8_t LinuxGetUsbData(void*     device_ctx,
-                        uint16_t* desc_len,
-                        char*     descriptors,
-                        uint16_t* id_vendor,
-                        uint16_t* id_product,
-                        char*     manufacturer,
-                        char*     product,
-                        char*     serial)
+uint8_t GetUsbData(void*     device_ctx,
+                   uint16_t* desc_len,
+                   char*     descriptors,
+                   uint16_t* id_vendor,
+                   uint16_t* id_product,
+                   char*     manufacturer,
+                   char*     product,
+                   char*     serial)
 {
-    LinuxDeviceContext* ctx = device_ctx;
-    char*               dev_path;
-    char                tmp_path[4096];
-    char                resolved_link[4096];
-    struct stat         sb;
-    ssize_t             len;
-    char*               rchr;
-    int                 found = 1;
-    FILE*               file;
+    DeviceContext* ctx = device_ctx;
+    char*          dev_path;
+    char           tmp_path[4096];
+    char           resolved_link[4096];
+    struct stat    sb;
+    ssize_t        len;
+    char*          rchr;
+    int            found = 1;
+    FILE*          file;
 
     if(!ctx) return -1;
 

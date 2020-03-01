@@ -20,26 +20,30 @@
 
 #include <errno.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
 
-int32_t LinuxSendSdhciCommand(void*     device_ctx,
-                              uint8_t   command,
-                              uint8_t   write,
-                              uint8_t   application,
-                              uint32_t  flags,
-                              uint32_t  argument,
-                              uint32_t  block_size,
-                              uint32_t  blocks,
-                              char*     buffer,
-                              uint32_t  timeout,
-                              uint32_t* response,
-                              uint32_t* duration,
-                              uint32_t* sense)
+int32_t SendSdhciCommand(void*     device_ctx,
+                         uint8_t   command,
+                         uint8_t   write,
+                         uint8_t   application,
+                         uint32_t  flags,
+                         uint32_t  argument,
+                         uint32_t  block_size,
+                         uint32_t  blocks,
+                         char*     buffer,
+                         uint32_t  buf_len,
+                         uint32_t  timeout,
+                         uint32_t* response,
+                         uint32_t* duration,
+                         uint32_t* sense)
 {
-    LinuxDeviceContext* ctx = device_ctx;
-    struct mmc_ioc_cmd  mmc_ioc_cmd;
-    int32_t             error;
+    DeviceContext*     ctx = device_ctx;
+    struct mmc_ioc_cmd mmc_ioc_cmd;
+    int32_t            error;
     *duration = 0;
     *sense    = 0;
 
@@ -72,4 +76,162 @@ int32_t LinuxSendSdhciCommand(void*     device_ctx,
     memcpy((char*)response, (char*)&mmc_ioc_cmd.response, sizeof(uint32_t) * 4);
 
     return error;
+}
+
+int32_t GetSdhciRegisters(void*     device_ctx,
+                          char**    csd,
+                          char**    cid,
+                          char**    ocr,
+                          char**    scr,
+                          uint32_t* csd_len,
+                          uint32_t* cid_len,
+                          uint32_t* ocr_len,
+                          uint32_t* scr_len)
+{
+    DeviceContext* ctx = device_ctx;
+    char*          tmp_string;
+    char*          sysfs_path_csd;
+    char*          sysfs_path_cid;
+    char*          sysfs_path_scr;
+    char*          sysfs_path_ocr;
+    size_t         len;
+    FILE*          file;
+    *csd     = NULL;
+    *cid     = NULL;
+    *ocr     = NULL;
+    *scr     = NULL;
+    *csd_len = 0;
+    *cid_len = 0;
+    *ocr_len = 0;
+    *scr_len = 0;
+    size_t n = 1026;
+
+    if(!ctx) return -1;
+
+    if(strncmp(ctx->device_path, "/dev/mmcblk", 11) != 0) return 0;
+
+    len            = strlen(ctx->device_path) + 19;
+    sysfs_path_csd = malloc(len);
+    sysfs_path_cid = malloc(len);
+    sysfs_path_scr = malloc(len);
+    sysfs_path_ocr = malloc(len);
+    tmp_string     = malloc(1024);
+
+    if(!sysfs_path_csd || !sysfs_path_cid || !sysfs_path_scr || !sysfs_path_ocr || !tmp_string)
+    {
+        free(sysfs_path_csd);
+        free(sysfs_path_cid);
+        free(sysfs_path_scr);
+        free(sysfs_path_ocr);
+        free(tmp_string);
+        return 0;
+    }
+
+    memset(sysfs_path_csd, 0, len);
+    memset(sysfs_path_cid, 0, len);
+    memset(sysfs_path_scr, 0, len);
+    memset(sysfs_path_ocr, 0, len);
+    memset(tmp_string, 0, strlen(ctx->device_path) - 5);
+
+    memcpy(tmp_string, ctx->device_path + 5, strlen(ctx->device_path) - 5);
+    snprintf(sysfs_path_csd, len, "/sys/block/%s/device/csd", tmp_string);
+    snprintf(sysfs_path_cid, len, "/sys/block/%s/device/cid", tmp_string);
+    snprintf(sysfs_path_scr, len, "/sys/block/%s/device/scr", tmp_string);
+    snprintf(sysfs_path_ocr, len, "/sys/block/%s/device/ocr", tmp_string);
+
+    if(access(sysfs_path_csd, R_OK) == 0)
+    {
+        file = fopen(sysfs_path_csd, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmp_string, &n, file);
+            if(len > 0)
+            {
+                *csd_len = Hexs2Bin(tmp_string, (unsigned char**)csd);
+
+                if(*csd_len <= 0)
+                {
+                    *csd_len = 0;
+                    *csd     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    if(access(sysfs_path_cid, R_OK) == 0)
+    {
+        file = fopen(sysfs_path_cid, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmp_string, &n, file);
+            if(len > 0)
+            {
+                *cid_len = Hexs2Bin(tmp_string, (unsigned char**)cid);
+
+                if(*cid_len <= 0)
+                {
+                    *cid_len = 0;
+                    *cid     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    if(access(sysfs_path_scr, R_OK) == 0)
+    {
+        file = fopen(sysfs_path_scr, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmp_string, &n, file);
+            if(len > 0)
+            {
+                *scr_len = Hexs2Bin(tmp_string, (unsigned char**)scr);
+
+                if(*scr_len <= 0)
+                {
+                    *scr_len = 0;
+                    *scr     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    if(access(sysfs_path_ocr, R_OK) == 0)
+    {
+        file = fopen(sysfs_path_ocr, "r");
+
+        if(file != NULL)
+        {
+            len = getline(&tmp_string, &n, file);
+            if(len > 0)
+            {
+                *ocr_len = Hexs2Bin(tmp_string, (unsigned char**)ocr);
+
+                if(*ocr_len <= 0)
+                {
+                    *ocr_len = 0;
+                    *ocr     = NULL;
+                }
+            }
+
+            fclose(file);
+        }
+    }
+
+    free(sysfs_path_csd);
+    free(sysfs_path_cid);
+    free(sysfs_path_scr);
+    free(sysfs_path_ocr);
+    free(tmp_string);
+
+    return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
 }

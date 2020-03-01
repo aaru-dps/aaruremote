@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-DeviceInfoList* WiiListDevices()
+DeviceInfoList* ListDevices()
 {
     DeviceInfoList *list_start = NULL, *list_current = NULL, *list_next = NULL;
     u32             deviceId = 0;

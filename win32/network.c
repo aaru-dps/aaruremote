@@ -78,9 +78,9 @@ char* PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
 
 void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 {
-    WSADATA              ws;
-    int                  ret;
-    Win32NetworkContext* ctx;
+    WSADATA         ws;
+    int             ret;
+    NetworkContext* ctx;
 
     ret = WSAStartup(MAKEWORD(2, 0), &ws);
 
@@ -90,7 +90,7 @@ void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
         return NULL;
     }
 
-    ctx = malloc(sizeof(Win32NetworkContext));
+    ctx = malloc(sizeof(NetworkContext));
 
     if(!ctx) return NULL;
 
@@ -108,7 +108,7 @@ void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 
 int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
 {
-    Win32NetworkContext* ctx = net_ctx;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 
@@ -117,7 +117,7 @@ int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
 
 int32_t NetListen(void* net_ctx, uint32_t backlog)
 {
-    Win32NetworkContext* ctx = net_ctx;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 
@@ -126,12 +126,12 @@ int32_t NetListen(void* net_ctx, uint32_t backlog)
 
 void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
 {
-    Win32NetworkContext* ctx = net_ctx;
-    Win32NetworkContext* cli_ctx;
+    NetworkContext* ctx = net_ctx;
+    NetworkContext* cli_ctx;
 
     if(!ctx) return NULL;
 
-    cli_ctx = malloc(sizeof(Win32NetworkContext));
+    cli_ctx = malloc(sizeof(NetworkContext));
 
     if(!cli_ctx) return NULL;
 
@@ -148,8 +148,8 @@ void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
 
 int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
 {
-    Win32NetworkContext* ctx     = net_ctx;
-    char*                charbuf = buf;
+    NetworkContext* ctx     = net_ctx;
+    char*           charbuf = buf;
 
     if(!ctx) return -1;
 
@@ -172,7 +172,7 @@ int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
 
 int32_t NetWrite(void* net_ctx, const void* buf, int32_t size)
 {
-    Win32NetworkContext* ctx = net_ctx;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 
@@ -181,8 +181,8 @@ int32_t NetWrite(void* net_ctx, const void* buf, int32_t size)
 
 int32_t NetClose(void* net_ctx)
 {
-    int                  ret;
-    Win32NetworkContext* ctx = net_ctx;
+    int             ret;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 

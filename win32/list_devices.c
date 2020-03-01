@@ -25,7 +25,7 @@
 #define IOCTL_STORAGE_QUERY_PROPERTY 0x2D1400
 #endif
 
-DeviceInfoList* Win32ListDevices()
+DeviceInfoList* ListDevices()
 {
     char                       physId[4096];
     LPSTR                      physical;

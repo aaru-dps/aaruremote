@@ -589,7 +589,7 @@ UsbDevice_t* FindDeviceNumber(DWORD devNum, GUID diskGuid)
     return foundDevice;
 }
 
-UsbDevice_t* FindDrivePath(Win32DeviceContext* ctx, GUID deviceGuid)
+UsbDevice_t* FindDrivePath(DeviceContext* ctx, GUID deviceGuid)
 {
     // We start by getting the unique DeviceNumber of the given
     // DriveLetter.  We'll use this later to find a matching
@@ -598,23 +598,23 @@ UsbDevice_t* FindDrivePath(Win32DeviceContext* ctx, GUID deviceGuid)
     return devNum < 0 ? NULL : FindDeviceNumber(devNum, deviceGuid);
 }
 
-uint8_t Win32GetUsbData(void*     device_ctx,
-                        uint16_t* desc_len,
-                        char*     descriptors,
-                        uint16_t* id_vendor,
-                        uint16_t* id_product,
-                        char*     manufacturer,
-                        char*     product,
-                        char*     serial)
+uint8_t GetUsbData(void*     device_ctx,
+                   uint16_t* desc_len,
+                   char*     descriptors,
+                   uint16_t* id_vendor,
+                   uint16_t* id_product,
+                   char*     manufacturer,
+                   char*     product,
+                   char*     serial)
 {
-    Win32DeviceContext* ctx        = device_ctx;
-    UsbDevice_t*        device     = NULL;
-    GUID                floppyGuid = GUID_DEVINTERFACE_FLOPPY;
-    GUID                tapeGuid   = GUID_DEVINTERFACE_TAPE;
-    GUID                diskGuid   = GUID_DEVINTERFACE_DISK;
-    GUID                cdromGuid  = GUID_DEVINTERFACE_CDROM;
-    GUID                guids[4]   = {floppyGuid, cdromGuid, diskGuid, tapeGuid};
-    int                 i;
+    DeviceContext* ctx        = device_ctx;
+    UsbDevice_t*   device     = NULL;
+    GUID           floppyGuid = GUID_DEVINTERFACE_FLOPPY;
+    GUID           tapeGuid   = GUID_DEVINTERFACE_TAPE;
+    GUID           diskGuid   = GUID_DEVINTERFACE_DISK;
+    GUID           cdromGuid  = GUID_DEVINTERFACE_CDROM;
+    GUID           guids[4]   = {floppyGuid, cdromGuid, diskGuid, tapeGuid};
+    int            i;
 
     if(!ctx) return -1;
 

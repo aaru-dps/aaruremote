@@ -28,15 +28,15 @@
 #include <libudev.h>
 #endif
 
-void* LinuxOpenDevice(const char* device_path)
+void* DeviceOpen(const char* device_path)
 {
-    LinuxDeviceContext* ctx;
+    DeviceContext* ctx;
 
-    ctx = malloc(sizeof(LinuxDeviceContext));
+    ctx = malloc(sizeof(DeviceContext));
 
     if(!ctx) return NULL;
 
-    memset(ctx, 0, sizeof(LinuxDeviceContext));
+    memset(ctx, 0, sizeof(DeviceContext));
 
     ctx->fd = open(device_path, O_RDWR | O_NONBLOCK | O_CREAT);
 
@@ -53,9 +53,9 @@ void* LinuxOpenDevice(const char* device_path)
     return ctx;
 }
 
-void LinuxCloseDevice(void* device_ctx)
+void DeviceClose(void* device_ctx)
 {
-    LinuxDeviceContext* ctx = device_ctx;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return;
 
@@ -64,9 +64,9 @@ void LinuxCloseDevice(void* device_ctx)
     free(ctx);
 }
 
-int32_t LinuxGetDeviceType(void* device_ctx)
+int32_t GetDeviceType(void* device_ctx)
 {
-    LinuxDeviceContext* ctx = device_ctx;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return -1;
 
@@ -318,162 +318,4 @@ int32_t LinuxGetDeviceType(void* device_ctx)
 
     return dev_type;
 #endif
-}
-
-int32_t LinuxGetSdhciRegisters(void*     device_ctx,
-                               char**    csd,
-                               char**    cid,
-                               char**    ocr,
-                               char**    scr,
-                               uint32_t* csd_len,
-                               uint32_t* cid_len,
-                               uint32_t* ocr_len,
-                               uint32_t* scr_len)
-{
-    LinuxDeviceContext* ctx = device_ctx;
-    char*               tmp_string;
-    char*               sysfs_path_csd;
-    char*               sysfs_path_cid;
-    char*               sysfs_path_scr;
-    char*               sysfs_path_ocr;
-    size_t              len;
-    FILE*               file;
-    *csd     = NULL;
-    *cid     = NULL;
-    *ocr     = NULL;
-    *scr     = NULL;
-    *csd_len = 0;
-    *cid_len = 0;
-    *ocr_len = 0;
-    *scr_len = 0;
-    size_t n = 1026;
-
-    if(!ctx) return -1;
-
-    if(strncmp(ctx->device_path, "/dev/mmcblk", 11) != 0) return 0;
-
-    len            = strlen(ctx->device_path) + 19;
-    sysfs_path_csd = malloc(len);
-    sysfs_path_cid = malloc(len);
-    sysfs_path_scr = malloc(len);
-    sysfs_path_ocr = malloc(len);
-    tmp_string     = malloc(1024);
-
-    if(!sysfs_path_csd || !sysfs_path_cid || !sysfs_path_scr || !sysfs_path_ocr || !tmp_string)
-    {
-        free(sysfs_path_csd);
-        free(sysfs_path_cid);
-        free(sysfs_path_scr);
-        free(sysfs_path_ocr);
-        free(tmp_string);
-        return 0;
-    }
-
-    memset(sysfs_path_csd, 0, len);
-    memset(sysfs_path_cid, 0, len);
-    memset(sysfs_path_scr, 0, len);
-    memset(sysfs_path_ocr, 0, len);
-    memset(tmp_string, 0, strlen(ctx->device_path) - 5);
-
-    memcpy(tmp_string, ctx->device_path + 5, strlen(ctx->device_path) - 5);
-    snprintf(sysfs_path_csd, len, "/sys/block/%s/device/csd", tmp_string);
-    snprintf(sysfs_path_cid, len, "/sys/block/%s/device/cid", tmp_string);
-    snprintf(sysfs_path_scr, len, "/sys/block/%s/device/scr", tmp_string);
-    snprintf(sysfs_path_ocr, len, "/sys/block/%s/device/ocr", tmp_string);
-
-    if(access(sysfs_path_csd, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_csd, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *csd_len = Hexs2Bin(tmp_string, (unsigned char**)csd);
-
-                if(*csd_len <= 0)
-                {
-                    *csd_len = 0;
-                    *csd     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    if(access(sysfs_path_cid, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_cid, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *cid_len = Hexs2Bin(tmp_string, (unsigned char**)cid);
-
-                if(*cid_len <= 0)
-                {
-                    *cid_len = 0;
-                    *cid     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    if(access(sysfs_path_scr, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_scr, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *scr_len = Hexs2Bin(tmp_string, (unsigned char**)scr);
-
-                if(*scr_len <= 0)
-                {
-                    *scr_len = 0;
-                    *scr     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    if(access(sysfs_path_ocr, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_ocr, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *ocr_len = Hexs2Bin(tmp_string, (unsigned char**)ocr);
-
-                if(*ocr_len <= 0)
-                {
-                    *ocr_len = 0;
-                    *ocr     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    free(sysfs_path_csd);
-    free(sysfs_path_cid);
-    free(sysfs_path_scr);
-    free(sysfs_path_ocr);
-    free(tmp_string);
-
-    return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
 }

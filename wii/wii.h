@@ -39,13 +39,11 @@ typedef struct
 {
     s32 ios_fd;
     s32 dev_type;
-} WiiDeviceContext;
+} DeviceContext;
 
 typedef struct
 {
     s32 fd;
-} WiiNetworkContext;
-
-DeviceInfoList* WiiListDevices();
+} NetworkContext;
 
 #endif // AARUREMOTE_WII_WII_H_

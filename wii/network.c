@@ -42,9 +42,9 @@ int PrintNetworkAddresses()
 char* PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
 void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 {
-    WiiNetworkContext* ctx;
+    NetworkContext* ctx;
 
-    ctx = malloc(sizeof(WiiNetworkContext));
+    ctx = malloc(sizeof(NetworkContext));
 
     if(!ctx) return NULL;
 
@@ -61,7 +61,7 @@ void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 
 int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
 {
-    WiiNetworkContext* ctx = net_ctx;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 
@@ -70,7 +70,7 @@ int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
 
 int32_t NetListen(void* net_ctx, uint32_t backlog)
 {
-    WiiNetworkContext* ctx = net_ctx;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 
@@ -79,12 +79,12 @@ int32_t NetListen(void* net_ctx, uint32_t backlog)
 
 void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
 {
-    WiiNetworkContext* ctx = net_ctx;
-    WiiNetworkContext* cli_ctx;
+    NetworkContext* ctx = net_ctx;
+    NetworkContext* cli_ctx;
 
     if(!ctx) return NULL;
 
-    cli_ctx = malloc(sizeof(WiiNetworkContext));
+    cli_ctx = malloc(sizeof(NetworkContext));
 
     if(!cli_ctx) return NULL;
 
@@ -101,7 +101,7 @@ void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
 
 int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
 {
-    WiiNetworkContext* ctx = net_ctx;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 
@@ -124,7 +124,7 @@ int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
 
 int32_t NetWrite(void* net_ctx, const void* buf, int32_t size)
 {
-    WiiNetworkContext* ctx = net_ctx;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 
@@ -133,8 +133,8 @@ int32_t NetWrite(void* net_ctx, const void* buf, int32_t size)
 
 int32_t NetClose(void* net_ctx)
 {
-    int                ret;
-    WiiNetworkContext* ctx = net_ctx;
+    int             ret;
+    NetworkContext* ctx = net_ctx;
 
     if(!ctx) return -1;
 

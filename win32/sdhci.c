@@ -20,21 +20,21 @@
 
 #include <stdint.h>
 
-int32_t Win32SendSdhciCommand(void*     device_ctx,
-                              uint8_t   command,
-                              uint8_t   write,
-                              uint8_t   application,
-                              uint32_t  flags,
-                              uint32_t  argument,
-                              uint32_t  block_size,
-                              uint32_t  blocks,
-                              char*     buffer,
-                              uint32_t  timeout,
-                              uint32_t* response,
-                              uint32_t* duration,
-                              uint32_t* sense)
+int32_t SendSdhciCommand(void*     device_ctx,
+                         uint8_t   command,
+                         uint8_t   write,
+                         uint8_t   application,
+                         uint32_t  flags,
+                         uint32_t  argument,
+                         uint32_t  block_size,
+                         uint32_t  blocks,
+                         char*     buffer,
+                         uint32_t  timeout,
+                         uint32_t* response,
+                         uint32_t* duration,
+                         uint32_t* sense)
 {
-    Win32DeviceContext*          ctx = device_ctx;
+    DeviceContext*               ctx = device_ctx;
     DWORD                        cmdbuf_len;
     PCHAR                        cmdbuf;
     DWORD                        buf_len;
@@ -126,19 +126,19 @@ BOOL IsSdhci(HANDLE handle)
     return GuidEquals(query.ProtocolGUID, sdGuid) || GuidEquals(query.ProtocolGUID, mmcGuid);
 }
 
-int32_t Win32GetSdhciRegisters(void*     device_ctx,
-                               char**    csd,
-                               char**    cid,
-                               char**    ocr,
-                               char**    scr,
-                               uint32_t* csd_len,
-                               uint32_t* cid_len,
-                               uint32_t* ocr_len,
-                               uint32_t* scr_len)
+int32_t GetSdhciRegisters(void*     device_ctx,
+                          char**    csd,
+                          char**    cid,
+                          char**    ocr,
+                          char**    scr,
+                          uint32_t* csd_len,
+                          uint32_t* cid_len,
+                          uint32_t* ocr_len,
+                          uint32_t* scr_len)
 {
-    Win32DeviceContext* ctx = device_ctx;
-    uint32_t            duration;
-    uint32_t            sense;
+    DeviceContext* ctx = device_ctx;
+    uint32_t       duration;
+    uint32_t       sense;
 
     if(!ctx) return -1;
 

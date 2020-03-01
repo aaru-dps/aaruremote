@@ -19,14 +19,14 @@
 
 #include <stdint.h>
 
-uint8_t Win32GetIeee1394Data(void*     device_ctx,
-                             uint32_t* id_model,
-                             uint32_t* id_vendor,
-                             uint64_t* guid,
-                             char*     vendor,
-                             char*     model)
+uint8_t GetFireWireData(void*     device_ctx,
+                        uint32_t* id_model,
+                        uint32_t* id_vendor,
+                        uint64_t* guid,
+                        char*     vendor,
+                        char*     model)
 {
-    Win32DeviceContext* ctx = device_ctx;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return 0;
 

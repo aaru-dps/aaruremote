@@ -22,19 +22,19 @@
 #include <stdint.h>
 #include <windows.h>
 
-int32_t Win32SendScsiCommand(void*     device_ctx,
-                             char*     cdb,
-                             char*     buffer,
-                             char**    sense_buffer,
-                             uint32_t  timeout,
-                             int32_t   direction,
-                             uint32_t* duration,
-                             uint32_t* sense,
-                             uint32_t  cdb_len,
-                             uint32_t* buf_len,
-                             uint32_t* sense_len)
+int32_t SendScsiCommand(void*     device_ctx,
+                        char*     cdb,
+                        char*     buffer,
+                        char**    sense_buffer,
+                        uint32_t  timeout,
+                        int32_t   direction,
+                        uint32_t* duration,
+                        uint32_t* sense,
+                        uint32_t  cdb_len,
+                        uint32_t* buf_len,
+                        uint32_t* sense_len)
 {
-    Win32DeviceContext*       ctx = device_ctx;
+    DeviceContext*            ctx = device_ctx;
     PSCSI_PASS_THROUGH_DIRECT sptd;
     PVOID                     sptd_and_sense;
     UCHAR                     dir;

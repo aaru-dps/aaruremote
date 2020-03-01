@@ -23,15 +23,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-void* Win32OpenDevice(const char* device_path)
+void* DeviceOpen(const char* device_path)
 {
-    Win32DeviceContext* ctx;
+    DeviceContext* ctx;
 
-    ctx = malloc(sizeof(Win32DeviceContext));
+    ctx = malloc(sizeof(DeviceContext));
 
     if(!ctx) return NULL;
 
-    memset(ctx, 0, sizeof(Win32DeviceContext));
+    memset(ctx, 0, sizeof(DeviceContext));
 
     ctx->handle = CreateFile(device_path,
                              GENERIC_READ | GENERIC_WRITE,
@@ -52,9 +52,9 @@ void* Win32OpenDevice(const char* device_path)
     return ctx;
 }
 
-void Win32CloseDevice(void* device_ctx)
+void DeviceClose(void* device_ctx)
 {
-    Win32DeviceContext* ctx = device_ctx;
+    DeviceContext* ctx = device_ctx;
 
     if(!ctx) return;
 
@@ -63,9 +63,9 @@ void Win32CloseDevice(void* device_ctx)
     free(ctx);
 }
 
-int32_t Win32GetDeviceType(void* device_ctx)
+int32_t GetDeviceType(void* device_ctx)
 {
-    Win32DeviceContext*        ctx = device_ctx;
+    DeviceContext*             ctx = device_ctx;
     STORAGE_PROPERTY_QUERY     query;
     DWORD                      error = 0;
     BOOL                       ret;

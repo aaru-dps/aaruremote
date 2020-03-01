@@ -23,22 +23,22 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-uint8_t LinuxGetIeee1394Data(void*     device_ctx,
-                             uint32_t* id_model,
-                             uint32_t* id_vendor,
-                             uint64_t* guid,
-                             char*     vendor,
-                             char*     model)
+uint8_t GetFireWireData(void*     device_ctx,
+                        uint32_t* id_model,
+                        uint32_t* id_vendor,
+                        uint64_t* guid,
+                        char*     vendor,
+                        char*     model)
 {
-    LinuxDeviceContext* ctx = device_ctx;
-    char*               dev_path;
-    char                tmp_path[4096];
-    char                resolved_link[4096];
-    struct stat         sb;
-    ssize_t             len;
-    char*               rchr;
-    int                 found;
-    FILE*               file;
+    DeviceContext* ctx = device_ctx;
+    char*          dev_path;
+    char           tmp_path[4096];
+    char           resolved_link[4096];
+    struct stat    sb;
+    ssize_t        len;
+    char*          rchr;
+    int            found;
+    FILE*          file;
 
     if(!ctx) return 0;
 

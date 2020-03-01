@@ -5,7 +5,7 @@ include(CheckLibraryExists)
 include(TestBigEndian)
 set(CMAKE_C_STANDARD 90)
 
-set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c usb.c ieee1394.c pcmcia.c ata.c sdhci.c worker.c endian.h)
+set(MAIN_SOURCES aaruremote.h endian.h hex2bin.c list_devices.c main.c worker.c)
 
 add_library(aaruremotecore ${MAIN_SOURCES})
 

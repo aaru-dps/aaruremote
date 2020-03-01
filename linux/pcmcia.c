@@ -24,18 +24,18 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-uint8_t LinuxGetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
+uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
 {
-    LinuxDeviceContext* ctx = device_ctx;
-    char*               dev_path;
-    char                tmp_path[4096];
-    char                resolved_link[4096];
-    struct stat         sb;
-    ssize_t             len;
-    char*               rchr;
-    FILE*               file;
-    DIR*                dir;
-    struct dirent*      dent;
+    DeviceContext* ctx = device_ctx;
+    char*          dev_path;
+    char           tmp_path[4096];
+    char           resolved_link[4096];
+    struct stat    sb;
+    ssize_t        len;
+    char*          rchr;
+    FILE*          file;
+    DIR*           dir;
+    struct dirent* dent;
     *cis_len = 0;
 
     if(!ctx) return 0;

@@ -21,6 +21,6 @@
 typedef struct
 {
     int fd;
-} UnixNetworkContext;
+} NetworkContext;
 
 #endif // AARUREMOTE_UNIX_UNIX_H_
