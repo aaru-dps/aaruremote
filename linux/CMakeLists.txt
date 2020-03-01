@@ -1,4 +1,4 @@
-project(dicremote-linux C)
+project(aaruremote-linux C)
 
 if (NOT "${CMAKE_SYSTEM}" MATCHES "Linux")
     return()
@@ -9,10 +9,10 @@ set(PLATFORM_SOURCES list_devices.c linux.h device.c scsi.c usb.c ieee1394.c pcm
 CHECK_LIBRARY_EXISTS("udev" udev_new "" HAS_UDEV)
 CHECK_INCLUDE_FILES("linux/mmc/ioctl.h" HAVE_MMC_IOCTL_H)
 
-add_executable(dicremote ${PLATFORM_SOURCES})
+add_executable(aaruremote ${PLATFORM_SOURCES})
 
 if (HAS_UDEV)
-    target_link_libraries(dicremote udev)
+    target_link_libraries(aaruremote udev)
     add_definitions(-DHAS_UDEV)
 endif ()
 
@@ -20,4 +20,4 @@ if (HAVE_MMC_IOCTL_H)
     add_definitions(-DHAS_UAPI_MMC)
 endif ()
 
-target_link_libraries(dicremote dicremotecore)
+target_link_libraries(aaruremote aaruremotecore)

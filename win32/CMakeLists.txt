@@ -1,4 +1,4 @@
-project("dicremote-win32" C)
+project("aaruremote-win32" C)
 
 if (NOT "${CMAKE_SYSTEM}" MATCHES "Windows")
     return()
@@ -43,6 +43,6 @@ endif ()
 
 set(PLATFORM_SOURCES "win32.h" network.c hello.c "win32.c" list_devices.c ata.c device.c ieee1394.c pcmcia.c scsi.c sdhci.c usb.h usb.c ntioctl.h)
 
-add_executable(dicremote ${PLATFORM_SOURCES})
+add_executable(aaruremote ${PLATFORM_SOURCES})
 
-target_link_libraries(dicremote dicremotecore ws2_32 iphlpapi version setupapi cfgmgr32)
+target_link_libraries(aaruremote aaruremotecore ws2_32 iphlpapi version setupapi cfgmgr32)

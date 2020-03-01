@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(dicremote C)
+project(aaruremote C)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(TestBigEndian)
@@ -7,7 +7,7 @@ set(CMAKE_C_STANDARD 90)
 
 set(MAIN_SOURCES main.c list_devices.c device.c scsi.c hex2bin.c usb.c ieee1394.c pcmcia.c ata.c sdhci.c worker.c endian.h)
 
-add_library(dicremotecore ${MAIN_SOURCES})
+add_library(aaruremotecore ${MAIN_SOURCES})
 
 CHECK_INCLUDE_FILES("endian.h" HAVE_ENDIAN_H)
 CHECK_INCLUDE_FILES("sys/endian.h" HAVE_SYS_ENDIAN_H)
@@ -37,8 +37,8 @@ else ()
 endif ()
 
 
-set(DIC_PORTS "linux;wii;win32" CACHE STRING "List of ports to build")
-foreach (PORT IN LISTS DIC_PORTS)
+set(AARU_PORTS "linux;wii;win32" CACHE STRING "List of ports to build")
+foreach (PORT IN LISTS AARU_PORTS)
     add_subdirectory(${PORT})
 endforeach (PORT)
 
