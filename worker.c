@@ -29,18 +29,18 @@
 
 void* WorkingLoop(void* arguments)
 {
-    AtaErrorRegistersChs           ata_chs_error_regs;
-    AtaErrorRegistersLba28         ata_lba28_error_regs;
-    AtaErrorRegistersLba48         ata_lba48_error_regs;
-    char*                          buffer;
-    char*                          cdb_buf;
-    char*                          cid;
-    char*                          csd;
-    char*                          in_buf;
-    char*                          ocr;
-    char*                          out_buf;
-    char*                          scr;
-    char*                          sense_buf;
+    AtaErrorRegistersChs            ata_chs_error_regs;
+    AtaErrorRegistersLba28          ata_lba28_error_regs;
+    AtaErrorRegistersLba48          ata_lba48_error_regs;
+    char*                           buffer;
+    char*                           cdb_buf;
+    char*                           cid;
+    char*                           csd;
+    char*                           in_buf;
+    char*                           ocr;
+    char*                           out_buf;
+    char*                           scr;
+    char*                           sense_buf;
     AaruPacketCmdAtaChs*            pkt_cmd_ata_chs;
     AaruPacketCmdAtaLba28*          pkt_cmd_ata_lba28;
     AaruPacketCmdAtaLba48*          pkt_cmd_ata_lba48;
@@ -63,20 +63,20 @@ void* WorkingLoop(void* arguments)
     AaruPacketResListDevs*          pkt_res_devinfo;
     AaruPacketResScsi*              pkt_res_scsi;
     AaruPacketResSdhci*             pkt_res_sdhci;
-    int                            skip_next_hdr;
-    int                            ret;
-    socklen_t                      cli_len;
-    ssize_t                        recv_size;
-    struct DeviceInfoList*         device_info_list;
-    struct sockaddr_in             cli_addr, serv_addr;
-    uint32_t                       duration;
-    uint32_t                       sdhci_response[4];
-    uint32_t                       sense;
-    uint32_t                       sense_len;
-    uint32_t                       n;
-    void*                          device_ctx = NULL;
-    void*                          net_ctx    = NULL;
-    void*                          cli_ctx    = NULL;
+    int                             skip_next_hdr;
+    int                             ret;
+    socklen_t                       cli_len;
+    ssize_t                         recv_size;
+    struct DeviceInfoList*          device_info_list;
+    struct sockaddr_in              cli_addr, serv_addr;
+    uint32_t                        duration;
+    uint32_t                        sdhci_response[4];
+    uint32_t                        sense;
+    uint32_t                        sense_len;
+    uint32_t                        n;
+    void*                           device_ctx = NULL;
+    void*                           net_ctx    = NULL;
+    void*                           cli_ctx    = NULL;
 
     if(!arguments)
     {
@@ -272,7 +272,8 @@ void* WorkingLoop(void* arguments)
                 break;
             }
 
-            if(pkt_hdr->remote_id != htole32(AARUREMOTE_REMOTE_ID) || pkt_hdr->packet_id != htole32(AARUREMOTE_PACKET_ID))
+            if(pkt_hdr->remote_id != htole32(AARUREMOTE_REMOTE_ID) ||
+               pkt_hdr->packet_id != htole32(AARUREMOTE_PACKET_ID))
             {
                 printf("Received data is not a correct aaruremote packet, closing connection...\n");
                 NetClose(cli_ctx);
@@ -389,8 +390,8 @@ void* WorkingLoop(void* arguments)
 
                     device_ctx = DeviceOpen(pkt_dev_open->device_path);
 
-                    pkt_nop->reason_code =
-                        device_ctx == NULL ? AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR : AARUREMOTE_PACKET_NOP_REASON_OPEN_OK;
+                    pkt_nop->reason_code = device_ctx == NULL ? AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR
+                                                              : AARUREMOTE_PACKET_NOP_REASON_OPEN_OK;
                     pkt_nop->error_no = errno;
                     memset(&pkt_nop->reason, 0, 256);
                     NetWrite(cli_ctx, pkt_nop, sizeof(AaruPacketNop));

@@ -23,8 +23,8 @@
 
 int main()
 {
-    AaruPacketHello*                pkt_server_hello;
-    int                            ret;
+    AaruPacketHello* pkt_server_hello;
+    int              ret;
 
     Initialize();
 

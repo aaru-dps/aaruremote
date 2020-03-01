@@ -23,8 +23,8 @@
 
 AaruPacketHello* GetHello()
 {
-    struct utsname  utsname;
-    int             ret;
+    struct utsname   utsname;
+    int              ret;
     AaruPacketHello* pkt_server_hello;
 
     ret = uname(&utsname);

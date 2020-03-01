@@ -18,8 +18,8 @@
 #ifndef AARUREMOTE_WIN32_NTIOCTL_H_
 #define AARUREMOTE_WIN32_NTIOCTL_H_
 
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 
 #ifdef HAS_NTDDSCSI_H
 #include <ntddscsi.h>

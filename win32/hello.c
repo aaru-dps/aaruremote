@@ -26,7 +26,7 @@
 
 AaruPacketHello* GetHello()
 {
-    AaruPacketHello*   pkt_server_hello;
+    AaruPacketHello*  pkt_server_hello;
     OSVERSIONINFOEX   osvi;
     SYSTEM_INFO       sysinfo;
     UINT              verSize;

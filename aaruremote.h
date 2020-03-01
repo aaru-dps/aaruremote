@@ -118,15 +118,21 @@
 #define AARUREMOTE_MMC_RESPONSE_SPI_B4 (1 << 9)
 #define AARUREMOTE_MMC_RESPONSE_SPI_BUSY (1 << 10)
 #define AARUREMOTE_MMC_RESPONSE_NONE (0)
-#define AARUREMOTE_MMC_RESPONSE_R1 AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
-#define AARUREMOTE_MMC_RESPONSE_R1B                                                                                       \
-    AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE | AARUREMOTE_MMC_RESPONSE_BUSY
-#define AARUREMOTE_MMC_RESPONSE_R2 AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_136 | AARUREMOTE_MMC_RESPONSE_CRC
+#define AARUREMOTE_MMC_RESPONSE_R1                                                                                     \
+    AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
+#define AARUREMOTE_MMC_RESPONSE_R1B                                                                                    \
+    AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE |                   \
+        AARUREMOTE_MMC_RESPONSE_BUSY
+#define AARUREMOTE_MMC_RESPONSE_R2                                                                                     \
+    AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_136 | AARUREMOTE_MMC_RESPONSE_CRC
 #define AARUREMOTE_MMC_RESPONSE_R3 AARUREMOTE_MMC_RESPONSE_PRESENT
 #define AARUREMOTE_MMC_RESPONSE_R4 AARUREMOTE_MMC_RESPONSE_PRESENT
-#define AARUREMOTE_MMC_RESPONSE_R5 AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
-#define AARUREMOTE_MMC_RESPONSE_R6 AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
-#define AARUREMOTE_MMC_RESPONSE_R7 AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
+#define AARUREMOTE_MMC_RESPONSE_R5                                                                                     \
+    AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
+#define AARUREMOTE_MMC_RESPONSE_R6                                                                                     \
+    AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
+#define AARUREMOTE_MMC_RESPONSE_R7                                                                                     \
+    AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_CRC | AARUREMOTE_MMC_RESPONSE_OPCODE
 #define AARUREMOTE_MMC_RESPONSE_SPI_R1 AARUREMOTE_MMC_RESPONSE_SPI_S1
 #define AARUREMOTE_MMC_RESPONSE_SPI_R1B AARUREMOTE_MMC_RESPONSE_SPI_S1 | AARUREMOTE_MMC_RESPONSE_SPI_BUSY
 #define AARUREMOTE_MMC_RESPONSE_SPI_R2 AARUREMOTE_MMC_RESPONSE_SPI_S1 | AARUREMOTE_MMC_RESPONSE_SPI_S2
@@ -150,13 +156,13 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    char            application[128];
-    char            version[64];
-    uint8_t         max_protocol;
-    char            spare[3];
-    char            sysname[256];
-    char            release[256];
-    char            machine[256];
+    char             application[128];
+    char             version[64];
+    uint8_t          max_protocol;
+    char             spare[3];
+    char             sysname[256];
+    char             release[256];
+    char             machine[256];
 } AaruPacketHello;
 
 typedef struct
@@ -167,7 +173,7 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint16_t        devices;
+    uint16_t         devices;
 } AaruPacketResListDevs;
 
 typedef struct
@@ -190,35 +196,35 @@ typedef struct DeviceInfoList
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint8_t         reason_code;
-    char            spare[3];
-    char            reason[256];
-    int32_t         error_no;
+    uint8_t          reason_code;
+    char             spare[3];
+    char             reason[256];
+    int32_t          error_no;
 } AaruPacketNop;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-    char            device_path[1024];
+    char             device_path[1024];
 } AaruPacketCmdOpen;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint32_t        cdb_len;
-    uint32_t        buf_len;
-    int32_t         direction;
-    uint32_t        timeout;
+    uint32_t         cdb_len;
+    uint32_t         buf_len;
+    int32_t          direction;
+    uint32_t         timeout;
 } AaruPacketCmdScsi;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint32_t        sense_len;
-    uint32_t        buf_len;
-    uint32_t        duration;
-    uint32_t        sense;
-    uint32_t        error_no;
+    uint32_t         sense_len;
+    uint32_t         buf_len;
+    uint32_t         duration;
+    uint32_t         sense;
+    uint32_t         error_no;
 } AaruPacketResScsi;
 
 typedef struct
@@ -246,18 +252,18 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint32_t        buf_len;
-    AtaRegistersChs registers;
-    uint8_t         protocol;
-    uint8_t         transfer_register;
-    uint8_t         transfer_blocks;
-    uint8_t         spare;
-    uint32_t        timeout;
+    uint32_t         buf_len;
+    AtaRegistersChs  registers;
+    uint8_t          protocol;
+    uint8_t          transfer_register;
+    uint8_t          transfer_blocks;
+    uint8_t          spare;
+    uint32_t         timeout;
 } AaruPacketCmdAtaChs;
 
 typedef struct
 {
-    AaruPacketHeader      hdr;
+    AaruPacketHeader     hdr;
     uint32_t             buf_len;
     AtaErrorRegistersChs registers;
     uint32_t             duration;
@@ -289,7 +295,7 @@ typedef struct
 
 typedef struct
 {
-    AaruPacketHeader   hdr;
+    AaruPacketHeader  hdr;
     uint32_t          buf_len;
     AtaRegistersLba28 registers;
     uint8_t           protocol;
@@ -301,7 +307,7 @@ typedef struct
 
 typedef struct
 {
-    AaruPacketHeader        hdr;
+    AaruPacketHeader       hdr;
     uint32_t               buf_len;
     AtaErrorRegistersLba28 registers;
     uint32_t               duration;
@@ -333,7 +339,7 @@ typedef struct
 
 typedef struct
 {
-    AaruPacketHeader   hdr;
+    AaruPacketHeader  hdr;
     uint32_t          buf_len;
     AtaRegistersLba48 registers;
     uint8_t           protocol;
@@ -345,7 +351,7 @@ typedef struct
 
 typedef struct
 {
-    AaruPacketHeader        hdr;
+    AaruPacketHeader       hdr;
     uint32_t               buf_len;
     AtaErrorRegistersLba48 registers;
     uint32_t               duration;
@@ -356,25 +362,25 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint8_t         command;
-    uint8_t         write;
-    uint8_t         application;
-    uint32_t        flags;
-    uint32_t        argument;
-    uint32_t        block_size;
-    uint32_t        blocks;
-    uint32_t        buf_len;
-    uint32_t        timeout;
+    uint8_t          command;
+    uint8_t          write;
+    uint8_t          application;
+    uint32_t         flags;
+    uint32_t         argument;
+    uint32_t         block_size;
+    uint32_t         blocks;
+    uint32_t         buf_len;
+    uint32_t         timeout;
 } AaruPacketCmdSdhci;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint32_t        buf_len;
-    uint32_t        response[4];
-    uint32_t        duration;
-    uint32_t        sense;
-    uint32_t        error_no;
+    uint32_t         buf_len;
+    uint32_t         response[4];
+    uint32_t         duration;
+    uint32_t         sense;
+    uint32_t         error_no;
 } AaruPacketResSdhci;
 
 typedef struct
@@ -385,7 +391,7 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    int32_t         device_type;
+    int32_t          device_type;
 } AaruPacketResGetDeviceType;
 
 typedef struct
@@ -396,15 +402,15 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint8_t         is_sdhci;
-    char            csd[16];
-    char            cid[16];
-    char            ocr[4];
-    char            scr[8];
-    uint32_t        csd_len;
-    uint32_t        cid_len;
-    uint32_t        ocr_len;
-    uint32_t        scr_len;
+    uint8_t          is_sdhci;
+    char             csd[16];
+    char             cid[16];
+    char             ocr[4];
+    char             scr[8];
+    uint32_t         csd_len;
+    uint32_t         cid_len;
+    uint32_t         ocr_len;
+    uint32_t         scr_len;
 } AaruPacketResGetSdhciRegisters;
 
 typedef struct
@@ -415,14 +421,14 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint8_t         is_usb;
-    uint16_t        desc_len;
-    char            descriptors[65536];
-    uint16_t        id_vendor;
-    uint16_t        id_product;
-    char            manufacturer[256];
-    char            product[256];
-    char            serial[256];
+    uint8_t          is_usb;
+    uint16_t         desc_len;
+    char             descriptors[65536];
+    uint16_t         id_vendor;
+    uint16_t         id_product;
+    char             manufacturer[256];
+    char             product[256];
+    char             serial[256];
 } AaruPacketResGetUsbData;
 
 typedef struct
@@ -433,12 +439,12 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint8_t         is_firewire;
-    uint32_t        id_model;
-    uint32_t        id_vendor;
-    uint64_t        guid;
-    char            vendor[256];
-    char            model[256];
+    uint8_t          is_firewire;
+    uint32_t         id_model;
+    uint32_t         id_vendor;
+    uint64_t         guid;
+    char             vendor[256];
+    char             model[256];
 } AaruPacketResGetFireWireData;
 
 typedef struct
@@ -449,9 +455,9 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint8_t         is_pcmcia;
-    uint16_t        cis_len;
-    char            cis[65536];
+    uint8_t          is_pcmcia;
+    uint16_t         cis_len;
+    char             cis[65536];
 } AaruPacketResGetPcmciaData;
 
 typedef struct
@@ -467,113 +473,113 @@ typedef struct
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint32_t        am_i_root;
+    uint32_t         am_i_root;
 } AaruPacketResAmIRoot;
 
 #pragma pack(pop)
 
-DeviceInfoList* ListDevices();
-void            FreeDeviceInfoList(DeviceInfoList* start);
-uint16_t        DeviceInfoListCount(DeviceInfoList* start);
-void*           DeviceOpen(const char* device_path);
-void            DeviceClose(void* device_ctx);
-int32_t         GetDeviceType(void* device_ctx);
-int32_t         SendScsiCommand(void*     device_ctx,
-                                char*     cdb,
-                                char*     buffer,
-                                char**    sense_buffer,
-                                uint32_t  timeout,
-                                int32_t   direction,
-                                uint32_t* duration,
-                                uint32_t* sense,
-                                uint32_t  cdb_len,
-                                uint32_t* buf_len,
-                                uint32_t* sense_len);
-int             Hexchr2Bin(const char hex, char* out);
-size_t          Hexs2Bin(const char* hex, unsigned char** out);
-int32_t         GetSdhciRegisters(void*     device_ctx,
-                                  char**    csd,
-                                  char**    cid,
-                                  char**    ocr,
-                                  char**    scr,
-                                  uint32_t* csd_len,
-                                  uint32_t* cid_len,
-                                  uint32_t* ocr_len,
-                                  uint32_t* scr_len);
-uint8_t         GetUsbData(void*     device_ctx,
-                           uint16_t* desc_len,
-                           char*     descriptors,
-                           uint16_t* id_vendor,
-                           uint16_t* id_product,
-                           char*     manufacturer,
-                           char*     product,
-                           char*     serial);
-uint8_t         GetFireWireData(void*     device_ctx,
-                                uint32_t* id_model,
-                                uint32_t* id_vendor,
-                                uint64_t* guid,
-                                char*     vendor,
-                                char*     model);
-uint8_t         GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis);
-int32_t         SendAtaChsCommand(void*                 device_ctx,
-                                  AtaRegistersChs       registers,
-                                  AtaErrorRegistersChs* error_registers,
-                                  uint8_t               protocol,
-                                  uint8_t               transfer_register,
-                                  char*                 buffer,
-                                  uint32_t              timeout,
-                                  uint8_t               transfer_blocks,
-                                  uint32_t*             duration,
-                                  uint32_t*             sense,
-                                  uint32_t*             buf_len);
-int32_t         SendAtaLba28Command(void*                   device_ctx,
-                                    AtaRegistersLba28       registers,
-                                    AtaErrorRegistersLba28* error_registers,
-                                    uint8_t                 protocol,
-                                    uint8_t                 transfer_register,
-                                    char*                   buffer,
-                                    uint32_t                timeout,
-                                    uint8_t                 transfer_blocks,
-                                    uint32_t*               duration,
-                                    uint32_t*               sense,
-                                    uint32_t*               buf_len);
-int32_t         SendAtaLba48Command(void*                   device_ctx,
-                                    AtaRegistersLba48       registers,
-                                    AtaErrorRegistersLba48* error_registers,
-                                    uint8_t                 protocol,
-                                    uint8_t                 transfer_register,
-                                    char*                   buffer,
-                                    uint32_t                timeout,
-                                    uint8_t                 transfer_blocks,
-                                    uint32_t*               duration,
-                                    uint32_t*               sense,
-                                    uint32_t*               buf_len);
-int32_t         SendSdhciCommand(void*     device_ctx,
-                                 uint8_t   command,
-                                 uint8_t   write,
-                                 uint8_t   application,
-                                 uint32_t  flags,
-                                 uint32_t  argument,
-                                 uint32_t  block_size,
-                                 uint32_t  blocks,
+DeviceInfoList*  ListDevices();
+void             FreeDeviceInfoList(DeviceInfoList* start);
+uint16_t         DeviceInfoListCount(DeviceInfoList* start);
+void*            DeviceOpen(const char* device_path);
+void             DeviceClose(void* device_ctx);
+int32_t          GetDeviceType(void* device_ctx);
+int32_t          SendScsiCommand(void*     device_ctx,
+                                 char*     cdb,
                                  char*     buffer,
-                                 uint32_t  buf_len,
+                                 char**    sense_buffer,
                                  uint32_t  timeout,
-                                 uint32_t* response,
+                                 int32_t   direction,
                                  uint32_t* duration,
-                                 uint32_t* sense);
+                                 uint32_t* sense,
+                                 uint32_t  cdb_len,
+                                 uint32_t* buf_len,
+                                 uint32_t* sense_len);
+int              Hexchr2Bin(const char hex, char* out);
+size_t           Hexs2Bin(const char* hex, unsigned char** out);
+int32_t          GetSdhciRegisters(void*     device_ctx,
+                                   char**    csd,
+                                   char**    cid,
+                                   char**    ocr,
+                                   char**    scr,
+                                   uint32_t* csd_len,
+                                   uint32_t* cid_len,
+                                   uint32_t* ocr_len,
+                                   uint32_t* scr_len);
+uint8_t          GetUsbData(void*     device_ctx,
+                            uint16_t* desc_len,
+                            char*     descriptors,
+                            uint16_t* id_vendor,
+                            uint16_t* id_product,
+                            char*     manufacturer,
+                            char*     product,
+                            char*     serial);
+uint8_t          GetFireWireData(void*     device_ctx,
+                                 uint32_t* id_model,
+                                 uint32_t* id_vendor,
+                                 uint64_t* guid,
+                                 char*     vendor,
+                                 char*     model);
+uint8_t          GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis);
+int32_t          SendAtaChsCommand(void*                 device_ctx,
+                                   AtaRegistersChs       registers,
+                                   AtaErrorRegistersChs* error_registers,
+                                   uint8_t               protocol,
+                                   uint8_t               transfer_register,
+                                   char*                 buffer,
+                                   uint32_t              timeout,
+                                   uint8_t               transfer_blocks,
+                                   uint32_t*             duration,
+                                   uint32_t*             sense,
+                                   uint32_t*             buf_len);
+int32_t          SendAtaLba28Command(void*                   device_ctx,
+                                     AtaRegistersLba28       registers,
+                                     AtaErrorRegistersLba28* error_registers,
+                                     uint8_t                 protocol,
+                                     uint8_t                 transfer_register,
+                                     char*                   buffer,
+                                     uint32_t                timeout,
+                                     uint8_t                 transfer_blocks,
+                                     uint32_t*               duration,
+                                     uint32_t*               sense,
+                                     uint32_t*               buf_len);
+int32_t          SendAtaLba48Command(void*                   device_ctx,
+                                     AtaRegistersLba48       registers,
+                                     AtaErrorRegistersLba48* error_registers,
+                                     uint8_t                 protocol,
+                                     uint8_t                 transfer_register,
+                                     char*                   buffer,
+                                     uint32_t                timeout,
+                                     uint8_t                 transfer_blocks,
+                                     uint32_t*               duration,
+                                     uint32_t*               sense,
+                                     uint32_t*               buf_len);
+int32_t          SendSdhciCommand(void*     device_ctx,
+                                  uint8_t   command,
+                                  uint8_t   write,
+                                  uint8_t   application,
+                                  uint32_t  flags,
+                                  uint32_t  argument,
+                                  uint32_t  block_size,
+                                  uint32_t  blocks,
+                                  char*     buffer,
+                                  uint32_t  buf_len,
+                                  uint32_t  timeout,
+                                  uint32_t* response,
+                                  uint32_t* duration,
+                                  uint32_t* sense);
 AaruPacketHello* GetHello();
-int             PrintNetworkAddresses();
-char*           PrintIpv4Address(struct in_addr addr);
-void*           NetSocket(uint32_t domain, uint32_t type, uint32_t protocol);
-int32_t         NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen);
-int32_t         NetListen(void* net_ctx, uint32_t backlog);
-void*           NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen);
-int32_t         NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags);
-int32_t         NetWrite(void* net_ctx, const void* buf, int32_t size);
-int32_t         NetClose(void* net_ctx);
-void            Initialize();
-void            PlatformLoop(AaruPacketHello* pkt_server_hello);
-void*           WorkingLoop(void* arguments);
-uint8_t         AmIRoot();
+int              PrintNetworkAddresses();
+char*            PrintIpv4Address(struct in_addr addr);
+void*            NetSocket(uint32_t domain, uint32_t type, uint32_t protocol);
+int32_t          NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen);
+int32_t          NetListen(void* net_ctx, uint32_t backlog);
+void*            NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen);
+int32_t          NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags);
+int32_t          NetWrite(void* net_ctx, const void* buf, int32_t size);
+int32_t          NetClose(void* net_ctx);
+void             Initialize();
+void             PlatformLoop(AaruPacketHello* pkt_server_hello);
+void*            WorkingLoop(void* arguments);
+uint8_t          AmIRoot();
 #endif
