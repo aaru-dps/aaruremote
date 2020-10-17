@@ -133,8 +133,11 @@ int32_t GetDeviceType(void* device_ctx)
 
                 if(tmp_string)
                 {
-                    if(strncmp(tmp_string, "cd", 2) == 0 || strncmp(tmp_string, "disk", 4) == 0)
-                    { device_type = AARUREMOTE_DEVICE_TYPE_SCSI; }
+                    if(strncmp(tmp_string, "cd", 2) == 0 || strncmp(tmp_string, "disk", 4) == 0 ||
+                       strncmp(tmp_string, "optical", 7) == 0)
+                    {
+                        device_type = AARUREMOTE_DEVICE_TYPE_SCSI;
+                    }
 
                     free((void*)tmp_string);
                 }
