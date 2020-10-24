@@ -152,11 +152,10 @@ int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
 {
     NetworkContext* ctx     = net_ctx;
     char*           charbuf = buf;
+    int32_t         got_once;
+    int32_t         got_total = 0;
 
     if(!ctx) return -1;
-
-    int32_t got_once;
-    int32_t got_total = 0;
 
     while(len > 0)
     {

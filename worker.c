@@ -81,6 +81,7 @@ void* WorkingLoop(void* arguments)
     void*                           device_ctx = NULL;
     void*                           net_ctx    = NULL;
     void*                           cli_ctx    = NULL;
+    long                            off;
 
     if(!arguments)
     {
@@ -345,8 +346,8 @@ void* WorkingLoop(void* arguments)
                     pkt_res_devinfo->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
 
                     // Save list start
-                    in_buf   = (char*)device_info_list;
-                    long off = sizeof(AaruPacketResListDevs);
+                    in_buf = (char*)device_info_list;
+                    off    = sizeof(AaruPacketResListDevs);
 
                     while(device_info_list)
                     {
