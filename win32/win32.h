@@ -17,8 +17,18 @@
 
 #ifndef AARUREMOTE_WIN32_WIN32_H_
 #define AARUREMOTE_WIN32_WIN32_H_
+#ifdef _WIN32
 
-#include "../aaruremote.h"
+typedef __int8           int8_t;
+typedef __int16          int16_t;
+typedef __int32          int32_t;
+typedef __int64          int64_t;
+typedef unsigned __int8  uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+
+typedef int socklen_t;
 
 #define PROCESSOR_ARCHITECTURE_INTEL 0
 #define PROCESSOR_ARCHITECTURE_MIPS 1
