@@ -311,7 +311,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
             // by the structure allocation, we're forced to zero out this
             // chunk of memory by using the StringToHGlobalAuto() hack above
             descriptor = (PUSB_STRING_DESCRIPTOR)(request + sizeof(USB_DESCRIPTOR_REQUEST));
-            snprintf(device->Manufacturer, USB_BUFFER_SIZE, "%ws", descriptor->bString);
+            sprintf_s(device->Manufacturer, USB_BUFFER_SIZE, "%ws", descriptor->bString);
         }
     }
     if(port->PortDeviceDescriptor.iProduct > 0)
