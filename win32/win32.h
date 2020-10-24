@@ -56,4 +56,13 @@ typedef struct
     char   device_path[4096];
 } DeviceContext;
 
+#ifndef SM_SERVERR2
+#define SM_SERVERR2 89
+#endif
+
+#ifndef VER_SUITE_WH_SERVER
+#define VER_SUITE_WH_SERVER 0x00008000
+#endif
+
+#endif // _WIN32
 #endif // AARUREMOTE_WIN32_WIN32_H_
