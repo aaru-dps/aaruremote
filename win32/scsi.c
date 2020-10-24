@@ -54,7 +54,7 @@ int32_t SendScsiCommand(void*     device_ctx,
 
     sptd_and_sense = malloc(sptd_and_sense_len);
 
-    if(!*sense_buffer) return -1;
+    if(!sptd_and_sense) return -1;
 
     memset(&sptd_and_sense, 0, sptd_and_sense_len);
 
