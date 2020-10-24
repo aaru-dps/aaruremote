@@ -20,4 +20,9 @@
       </configuration>
     </configurations>
   </component>
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/aaruremote.iml" filepath="$PROJECT_DIR$/.idea/aaruremote.iml" />
+    </modules>
+  </component>
 </project>
