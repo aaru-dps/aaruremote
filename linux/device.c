@@ -15,8 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "linux.h"
-
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -27,6 +25,9 @@
 #ifdef HAS_UDEV
 #include <libudev.h>
 #endif
+
+#include "../aaruremote.h"
+#include "linux.h"
 
 void* DeviceOpen(const char* device_path)
 {
@@ -135,9 +136,7 @@ int32_t GetDeviceType(void* device_ctx)
                 {
                     if(strncmp(tmp_string, "cd", 2) == 0 || strncmp(tmp_string, "disk", 4) == 0 ||
                        strncmp(tmp_string, "optical", 7) == 0)
-                    {
                         device_type = AARUREMOTE_DEVICE_TYPE_SCSI;
-                    }
 
                     free((void*)tmp_string);
                 }

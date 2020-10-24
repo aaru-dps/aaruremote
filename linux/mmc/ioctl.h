@@ -7,8 +7,6 @@
 #include <linux/major.h>
 #include <linux/mmc/ioctl.h>
 #else
-#include <stdint.h>
-
 #ifndef MMC_BLOCK_MAJOR
 #define MMC_BLOCK_MAJOR 179
 #endif

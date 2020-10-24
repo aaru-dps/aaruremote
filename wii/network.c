@@ -15,12 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-#include "wii.h"
-
 #include <network.h>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "../aaruremote.h"
+#include "wii.h"
 
 int PrintNetworkAddresses()
 {

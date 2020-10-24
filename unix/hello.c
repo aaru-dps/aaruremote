@@ -15,11 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-
 #include <malloc.h>
 #include <string.h>
 #include <sys/utsname.h>
+
+#include "../aaruremote.h"
 
 AaruPacketHello* GetHello()
 {

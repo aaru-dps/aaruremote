@@ -15,15 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-#include "../unix/unix.h"
-
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include "../aaruremote.h"
+#include "unix.h"
 
 int PrintNetworkAddresses()
 {

@@ -15,11 +15,16 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "aaruremote.h"
-
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
+
+#ifdef _WIN32
+#include <windows.h>
+
+#include "win32/win32.h"
+#endif
+
+#include "aaruremote.h"
 
 int main()
 {

@@ -15,12 +15,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-
 #include <debug.h>
 #include <errno.h>
 #include <gccore.h>
 #include <wiiuse/wpad.h>
+
+#include "../aaruremote.h"
 
 void Initialize()
 {

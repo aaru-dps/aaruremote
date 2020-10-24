@@ -15,9 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "linux.h"
-#include "mmc/ioctl.h"
-
 #include <errno.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -25,6 +22,10 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
+#include "../aaruremote.h"
+#include "linux.h"
+#include "mmc/ioctl.h"
 
 int32_t SendSdhciCommand(void*     device_ctx,
                          uint8_t   command,

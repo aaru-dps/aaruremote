@@ -18,8 +18,6 @@
 #ifndef AARUREMOTE_LINUX_LINUX_H_
 #define AARUREMOTE_LINUX_LINUX_H_
 
-#include "../aaruremote.h"
-
 #define PATH_SYS_DEVBLOCK "/sys/block"
 
 typedef struct

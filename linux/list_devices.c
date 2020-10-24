@@ -15,8 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-#include "linux.h"
+#ifdef HAS_UDEV
+#include <libudev.h>
+#endif
 
 #include <ctype.h>
 #include <dirent.h>
@@ -27,9 +28,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef HAS_UDEV
-#include <libudev.h>
-#endif
+#include "../aaruremote.h"
+#include "linux.h"
 
 DeviceInfoList* ListDevices()
 {

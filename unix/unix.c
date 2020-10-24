@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-
 #include <unistd.h>
+
+#include "../aaruremote.h"
 
 void Initialize()
 {

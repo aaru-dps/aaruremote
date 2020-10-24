@@ -15,9 +15,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "aaruremote.h"
-
 #include <stdlib.h>
+
+#ifdef _WIN32
+#include <windows.h>
+
+#include "win32/win32.h"
+#else
+#include <stdint.h>
+#endif
+
+#include "aaruremote.h"
 
 void FreeDeviceInfoList(DeviceInfoList* start)
 {

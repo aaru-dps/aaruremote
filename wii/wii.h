@@ -18,8 +18,6 @@
 #ifndef AARUREMOTE_WII_WII_H_
 #define AARUREMOTE_WII_WII_H_
 
-#include "../aaruremote.h"
-
 #define AARUREMOTE_WII_DEVICE_FD_NAND 1
 #define AARUREMOTE_WII_DEVICE_FD_DVD 2
 #define AARUREMOTE_WII_DEVICE_FD_SD 3

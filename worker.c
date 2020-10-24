@@ -15,17 +15,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "aaruremote.h"
-#include "endian.h"
-
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #define ssize_t int
+#include <windows.h>
+
+#include "win32/win32.h"
+
+#include <winsock.h>
 #endif
+
+#include "aaruremote.h"
+#include "endian.h"
 
 void* WorkingLoop(void* arguments)
 {
@@ -392,7 +397,7 @@ void* WorkingLoop(void* arguments)
 
                     pkt_nop->reason_code = device_ctx == NULL ? AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR
                                                               : AARUREMOTE_PACKET_NOP_REASON_OPEN_OK;
-                    pkt_nop->error_no = errno;
+                    pkt_nop->error_no    = errno;
                     memset(&pkt_nop->reason, 0, 256);
                     NetWrite(cli_ctx, pkt_nop, sizeof(AaruPacketNop));
 

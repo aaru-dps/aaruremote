@@ -15,14 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "linux.h"
-
 #include <dirent.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "../aaruremote.h"
+#include "linux.h"
 
 uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
 {
@@ -78,8 +79,7 @@ uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
         dir = opendir(tmp_path);
         if(!dir) continue;
 
-        do
-        {
+        do {
             dent = readdir(dir);
 
             if(!dent) break;

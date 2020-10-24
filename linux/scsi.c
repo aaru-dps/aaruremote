@@ -15,14 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-#include "linux.h"
-
 #include <malloc.h>
 #include <scsi/sg.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/ioctl.h>
+
+#include "../aaruremote.h"
+#include "linux.h"
 
 int32_t SendScsiCommand(void*     device_ctx,
                         char*     cdb,

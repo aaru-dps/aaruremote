@@ -18,17 +18,12 @@
 #ifndef AARUREMOTE__AARUREMOTE_H_
 #define AARUREMOTE__AARUREMOTE_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
 #ifdef GEKKO
 #include <network.h>
 #ifndef MSG_PEEK
 #define MSG_PEEK 0x02 // TODO: Untested, may not work
 #endif
-#elif _WIN32
-#include <ws2tcpip.h>
-#else
+#elif !defined(_WIN32)
 #include <netinet/in.h>
 #include <sys/socket.h>
 #endif

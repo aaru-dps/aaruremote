@@ -15,13 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "linux.h"
-
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
+#include "../aaruremote.h"
+#include "linux.h"
 
 uint8_t GetUsbData(void*     device_ctx,
                    uint16_t* desc_len,
