@@ -56,12 +56,12 @@ DeviceInfoList* ListDevices()
         return NULL;
     }
 
-    QueryDosDevice(NULL, physical, 65536);
+    QueryDosDevice(NULL, physical, 65535);
 
     for(pos = physical; *pos; pos += strlen(pos) + 1)
     {
         if((strncmp(pos, "PhysicalDrive", 13) != 0 && strncmp(pos, "CdRom", 5) != 0) && strncmp(pos, "Tape", 4) != 0)
-        { continue; }
+            continue;
 
         sprintf_s(physId, 4096, "\\\\.\\%s", pos);
 
