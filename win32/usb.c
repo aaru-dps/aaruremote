@@ -15,16 +15,18 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "usb.h"
-
-#include "win32.h"
+#include <windows.h>
 
 #include <SetupAPI.h>
 #include <cfgmgr32.h>
-#include <ntddstor.h>
-#include <stdint.h>
+#include <guiddef.h>
 #include <stdio.h>
-#include <usbioctl.h>
+
+#include "win32.h"
+
+#include "usb.h"
+
+#include "ntioctl.h"
 
 #ifndef DIGCF_PRESENT
 #define DIGCF_PRESENT 0x00000002

@@ -15,11 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
+#include <windows.h>
 
 #include <stddef.h>
 #include <stdio.h>
-#include <windows.h>
+
+#include "win32.h"
+#include "../aaruremote.h"
+#include "ntioctl.h"
 
 #ifndef IOCTL_STORAGE_QUERY_PROPERTY
 #define IOCTL_STORAGE_QUERY_PROPERTY 0x2D1400

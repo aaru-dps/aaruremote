@@ -15,13 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-#include "win32.h"
+#include <winsock2.h>
+#include <windows.h>
 
 #include <iphlpapi.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <winsock2.h>
+
+#include "win32.h"
+#include "../aaruremote.h"
 
 int PrintNetworkAddresses()
 {

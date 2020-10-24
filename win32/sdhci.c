@@ -15,10 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "ntioctl.h"
-#include "win32.h"
+#include <windows.h>
 
-#include <stdint.h>
+#include "win32.h"
+#include "../aaruremote.h"
+#include "ntioctl.h"
 
 int32_t SendSdhciCommand(void*     device_ctx,
                          uint8_t   command,

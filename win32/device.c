@@ -15,13 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../aaruremote.h"
-#include "win32.h"
+#include <windows.h>
 
 #include <errno.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "win32.h"
+#include "../aaruremote.h"
+#include "ntioctl.h"
 
 void* DeviceOpen(const char* device_path)
 {

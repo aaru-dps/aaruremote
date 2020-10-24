@@ -15,12 +15,11 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <windows.h>
+
+#include "win32.h"
 #include "../aaruremote.h"
 #include "ntioctl.h"
-#include "win32.h"
-
-#include <stdint.h>
-#include <windows.h>
 
 int32_t SendScsiCommand(void*     device_ctx,
                         char*     cdb,

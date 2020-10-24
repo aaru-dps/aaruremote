@@ -15,6 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <windows.h>
+
+#include "win32.h"
 #include "../aaruremote.h"
 
 int32_t SendAtaChsCommand(void*                 device_ctx,

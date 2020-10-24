@@ -15,9 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "win32.h"
+#include <windows.h>
 
-#include <stdint.h>
+#include "win32.h"
+#include "../aaruremote.h"
 
 uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis)
 {

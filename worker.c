@@ -22,11 +22,10 @@
 
 #ifdef _WIN32
 #define ssize_t int
+#include <winsock2.h>
 #include <windows.h>
 
 #include "win32/win32.h"
-
-#include <winsock.h>
 #endif
 
 #include "aaruremote.h"
