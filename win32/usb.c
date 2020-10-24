@@ -133,7 +133,7 @@ DWORD GetDeviceNumberWithHandle(HANDLE handle)
 
 DWORD GetDeviceNumber(char* devicePath)
 {
-    DWORD  len = strlen(devicePath);
+    DWORD  len = (DWORD)strlen(devicePath);
     HANDLE h;
     DWORD  ans = -1;
 
@@ -303,7 +303,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
         request->ConnectionIndex     = port->PortPortNumber;
         request->SetupPacket.wIndex  = 0x409;
         request->SetupPacket.wValue  = ((USB_STRING_DESCRIPTOR_TYPE << 8) + port->PortDeviceDescriptor.iManufacturer);
-        request->SetupPacket.wLength = nBytes - sizeof(USB_DESCRIPTOR_REQUEST);
+        request->SetupPacket.wLength = (USHORT)(nBytes - sizeof(USB_DESCRIPTOR_REQUEST));
 
         // Use an IOCTL call to request the String Descriptor
         if(DeviceIoControl(
@@ -324,7 +324,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
         request->ConnectionIndex     = port->PortPortNumber;
         request->SetupPacket.wIndex  = 0x409;
         request->SetupPacket.wValue  = ((USB_STRING_DESCRIPTOR_TYPE << 8) + port->PortDeviceDescriptor.iProduct);
-        request->SetupPacket.wLength = nBytes - sizeof(USB_DESCRIPTOR_REQUEST);
+        request->SetupPacket.wLength = (USHORT)(nBytes - sizeof(USB_DESCRIPTOR_REQUEST));
 
         // Use an IOCTL call to request the String Descriptor
         if(DeviceIoControl(
@@ -345,7 +345,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
         request->ConnectionIndex     = port->PortPortNumber;
         request->SetupPacket.wIndex  = 0x409;
         request->SetupPacket.wValue  = ((USB_STRING_DESCRIPTOR_TYPE << 8) + port->PortDeviceDescriptor.iSerialNumber);
-        request->SetupPacket.wLength = nBytes - sizeof(USB_DESCRIPTOR_REQUEST);
+        request->SetupPacket.wLength = (USHORT)(nBytes - sizeof(USB_DESCRIPTOR_REQUEST));
 
         // Use an IOCTL call to request the String Descriptor
         if(DeviceIoControl(
@@ -366,7 +366,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
     request->ConnectionIndex     = port->PortPortNumber;
     request->SetupPacket.wIndex  = 0;
     request->SetupPacket.wValue  = ((USB_STRING_DESCRIPTOR_TYPE << 8));
-    request->SetupPacket.wLength = nBytes - sizeof(USB_DESCRIPTOR_REQUEST);
+    request->SetupPacket.wLength = (USHORT)(nBytes - sizeof(USB_DESCRIPTOR_REQUEST));
 
     // Use an IOCTL call to request the String Descriptor
     if(DeviceIoControl(
@@ -634,7 +634,7 @@ uint8_t GetUsbData(void*     device_ctx,
     if(device == NULL) return 0;
 
     memcpy(descriptors, device->BinaryDeviceDescriptors, device->BinaryDeviceDescriptorsLength);
-    *desc_len   = device->BinaryDeviceDescriptorsLength;
+    *desc_len   = (uint16_t)device->BinaryDeviceDescriptorsLength;
     *id_vendor  = device->DeviceDescriptor.idVendor;
     *id_product = device->DeviceDescriptor.idProduct;
     strncpy(manufacturer, device->Manufacturer, 256);

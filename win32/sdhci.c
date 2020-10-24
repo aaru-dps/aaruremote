@@ -95,7 +95,7 @@ int32_t SendSdhciCommand(void*     device_ctx,
     QueryPerformanceCounter(&end);
 
     interval  = (DOUBLE)(end.QuadPart - start.QuadPart) / frequency.QuadPart;
-    *duration = interval * 1000;
+    *duration = (uint32_t)(interval * 1000.0);
 
     if(*sense) error = GetLastError();
 
