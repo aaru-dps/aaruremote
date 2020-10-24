@@ -57,15 +57,22 @@ ForEachMacros:
   - Q_FOREACH
   - BOOST_FOREACH
 IncludeBlocks:   Regroup
-IncludeCategories: 
+IncludeCategories:
+  - Regex:           '^(<winsock2.h>)'
+    Priority:        -3
+    SortPriority:    -4
   - Regex:           '^(<windows.h>)'
     Priority:        -3
-  - Regex:           '^("(win32|windows))'
-    Priority:        -2
+    SortPriority:    -3
   - Regex:           '^(<.*)'
-    Priority:        -1
+    Priority:        -2
+    SortPriority:    -2
+  - Regex:           '^("(win32|windows))'
+    Priority:        1
+    SortPriority:    -1
   - Regex:           '.*'
     Priority:        1
+    SortPriority:    1
 IncludeIsMainRegex: '(Test)?$'
 IndentCaseLabels: true
 IndentPPDirectives: None
