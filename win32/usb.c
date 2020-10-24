@@ -69,8 +69,7 @@ UsbController_t* GetHostControllers(DWORD* length)
 
     i = 0;
 
-    do
-    {
+    do {
         host = &hostlist[*length];
         memset(host, 0, sizeof(UsbController_t));
         host->ControllerIndex = i;
@@ -126,7 +125,7 @@ DWORD GetDeviceNumberWithHandle(HANDLE handle)
     DWORD                 k   = 0;
 
     if(DeviceIoControl(handle, IOCTL_STORAGE_GET_DEVICE_NUMBER, NULL, 0, &sdn, sizeof(STORAGE_DEVICE_NUMBER), &k, NULL))
-    { ans = (sdn.DeviceType << 8) + sdn.DeviceNumber; }
+        ans = (sdn.DeviceType << 8) + sdn.DeviceNumber;
 
     return ans;
 }
@@ -177,9 +176,7 @@ UsbHub_t* GetRootHub(UsbController_t* controller)
 
     // get the Hub Name
     if(DeviceIoControl(h, IOCTL_USB_GET_ROOT_HUB_NAME, &hubName, nBytes, &hubName, nBytes, &k, NULL))
-    {
         sprintf_s(root->HubDevicePath, USB_BUFFER_SIZE, "\\\\.\\%ws", hubName->RootHubName);
-    }
 
     // TODO: Get DriverKeyName for Root Hub
 
@@ -420,9 +417,7 @@ UsbHub_t* GetPortHub(UsbPort_t* port)
 
     // Use an IOCTL call to request the Node Name
     if(DeviceIoControl(h, IOCTL_USB_GET_NODE_CONNECTION_NAME, nodeName, nBytes, nodeName, nBytes, &k, NULL))
-    {
         sprintf_s(hub->HubDevicePath, USB_BUFFER_SIZE, "\\\\.\\%ws", nodeName->NodeName);
-    }
 
     // Now let's open the Hub (based upon the HubName we got above)
     h2 = CreateFile(hub->HubDevicePath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
@@ -548,8 +543,7 @@ UsbDevice_t* FindDeviceNumber(DWORD devNum, GUID diskGuid)
 
     if(h != INVALID_HANDLE_VALUE)
     {
-        do
-        {
+        do {
             // create a Device Interface Data structure
             memset(&dia, 0, sizeof(SP_DEVICE_INTERFACE_DATA));
             dia.cbSize = sizeof(SP_DEVICE_INTERFACE_DATA);
