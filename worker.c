@@ -458,12 +458,21 @@ void* WorkingLoop(void* arguments)
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(le32toh(pkt_cmd_scsi->cdb_len) > 0) cdb_buf = in_buf + sizeof(AaruPacketCmdScsi);
+                    if(le32toh(pkt_cmd_scsi->cdb_len) > 0)
+                    {
+                        cdb_buf = malloc(le32toh(pkt_cmd_scsi->cdb_len));
+                        memcpy(cdb_buf, in_buf + sizeof(AaruPacketCmdScsi), le32toh(pkt_cmd_scsi->cdb_len));
+                    }
                     else
                         cdb_buf = NULL;
 
                     if(le32toh(pkt_cmd_scsi->buf_len) > 0)
-                        buffer = in_buf + le32toh(pkt_cmd_scsi->cdb_len) + sizeof(AaruPacketCmdScsi);
+                    {
+                        buffer = malloc(le32toh(pkt_cmd_scsi->buf_len));
+                        memcpy(buffer,
+                               in_buf + le32toh(pkt_cmd_scsi->cdb_len) + sizeof(AaruPacketCmdScsi),
+                               le32toh(pkt_cmd_scsi->buf_len));
+                    }
                     else
                         buffer = NULL;
 
@@ -515,6 +524,8 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_res_scsi, le32toh(pkt_res_scsi->hdr.len));
                     free(pkt_cmd_scsi);
                     free(pkt_res_scsi);
+                    if(cdb_buf) free(cdb_buf);
+                    if(buffer) free(buffer);
                     if(sense_buf) free(sense_buf);
                     continue;
                 case AARUREMOTE_PACKET_TYPE_COMMAND_GET_SDHCI_REGISTERS:
