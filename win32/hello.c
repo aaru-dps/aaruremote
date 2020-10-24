@@ -81,7 +81,7 @@ AaruPacketHello* GetHello()
     if(osvi.dwPlatformId == VER_PLATFORM_WIN32s)
     {
         strncpy(pkt_server_hello->sysname, win, 255);
-        snprintf(pkt_server_hello->release, 255, "%d.%02d", osvi.dwMajorVersion, osvi.dwMinorVersion);
+        sprintf_s(pkt_server_hello->release, 255, "%d.%02d", osvi.dwMajorVersion, osvi.dwMinorVersion);
         strncpy(pkt_server_hello->machine, "x86", 255);
 
         return pkt_server_hello;
@@ -105,12 +105,12 @@ AaruPacketHello* GetHello()
             default: strncpy(pkt_server_hello->sysname, win, 255); break;
         }
 
-        snprintf(pkt_server_hello->release,
-                 255,
-                 "%d.%02d.%d",
-                 osvi.dwMajorVersion,
-                 osvi.dwMinorVersion,
-                 osvi.dwBuildNumber & 0xFFFF);
+        sprintf_s(pkt_server_hello->release,
+                  255,
+                  "%d.%02d.%d",
+                  osvi.dwMajorVersion,
+                  osvi.dwMinorVersion,
+                  osvi.dwBuildNumber & 0xFFFF);
         strncpy(pkt_server_hello->machine, "x86", 255);
 
         return pkt_server_hello;
@@ -139,20 +139,20 @@ AaruPacketHello* GetHello()
     }
 
     if(strlen(osvi.szCSDVersion) > 0)
-        snprintf(pkt_server_hello->release,
-                 255,
-                 "%d.%d.%d (%s)",
-                 osvi.dwMajorVersion,
-                 osvi.dwMinorVersion * 10,
-                 osvi.dwBuildNumber,
-                 osvi.szCSDVersion);
+        sprintf_s(pkt_server_hello->release,
+                  255,
+                  "%d.%d.%d (%s)",
+                  osvi.dwMajorVersion,
+                  osvi.dwMinorVersion * 10,
+                  osvi.dwBuildNumber,
+                  osvi.szCSDVersion);
     else
-        snprintf(pkt_server_hello->release,
-                 255,
-                 "%d.%d.%d",
-                 osvi.dwMajorVersion,
-                 osvi.dwMinorVersion * 10,
-                 osvi.dwBuildNumber);
+        sprintf_s(pkt_server_hello->release,
+                  255,
+                  "%d.%d.%d",
+                  osvi.dwMajorVersion,
+                  osvi.dwMinorVersion * 10,
+                  osvi.dwBuildNumber);
 
     if(osvi.dwMajorVersion < 5)
     {
@@ -243,20 +243,20 @@ AaruPacketHello* GetHello()
                         osvi.dwBuildNumber  = HIWORD(fileVerInfo->dwProductVersionLS);
 
                         if(strlen(osvi.szCSDVersion) > 0)
-                            snprintf(pkt_server_hello->release,
-                                     255,
-                                     "%d.%d.%d (%s)",
-                                     osvi.dwMajorVersion,
-                                     osvi.dwMinorVersion * 10,
-                                     osvi.dwBuildNumber,
-                                     osvi.szCSDVersion);
+                            sprintf_s(pkt_server_hello->release,
+                                      255,
+                                      "%d.%d.%d (%s)",
+                                      osvi.dwMajorVersion,
+                                      osvi.dwMinorVersion * 10,
+                                      osvi.dwBuildNumber,
+                                      osvi.szCSDVersion);
                         else
-                            snprintf(pkt_server_hello->release,
-                                     255,
-                                     "%d.%d.%d",
-                                     osvi.dwMajorVersion,
-                                     osvi.dwMinorVersion * 10,
-                                     osvi.dwBuildNumber);
+                            sprintf_s(pkt_server_hello->release,
+                                      255,
+                                      "%d.%d.%d",
+                                      osvi.dwMajorVersion,
+                                      osvi.dwMinorVersion * 10,
+                                      osvi.dwBuildNumber);
                     }
 
                     free(verData);

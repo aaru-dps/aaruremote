@@ -63,7 +63,7 @@ DeviceInfoList* ListDevices()
         if((strncmp(pos, "PhysicalDrive", 13) != 0 && strncmp(pos, "CdRom", 5) != 0) && strncmp(pos, "Tape", 4) != 0)
         { continue; }
 
-        snprintf(physId, 4096, "\\\\.\\%s", pos);
+        sprintf_s(physId, 4096, "\\\\.\\%s", pos);
 
         printf("%s\n", physId);
 

@@ -1069,10 +1069,17 @@ void* WorkingLoop(void* arguments)
                 default:
                     pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);
+#ifdef _WIN32
+                    sprintf_s(pkt_nop->reason,
+                              256,
+                              "Received unrecognized packet with type %d, skipping...",
+                              pkt_hdr->packet_type);
+#else
                     snprintf(pkt_nop->reason,
                              256,
                              "Received unrecognized packet with type %d, skipping...",
                              pkt_hdr->packet_type);
+#endif
                     NetWrite(cli_ctx, pkt_nop, sizeof(AaruPacketNop));
                     printf("%s...\n", pkt_nop->reason);
                     skip_next_hdr = 1;

@@ -177,7 +177,9 @@ UsbHub_t* GetRootHub(UsbController_t* controller)
 
     // get the Hub Name
     if(DeviceIoControl(h, IOCTL_USB_GET_ROOT_HUB_NAME, &hubName, nBytes, &hubName, nBytes, &k, NULL))
-    { snprintf(root->HubDevicePath, USB_BUFFER_SIZE, "\\\\.\\%ws", hubName->RootHubName); }
+    {
+        sprintf_s(root->HubDevicePath, USB_BUFFER_SIZE, "\\\\.\\%ws", hubName->RootHubName);
+    }
 
     // TODO: Get DriverKeyName for Root Hub
 
@@ -333,7 +335,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
             // by the structure allocation, we're forced to zero out this
             // chunk of memory by using the StringToHGlobalAuto() hack above
             descriptor = (PUSB_STRING_DESCRIPTOR)(request + sizeof(USB_DESCRIPTOR_REQUEST));
-            snprintf(device->Product, USB_BUFFER_SIZE, "%ws", descriptor->bString);
+            sprintf_s(device->Product, USB_BUFFER_SIZE, "%ws", descriptor->bString);
         }
     }
     if(port->PortDeviceDescriptor.iSerialNumber > 0)
@@ -354,7 +356,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
             // by the structure allocation, we're forced to zero out this
             // chunk of memory by using the StringToHGlobalAuto() hack above
             descriptor = (PUSB_STRING_DESCRIPTOR)(request + sizeof(USB_DESCRIPTOR_REQUEST));
-            snprintf(device->SerialNumber, USB_BUFFER_SIZE, "%ws", descriptor->bString);
+            sprintf_s(device->SerialNumber, USB_BUFFER_SIZE, "%ws", descriptor->bString);
         }
     }
 
@@ -418,7 +420,9 @@ UsbHub_t* GetPortHub(UsbPort_t* port)
 
     // Use an IOCTL call to request the Node Name
     if(DeviceIoControl(h, IOCTL_USB_GET_NODE_CONNECTION_NAME, nodeName, nBytes, nodeName, nBytes, &k, NULL))
-    { snprintf(hub->HubDevicePath, USB_BUFFER_SIZE, "\\\\.\\%ws", nodeName->NodeName); }
+    {
+        sprintf_s(hub->HubDevicePath, USB_BUFFER_SIZE, "\\\\.\\%ws", nodeName->NodeName);
+    }
 
     // Now let's open the Hub (based upon the HubName we got above)
     h2 = CreateFile(hub->HubDevicePath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
