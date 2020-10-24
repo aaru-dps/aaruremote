@@ -210,4 +210,85 @@ typedef struct _SDCMD_DESCRIPTOR
 } SDCMD_DESCRIPTOR, *PSDCMD_DESCRIPTOR;
 #endif
 
+#ifndef _WINIOCTL_
+typedef enum _STORAGE_PROPERTY_ID
+{
+    StorageDeviceProperty,
+    StorageAdapterProperty,
+    StorageDeviceIdProperty,
+    StorageDeviceUniqueIdProperty,
+    StorageDeviceWriteCacheProperty,
+    StorageMiniportProperty,
+    StorageAccessAlignmentProperty,
+    StorageDeviceSeekPenaltyProperty,
+    StorageDeviceTrimProperty,
+    StorageDeviceWriteAggregationProperty,
+    StorageDeviceDeviceTelemetryProperty,
+    StorageDeviceLBProvisioningProperty,
+    StorageDevicePowerProperty,
+    StorageDeviceCopyOffloadProperty,
+    StorageDeviceResiliencyProperty,
+    StorageDeviceMediumProductType,
+    StorageAdapterRpmbProperty,
+    StorageAdapterCryptoProperty,
+    StorageDeviceTieringProperty,
+    StorageDeviceFaultDomainProperty,
+    StorageDeviceClusportProperty,
+    StorageDeviceDependantDevicesProperty,
+    StorageDeviceIoCapabilityProperty,
+    StorageAdapterProtocolSpecificProperty,
+    StorageDeviceProtocolSpecificProperty,
+    StorageAdapterTemperatureProperty,
+    StorageDeviceTemperatureProperty,
+    StorageAdapterPhysicalTopologyProperty,
+    StorageDevicePhysicalTopologyProperty,
+    StorageDeviceAttributesProperty,
+    StorageDeviceManagementStatus,
+    StorageAdapterSerialNumberProperty,
+    StorageDeviceLocationProperty,
+    StorageDeviceNumaProperty,
+    StorageDeviceZonedDeviceProperty,
+    StorageDeviceUnsafeShutdownCount,
+    StorageDeviceEnduranceProperty
+} STORAGE_PROPERTY_ID,
+    *PSTORAGE_PROPERTY_ID;
+
+typedef enum _STORAGE_QUERY_TYPE
+{
+    PropertyStandardQuery,
+    PropertyExistsQuery,
+    PropertyMaskQuery,
+    PropertyQueryMaxDefined
+} STORAGE_QUERY_TYPE,
+    *PSTORAGE_QUERY_TYPE;
+
+typedef struct _STORAGE_PROPERTY_QUERY
+{
+    STORAGE_PROPERTY_ID PropertyId;
+    STORAGE_QUERY_TYPE  QueryType;
+    UCHAR               AdditionalParameters[1];
+} STORAGE_PROPERTY_QUERY, *PSTORAGE_PROPERTY_QUERY;
+
+typedef struct _STORAGE_DEVICE_DESCRIPTOR
+{
+    DWORD            Version;
+    DWORD            Size;
+    BYTE             DeviceType;
+    BYTE             DeviceTypeModifier;
+    BOOLEAN          RemovableMedia;
+    BOOLEAN          CommandQueueing;
+    DWORD            VendorIdOffset;
+    DWORD            ProductIdOffset;
+    DWORD            ProductRevisionOffset;
+    DWORD            SerialNumberOffset;
+    STORAGE_BUS_TYPE BusType;
+    DWORD            RawPropertiesLength;
+    BYTE             RawDeviceProperties[1];
+} STORAGE_DEVICE_DESCRIPTOR, *PSTORAGE_DEVICE_DESCRIPTOR;
+#endif
+
+#ifndef IOCTL_STORAGE_QUERY_PROPERTY
+#define IOCTL_STORAGE_QUERY_PROPERTY 0x2D1400
+#endif
+
 #endif // AARUREMOTE_WIN32_NTIOCTL_H_
