@@ -30,6 +30,7 @@ int32_t SendSdhciCommand(void*     device_ctx,
                          uint32_t  block_size,
                          uint32_t  blocks,
                          char*     buffer,
+                         uint32_t  buf_len,
                          uint32_t  timeout,
                          uint32_t* response,
                          uint32_t* duration,
@@ -38,7 +39,6 @@ int32_t SendSdhciCommand(void*     device_ctx,
     DeviceContext*               ctx = device_ctx;
     DWORD                        cmdbuf_len;
     PCHAR                        cmdbuf;
-    DWORD                        buf_len;
     PSFFDISK_DEVICE_COMMAND_DATA cmd_data;
     PSDCMD_DESCRIPTOR            cmd_descriptor;
     PCHAR                        data_buf;
@@ -51,7 +51,6 @@ int32_t SendSdhciCommand(void*     device_ctx,
 
     if(!ctx) return -1;
 
-    buf_len    = blocks * block_size;
     cmdbuf_len = sizeof(SFFDISK_DEVICE_COMMAND_DATA) + sizeof(SDCMD_DESCRIPTOR) + buf_len;
 
     cmdbuf = malloc(cmdbuf_len);
@@ -149,19 +148,20 @@ int32_t GetSdhciRegisters(void*     device_ctx,
     if(*csd)
     {
         *csd_len = 16;
-        Win32SendSdhciCommand(device_ctx,
-                              9,
-                              0,
-                              0,
-                              AARUREMOTE_MMC_RESPONSE_SPI_R2 | AARUREMOTE_MMC_RESPONSE_R2 | AARUREMOTE_MMC_COMMAND_AC,
-                              0,
-                              16,
-                              1,
-                              *csd,
-                              1000,
-                              NULL,
-                              &duration,
-                              &sense);
+        SendSdhciCommand(device_ctx,
+                         9,
+                         0,
+                         0,
+                         AARUREMOTE_MMC_RESPONSE_SPI_R2 | AARUREMOTE_MMC_RESPONSE_R2 | AARUREMOTE_MMC_COMMAND_AC,
+                         0,
+                         16,
+                         1,
+                         *csd,
+                         *csd_len,
+                         1000,
+                         NULL,
+                         &duration,
+                         &sense);
 
         if(sense)
         {
@@ -174,19 +174,20 @@ int32_t GetSdhciRegisters(void*     device_ctx,
     if(*cid)
     {
         *cid_len = 16;
-        Win32SendSdhciCommand(device_ctx,
-                              10,
-                              0,
-                              0,
-                              AARUREMOTE_MMC_RESPONSE_SPI_R2 | AARUREMOTE_MMC_RESPONSE_R2 | AARUREMOTE_MMC_COMMAND_AC,
-                              0,
-                              16,
-                              1,
-                              *cid,
-                              1000,
-                              NULL,
-                              &duration,
-                              &sense);
+        SendSdhciCommand(device_ctx,
+                         10,
+                         0,
+                         0,
+                         AARUREMOTE_MMC_RESPONSE_SPI_R2 | AARUREMOTE_MMC_RESPONSE_R2 | AARUREMOTE_MMC_COMMAND_AC,
+                         0,
+                         16,
+                         1,
+                         *cid,
+                         *cid_len,
+                         1000,
+                         NULL,
+                         &duration,
+                         &sense);
 
         if(sense)
         {
@@ -199,19 +200,20 @@ int32_t GetSdhciRegisters(void*     device_ctx,
     if(*scr)
     {
         *scr_len = 8;
-        Win32SendSdhciCommand(device_ctx,
-                              10,
-                              0,
-                              0,
-                              AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
-                              0,
-                              8,
-                              1,
-                              *scr,
-                              1000,
-                              NULL,
-                              &duration,
-                              &sense);
+        SendSdhciCommand(device_ctx,
+                         10,
+                         0,
+                         0,
+                         AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
+                         0,
+                         8,
+                         1,
+                         *scr,
+                         *scr_len,
+                         1000,
+                         NULL,
+                         &duration,
+                         &sense);
 
         if(sense)
         {
@@ -224,19 +226,20 @@ int32_t GetSdhciRegisters(void*     device_ctx,
     if(*ocr)
     {
         *ocr_len = 4;
-        Win32SendSdhciCommand(device_ctx,
-                              *scr_len > 0 ? 41 : 1,
-                              0,
-                              0,
-                              AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
-                              0,
-                              4,
-                              1,
-                              *ocr,
-                              1000,
-                              NULL,
-                              &duration,
-                              &sense);
+        SendSdhciCommand(device_ctx,
+                         *scr_len > 0 ? 41 : 1,
+                         0,
+                         0,
+                         AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
+                         0,
+                         4,
+                         1,
+                         *ocr,
+                         *ocr_len,
+                         1000,
+                         NULL,
+                         &duration,
+                         &sense);
 
         if(sense)
         {
