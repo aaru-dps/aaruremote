@@ -32,7 +32,7 @@ else ()
 endif ()
 
 
-set(AARU_PORTS "linux;wii;win32" CACHE STRING "List of ports to build")
+set(AARU_PORTS "linux;wii;win32;freebsd" CACHE STRING "List of ports to build")
 foreach (PORT IN LISTS AARU_PORTS)
     add_subdirectory(${PORT})
 endforeach (PORT)
