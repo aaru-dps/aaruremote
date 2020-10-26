@@ -26,6 +26,8 @@
 #include <windows.h>
 
 #include "win32/win32.h"
+#else
+#include <stdint.h>
 #endif
 
 #include "aaruremote.h"
