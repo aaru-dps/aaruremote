@@ -15,8 +15,6 @@
 
 #if HAVE_ENDIAN_H
 #include <endian.h>
-#elif HAVE_SYS_ENDIAN_H
-#include <sys/endian.h>
 #else
 
 #define __LITTLE_ENDIAN 1234

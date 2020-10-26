@@ -10,14 +10,9 @@ set(MAIN_SOURCES aaruremote.h endian.h hex2bin.c list_devices.c main.c worker.c)
 add_library(aaruremotecore ${MAIN_SOURCES})
 
 CHECK_INCLUDE_FILES("endian.h" HAVE_ENDIAN_H)
-CHECK_INCLUDE_FILES("sys/endian.h" HAVE_SYS_ENDIAN_H)
 
 if (HAVE_ENDIAN_H)
     add_definitions(-DHAVE_ENDIAN_H)
-endif ()
-
-if (HAVE_SYS_ENDIAN_H)
-    add_definitions(-DHAVE_SYS_ENDIAN_H)
 endif ()
 
 if (WII)
