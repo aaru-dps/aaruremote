@@ -18,6 +18,10 @@
 #ifndef AARUREMOTE_FREEBSD_FREEBSD_H_
 #define AARUREMOTE_FREEBSD_FREEBSD_H_
 
+// Included here as it seems to need to be after all others
+#include <stdio.h>
+#include <camlib.h>
+
 typedef struct
 {
     int  fd;
