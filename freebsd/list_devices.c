@@ -81,12 +81,11 @@ DeviceInfoList* ListDevices()
 
         ret = cam_send_ccb(camdev, camccb);
 
-        cam_freeccb(camccb);
-        cam_close_device(camdev);
-
         if(ret < 0)
         {
             dirent = readdir(dir);
+            cam_freeccb(camccb);
+            cam_close_device(camdev);
             free(list_next);
             continue;
         }
@@ -152,6 +151,9 @@ DeviceInfoList* ListDevices()
                 free(list_next);
                 continue;
         }
+
+        cam_freeccb(camccb);
+        cam_close_device(camdev);
 
         list_current = list_next;
         dirent       = readdir(dir);
