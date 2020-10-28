@@ -60,7 +60,16 @@ void* DeviceOpen(const char* device_path)
 
 void DeviceClose(void* device_ctx)
 {
-    return;
+    DeviceContext* ctx = device_ctx;
+
+    if(!ctx) return;
+
+    if(ctx->device)
+        cam_close_device(ctx->device);
+
+    close(ctx->fd);
+
+    free(ctx);
 }
 
 int32_t GetDeviceType(void* device_ctx)
