@@ -15,6 +15,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "../aaruremote.h"
@@ -22,7 +26,36 @@
 
 void* DeviceOpen(const char* device_path)
 {
-    return NULL;
+    DeviceContext* ctx;
+
+    ctx = malloc(sizeof(DeviceContext));
+
+    if(!ctx) return NULL;
+
+    memset(ctx, 0, sizeof(DeviceContext));
+
+    ctx->fd = open(device_path, O_RDWR | O_NONBLOCK | O_CREAT);
+
+    if((ctx->fd < 0) && (errno == EACCES || errno == EROFS)) ctx->fd = open(device_path, O_RDONLY | O_NONBLOCK);
+
+    if(ctx->fd <= 0)
+    {
+        free(ctx);
+        return NULL;
+    }
+
+    strncpy(ctx->device_path, device_path, 4096);
+
+    ctx->device = cam_open_device(ctx->device_path, O_RDWR);
+
+    if(!ctx->device)
+    {
+        close(ctx->fd);
+        free(ctx);
+        return NULL;
+    }
+
+    return ctx;
 }
 
 void DeviceClose(void* device_ctx)

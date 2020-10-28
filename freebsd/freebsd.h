@@ -26,6 +26,7 @@ typedef struct
 {
     int  fd;
     char device_path[4096];
+    struct cam_device *device;
 } DeviceContext;
 
 #endif // AARUREMOTE_FREEBSD_FREEBSD_H_
