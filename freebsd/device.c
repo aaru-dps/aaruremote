@@ -74,5 +74,52 @@ void DeviceClose(void* device_ctx)
 
 int32_t GetDeviceType(void* device_ctx)
 {
-    return -1;
+    DeviceContext* ctx = device_ctx;
+    union ccb* camccb;
+    int ret;
+    int32_t             device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+
+    if(!ctx) return -1;
+    if(!ctx->device) return -1;
+
+    camccb = cam_getccb(ctx->device);
+
+    if(!camccb) return device_type;
+
+    camccb->ccb_h.func_code = XPT_GDEV_TYPE;
+
+    ret = cam_send_ccb(ctx->device, camccb);
+
+    if(ret < 0)
+    {
+        cam_freeccb(camccb);
+        return device_type;
+    }
+
+    switch(camccb->cgd.protocol)
+    {
+        case PROTO_ATA:
+        case PROTO_SATAPM:
+            device_type = AARUREMOTE_DEVICE_TYPE_ATA;
+            break;
+        case PROTO_ATAPI:
+            device_type = AARUREMOTE_DEVICE_TYPE_ATAPI;
+            break;
+        case PROTO_SCSI:
+            device_type = AARUREMOTE_DEVICE_TYPE_SCSI;
+            break;
+        case PROTO_NVME:
+            device_type = AARUREMOTE_DEVICE_TYPE_NVME;
+            break;
+        case PROTO_MMCSD:
+            // TODO: MMC vs SD
+            device_type = AARUREMOTE_DEVICE_TYPE_MMC;
+            break;
+        default:
+            device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+            break;
+    }
+
+    cam_freeccb(camccb);
+    return device_type;
 }
