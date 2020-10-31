@@ -28,13 +28,13 @@
 
 DeviceInfoList* ListDevices()
 {
-    DeviceInfoList*    list_start = NULL, *list_current = NULL, *list_next = NULL;
+    DeviceInfoList *   list_start = NULL, *list_current = NULL, *list_next = NULL;
     DIR*               dir;
     struct dirent*     dirent;
     struct cam_device* camdev;
-    union ccb* camccb;
-    int ret;
-    int i;
+    union ccb*         camccb;
+    int                ret;
+    int                i;
 
     dir = opendir("/dev");
     if(!dir) return NULL;
@@ -99,7 +99,7 @@ DeviceInfoList* ListDevices()
             case PROTO_SATAPM:
                 // TODO: Split on space
                 strncpy(list_next->this.vendor, "ATA", 3);
-                strncpy(list_next->this.model, (const char *)camccb->cgd.ident_data.model, 40);
+                strncpy(list_next->this.model, (const char*)camccb->cgd.ident_data.model, 40);
 
                 // Trim spaces
                 for(i = 40; i > 0; i--)
@@ -109,18 +109,16 @@ DeviceInfoList* ListDevices()
                     list_next->this.model[i] = 0;
                 }
 
-                strncpy(list_next->this.serial, (const char *)camccb->cgd.ident_data.serial, 20);
+                strncpy(list_next->this.serial, (const char*)camccb->cgd.ident_data.serial, 20);
 
-                if(strncmp(camdev->sim_name, "ahcich", 6) == 0)
-                    strncpy(list_next->this.bus, "SATA", 5);
+                if(strncmp(camdev->sim_name, "ahcich", 6) == 0) strncpy(list_next->this.bus, "SATA", 5);
                 else
                     strncpy(list_next->this.bus, "ATA", 4);
 
                 // TODO: This protocol didn't work in C#, does it work in C?
                 list_next->this.supported = strncmp(camdev->sim_name, "ata", 3) != 0;
 
-                if(camccb->cgd.protocol == PROTO_ATAPI)
-                    goto protocol_atapi;
+                if(camccb->cgd.protocol == PROTO_ATAPI) goto protocol_atapi;
 
                 break;
             case PROTO_SCSI:
@@ -128,8 +126,7 @@ DeviceInfoList* ListDevices()
                 strncpy(list_next->this.vendor, camccb->cgd.inq_data.vendor, 8);
                 strncpy(list_next->this.model, camccb->cgd.inq_data.product, 16);
 
-                if(strncmp(camdev->sim_name, "ata", 3) == 0 ||
-                    strncmp(camdev->sim_name, "ahcich", 6) == 0)
+                if(strncmp(camdev->sim_name, "ata", 3) == 0 || strncmp(camdev->sim_name, "ahcich", 6) == 0)
                     strncpy(list_next->this.bus, "ATAPI", 5);
                 else
                     strncpy(list_next->this.bus, "SCSI", 4);

@@ -64,8 +64,7 @@ void DeviceClose(void* device_ctx)
 
     if(!ctx) return;
 
-    if(ctx->device)
-        cam_close_device(ctx->device);
+    if(ctx->device) cam_close_device(ctx->device);
 
     close(ctx->fd);
 
@@ -75,9 +74,9 @@ void DeviceClose(void* device_ctx)
 int32_t GetDeviceType(void* device_ctx)
 {
     DeviceContext* ctx = device_ctx;
-    union ccb* camccb;
-    int ret;
-    int32_t             device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+    union ccb*     camccb;
+    int            ret;
+    int32_t        device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     if(!ctx) return -1;
     if(!ctx->device) return -1;
@@ -99,25 +98,15 @@ int32_t GetDeviceType(void* device_ctx)
     switch(camccb->cgd.protocol)
     {
         case PROTO_ATA:
-        case PROTO_SATAPM:
-            device_type = AARUREMOTE_DEVICE_TYPE_ATA;
-            break;
-        case PROTO_ATAPI:
-            device_type = AARUREMOTE_DEVICE_TYPE_ATAPI;
-            break;
-        case PROTO_SCSI:
-            device_type = AARUREMOTE_DEVICE_TYPE_SCSI;
-            break;
-        case PROTO_NVME:
-            device_type = AARUREMOTE_DEVICE_TYPE_NVME;
-            break;
+        case PROTO_SATAPM: device_type = AARUREMOTE_DEVICE_TYPE_ATA; break;
+        case PROTO_ATAPI: device_type = AARUREMOTE_DEVICE_TYPE_ATAPI; break;
+        case PROTO_SCSI: device_type = AARUREMOTE_DEVICE_TYPE_SCSI; break;
+        case PROTO_NVME: device_type = AARUREMOTE_DEVICE_TYPE_NVME; break;
         case PROTO_MMCSD:
             // TODO: MMC vs SD
             device_type = AARUREMOTE_DEVICE_TYPE_MMC;
             break;
-        default:
-            device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
-            break;
+        default: device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN; break;
     }
 
     cam_freeccb(camccb);
