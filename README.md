@@ -23,11 +23,25 @@ remotely.
 All commands that support devices are supported, with a URI with the following schema:
 `aaru://<IP ADDRESS>/<DEVICE PATH>`.
 
+Feature matrix
+==============
+|            |Minimum OS<sup>*1</sup>|     SCSI      |CHS ATA        |28-bit LBA ATA |48-bit LBA ATA |Secure Digital|MultiMediaCard|USB                 |FireWire            |PCMCIA          |Special<sup>*2</sup>|
+|------------|-----------------------|---------------|---------------|---------------|---------------|--------------|--------------|--------------------|--------------------|----------------|-------|
+|FreeBSD     | 12                    |Yes            |Yes            |Yes            |Yes            |Not yet       |Not yet       |Not yet<sup>*4</sup>|Not yet<sup>*4</sup>|No<sup>*5</sup> ||
+|Linux       |2.6                    |Yes            |Yes            |Yes            |Yes            |Yes           |Yes           |Yes                 |Yes                 |Yes<sup>*6</sup>||
+|Nintendo Wii|4.3                    |No<sup>*3</sup>|No<sup>*3</sup>|No<sup>*3</sup>|No<sup>*3</sup>|Not yet       |Not yet       |Not yet             |No<sup>*3</sup>     |No<sup>*3</sup> |Not yet|
+|Windows NT  | XP                    |Yes            |Yes            |Yes            |Yes            |Yes           |Yes           |Yes                 |Not yet<sup>*4</sup>|No<sup>*5</sup> ||
+
+1. Minimum operating system version where aaruremote has been tested. May work on early version.
+2. Special storage media only available on that environment.
+3. Hardware not available or supported by the operating system.
+4. As SCSI device, not possible to retrieve special data.
+5. As ATA device, not possible to retrieve special data.
+6. Only ATA devices, not linear memory devices.
+
 TODO
 ====
 - More buffer overflow guards
-- Support FreeBSD
-- Support Windows (Windows XP at the lowest level)
 - Support PSP
 - Support Wii
 - Support Wii U
