@@ -20,6 +20,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "../aaruremote.h"
 #include "freebsd.h"
@@ -43,6 +44,10 @@ int32_t SendScsiCommand(void*     device_ctx,
     union ccb* camccb;
     u_int32_t flags;
     int error;
+    int clock_error;
+    struct timespec start_tp;
+    struct timespec end_tp;
+    double start, end;
 
     switch(direction)
     {
@@ -93,8 +98,22 @@ int32_t SendScsiCommand(void*     device_ctx,
 
     camccb->ccb_h.flags |= CAM_DEV_QFRZDIS;
 
-    // TODO: Measure duration
+    clock_error = clock_gettime(CLOCK_REALTIME_PRECISE, &start_tp);
+
     error = cam_send_ccb(ctx->device, camccb);
+
+    if(!clock_error)
+        clock_error = clock_gettime(CLOCK_REALTIME_PRECISE, &end_tp);
+
+    if(!clock_error)
+    {
+        start = (double)start_tp.tv_sec * 1000.0;
+        start += (double)start_tp.tv_nsec / 1000000.0;
+        end = (double)end_tp.tv_sec * 1000.0;
+        end += (double)end_tp.tv_nsec / 1000000.0;
+
+        *duration = (uint32_t)(end-start);
+    }
 
     if(error < 0)
         error = errno;
