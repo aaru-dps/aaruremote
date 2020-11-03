@@ -35,23 +35,12 @@ void* DeviceOpen(const char* device_path)
 
     memset(ctx, 0, sizeof(DeviceContext));
 
-    ctx->fd = open(device_path, O_RDWR | O_NONBLOCK | O_CREAT);
-
-    if((ctx->fd < 0) && (errno == EACCES || errno == EROFS)) ctx->fd = open(device_path, O_RDONLY | O_NONBLOCK);
-
-    if(ctx->fd <= 0)
-    {
-        free(ctx);
-        return NULL;
-    }
-
     strncpy(ctx->device_path, device_path, 4096);
 
     ctx->device = cam_open_device(ctx->device_path, O_RDWR);
 
     if(!ctx->device)
     {
-        close(ctx->fd);
         free(ctx);
         return NULL;
     }
@@ -66,8 +55,6 @@ void DeviceClose(void* device_ctx)
     if(!ctx) return;
 
     if(ctx->device) cam_close_device(ctx->device);
-
-    close(ctx->fd);
 
     free(ctx);
 }

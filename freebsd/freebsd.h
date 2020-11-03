@@ -24,11 +24,9 @@
 #endif
 
 #include <camlib.h>
-#include <stdio.h>
 
 typedef struct
 {
-    int                fd;
     char               device_path[4096];
     struct cam_device* device;
 } DeviceContext;
