@@ -114,8 +114,7 @@ DeviceInfoList* ListDevices()
                 else
                     strncpy(list_next->this.bus, "ATA", 4);
 
-                // TODO: This protocol didn't work in C#, does it work in C?
-                list_next->this.supported = strncmp(camdev->sim_name, "ata", 3) != 0;
+                list_next->this.supported = true;
 
                 if(camccb->cgd.protocol == PROTO_ATAPI) goto protocol_atapi;
 
@@ -130,8 +129,7 @@ DeviceInfoList* ListDevices()
                 else
                     strncpy(list_next->this.bus, "SCSI", 4);
 
-                // TODO: This protocol didn't work in C#, does it work in C?
-                list_next->this.supported = strncmp(camdev->sim_name, "ata", 3) != 0;
+                list_next->this.supported = true;
 
                 break;
             case PROTO_NVME:
