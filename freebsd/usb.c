@@ -28,5 +28,5 @@ uint8_t GetUsbData(void*     device_ctx,
                    char*     product,
                    char*     serial)
 {
-    return -1;
+    return 0;
 }
