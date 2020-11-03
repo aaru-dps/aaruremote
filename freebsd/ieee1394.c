@@ -18,7 +18,6 @@
 #include <stdint.h>
 
 #include "../aaruremote.h"
-#include "freebsd.h"
 
 uint8_t GetFireWireData(void*     device_ctx,
                         uint32_t* id_model,

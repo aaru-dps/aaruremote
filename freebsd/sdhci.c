@@ -18,7 +18,6 @@
 #include <stdint.h>
 
 #include "../aaruremote.h"
-#include "freebsd.h"
 
 int32_t SendSdhciCommand(void*     device_ctx,
                          uint8_t   command,

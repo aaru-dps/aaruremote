@@ -18,6 +18,5 @@
 #include <stdint.h>
 
 #include "../aaruremote.h"
-#include "freebsd.h"
 
 uint8_t GetPcmciaData(void* device_ctx, uint16_t* cis_len, char* cis) { return 0; }

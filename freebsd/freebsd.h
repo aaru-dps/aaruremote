@@ -19,6 +19,10 @@
 #define AARUREMOTE_FREEBSD_FREEBSD_H_
 
 // Included here as it seems to need to be after all others
+#ifndef	_STDIO_H_
+#include <stdio.h>
+#endif
+
 #include <camlib.h>
 #include <stdio.h>
 

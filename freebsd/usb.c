@@ -18,7 +18,6 @@
 #include <stdint.h>
 
 #include "../aaruremote.h"
-#include "freebsd.h"
 
 uint8_t GetUsbData(void*     device_ctx,
                    uint16_t* desc_len,
