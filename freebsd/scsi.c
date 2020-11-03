@@ -41,6 +41,7 @@ int32_t SendScsiCommand(void*     device_ctx,
     *sense_len         = 0;
     *sense_buffer      = NULL;
     *duration          = 0;
+    *sense             = false;
     union ccb*      camccb;
     u_int32_t       flags;
     int             error;
