@@ -149,6 +149,7 @@ void* WorkingLoop(void* arguments)
         if(!cli_ctx)
         {
             printf("Error %d accepting incoming connection.\n", errno);
+            free(pkt_nop);
             NetClose(net_ctx);
             return NULL;
         }
@@ -165,6 +166,7 @@ void* WorkingLoop(void* arguments)
             NetClose(cli_ctx);
             NetClose(net_ctx);
             free(pkt_server_hello);
+            free(pkt_nop);
             return NULL;
         }
 
@@ -1101,4 +1103,6 @@ void* WorkingLoop(void* arguments)
             }
         }
     }
+    
+    free(pkt_nop);
 }
