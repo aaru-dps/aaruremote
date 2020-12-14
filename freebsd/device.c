@@ -100,3 +100,18 @@ int32_t GetDeviceType(void* device_ctx)
     cam_freeccb(camccb);
     return device_type;
 }
+
+int32_t ReOpen(void* device_ctx, uint32_t* closeFailed)
+{
+    DeviceContext* ctx = device_ctx;
+    int            ret;
+    *closeFailed = 0;
+
+    if(!ctx) return -1;
+
+    cam_close_device(ctx->device);
+
+    ctx->device = cam_open_device(ctx->device_path, O_RDWR);
+
+    return ctx->device == 0 ? errno : 0;
+}
