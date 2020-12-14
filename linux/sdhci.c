@@ -236,3 +236,60 @@ int32_t GetSdhciRegisters(void*     device_ctx,
 
     return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
 }
+
+int32_t SendMultiSdhciCommand(void*            device_ctx,
+                              uint64_t         count,
+                              MmcSingleCommand commands[],
+                              uint32_t*        duration,
+                              uint32_t*        sense)
+{
+    DeviceContext* ctx = device_ctx;
+    *duration          = 0;
+    *sense             = 0;
+    struct mmc_ioc_multi_cmd* mmc_ioc_multi_cmd;
+    uint64_t                  i;
+    int32_t                   error;
+    if(!ctx) return -1;
+
+    mmc_ioc_multi_cmd = malloc(sizeof(struct mmc_ioc_multi_cmd) + sizeof(struct mmc_ioc_cmd) * count);
+
+    if(!mmc_ioc_multi_cmd)
+    {
+        *sense = 1;
+        return errno;
+    }
+
+    memset(mmc_ioc_multi_cmd, 0, sizeof(struct mmc_ioc_multi_cmd) + sizeof(struct mmc_ioc_cmd) * count);
+
+    mmc_ioc_multi_cmd->num_of_cmds = count;
+
+    for(i = 0; i < count; i++)
+    {
+        mmc_ioc_multi_cmd->cmds[i].write_flag = commands[i].write;
+        mmc_ioc_multi_cmd->cmds[i].is_acmd    = commands[i].application;
+        mmc_ioc_multi_cmd->cmds[i].opcode     = commands[i].command;
+        mmc_ioc_multi_cmd->cmds[i].arg        = commands[i].argument;
+        mmc_ioc_multi_cmd->cmds[i].flags      = commands[i].flags;
+        mmc_ioc_multi_cmd->cmds[i].blksz      = commands[i].block_size;
+        mmc_ioc_multi_cmd->cmds[i].blocks     = commands[i].blocks;
+        /* TODO: Where?
+        if(commands[i].timeout > 0)
+        {
+            mmc_ioc_multi_cmd->cmds[i].data_timeout_ns = commands[i].timeout * 1000000000;
+            mmc_ioc_multi_cmd->cmds[i].cmd_timeout_ms  = commands[i].timeout * 1000;
+        }
+         */
+        mmc_ioc_multi_cmd->cmds[i].data_ptr = (uint64_t)commands[i].buffer;
+    }
+
+    error = ioctl(ctx->fd, MMC_IOC_MULTI_CMD, mmc_ioc_multi_cmd);
+
+    if(error < 0) error = errno;
+
+    *sense = error < 0;
+
+    for(i = 0; i < count; i++)
+        memcpy((char*)commands[i].response, (char*)mmc_ioc_multi_cmd->cmds[i].response, sizeof(uint32_t) * 4);
+
+    return error;
+}

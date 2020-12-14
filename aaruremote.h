@@ -511,14 +511,14 @@ typedef struct
 {
     AaruPacketHeader hdr;
     uint64_t         offset;
-                     uint32_t length;
+    uint32_t         length;
 } AaruPacketCmdOsRead;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-    int32_t error_no;
-    uint32_t duration;
+    int32_t          error_no;
+    uint32_t         duration;
 } AaruPacketResOsRead;
 
 #pragma pack(pop)
@@ -632,11 +632,7 @@ int32_t          SendMultiSdhciCommand(void*            device_ctx,
                                        MmcSingleCommand commands[],
                                        uint32_t*        duration,
                                        uint32_t*        sense);
-int32_t          OsRead(void*            device_ctx,
-                                       char *buffer,
-                                       uint64_t         offset,
-                                       uint32_t length,
-                                       uint32_t*        duration);
+int32_t          OsRead(void* device_ctx, char* buffer, uint64_t offset, uint32_t length, uint32_t* duration);
 AaruPacketHello* GetHello();
 int              PrintNetworkAddresses();
 char*            PrintIpv4Address(struct in_addr addr);
@@ -651,5 +647,5 @@ void             Initialize();
 void             PlatformLoop(AaruPacketHello* pkt_server_hello);
 void*            WorkingLoop(void* arguments);
 uint8_t          AmIRoot();
-int32_t          ReOpen(void *device_ctx, uint32_t* closeFailed);
+int32_t          ReOpen(void* device_ctx, uint32_t* closeFailed);
 #endif
