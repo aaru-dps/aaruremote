@@ -71,6 +71,8 @@ void* WorkingLoop(void* arguments)
     AaruPacketResScsi*              pkt_res_scsi;
     AaruPacketResSdhci*             pkt_res_sdhci;
     AaruPacketMultiResSdhci*        pkt_res_multi_sdhci;
+    AaruPacketCmdOsRead*            pkt_cmd_osread;
+    AaruPacketResOsRead*            pkt_res_osread;
     int                             skip_next_hdr;
     int                             ret;
     socklen_t                       cli_len;
@@ -1189,10 +1191,10 @@ void* WorkingLoop(void* arguments)
                         off += multi_sdhci_commands->buf_len;
                     }
 
-                    NetWrite(cli_ctx, pkt_res_sdhci, le32toh(pkt_res_sdhci->hdr.len));
+                    NetWrite(cli_ctx, pkt_res_multi_sdhci, le32toh(pkt_res_multi_sdhci->hdr.len));
                     free(multi_sdhci_commands);
-                    free(pkt_cmd_sdhci);
-                    free(pkt_res_sdhci);
+                    free(pkt_cmd_multi_sdhci);
+                    free(pkt_res_multi_sdhci);
 
                     continue;
                 case AARUREMOTE_PACKET_TYPE_COMMAND_REOPEN:
@@ -1229,6 +1231,70 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_nop, sizeof(AaruPacketNop));
 
                     free(in_buf);
+
+                    continue;
+                case AARUREMOTE_PACKET_TYPE_COMMAND_OSREAD:
+                    in_buf = malloc(le32toh(pkt_hdr->len));
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        continue;
+                    }
+
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
+
+                    pkt_cmd_osread = (AaruPacketCmdOsRead*)in_buf;
+
+                    buffer = malloc(le32toh(pkt_cmd_osread->length));
+
+                    if(!buffer)
+                    {
+                        printf("Fatal error %d allocating memory for buffer, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        NetClose(cli_ctx);
+                        continue;
+                    }
+
+                    memset(buffer, 0, le32toh(pkt_cmd_osread->length));
+
+                    ret = OsRead(device_ctx,
+                                 buffer,
+                                 le64toh(pkt_cmd_osread->offset),
+                                 le32toh(pkt_cmd_osread->length),
+                                 &duration);
+
+                    out_buf = malloc(sizeof(AaruPacketResOsRead) + le32toh(pkt_cmd_osread->length));
+
+                    if(!out_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
+                        free(buffer);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        NetClose(cli_ctx);
+                        continue;
+                    }
+
+                    pkt_res_osread = (AaruPacketResOsRead*)out_buf;
+
+                    pkt_res_osread->hdr.len = htole32(sizeof(AaruPacketResOsRead) + le32toh(pkt_cmd_osread->length));
+                    pkt_res_osread->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_OSREAD;
+                    pkt_res_osread->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_osread->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_osread->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_osread->error_no        = htole32(ret);
+                    pkt_res_osread->duration        = htole32(duration);
+
+                    memcpy(out_buf + sizeof(AaruPacketResOsRead), buffer, le32toh(pkt_cmd_osread->length));
+
+                    NetWrite(cli_ctx, pkt_res_osread, le32toh(pkt_res_osread->hdr.len));
+                    free(buffer);
+                    free(pkt_cmd_osread);
+                    free(pkt_res_osread);
 
                     continue;
                 default:

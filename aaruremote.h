@@ -65,6 +65,8 @@
 #define AARUREMOTE_PACKET_TYPE_MULTI_COMMAND_SDHCI 28
 #define AARUREMOTE_PACKET_TYPE_RESPONSE_MULTI_SDHCI 29
 #define AARUREMOTE_PACKET_TYPE_COMMAND_REOPEN 30
+#define AARUREMOTE_PACKET_TYPE_COMMAND_OSREAD 31
+#define AARUREMOTE_PACKET_TYPE_RESPONSE_OSREAD 32
 #define AARUREMOTE_PROTOCOL_MAX 2
 #define AARUREMOTE_PACKET_NOP_REASON_OOO 0
 #define AARUREMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -505,6 +507,20 @@ typedef struct
     AaruPacketHeader hdr;
 } AaruPacketCmdReOpen;
 
+typedef struct
+{
+    AaruPacketHeader hdr;
+    uint64_t         offset;
+                     uint32_t length;
+} AaruPacketCmdOsRead;
+
+typedef struct
+{
+    AaruPacketHeader hdr;
+    int32_t error_no;
+    uint32_t duration;
+} AaruPacketResOsRead;
+
 #pragma pack(pop)
 
 typedef struct
@@ -616,6 +632,11 @@ int32_t          SendMultiSdhciCommand(void*            device_ctx,
                                        MmcSingleCommand commands[],
                                        uint32_t*        duration,
                                        uint32_t*        sense);
+int32_t          OsRead(void*            device_ctx,
+                                       char *buffer,
+                                       uint64_t         offset,
+                                       uint32_t length,
+                                       uint32_t*        duration);
 AaruPacketHello* GetHello();
 int              PrintNetworkAddresses();
 char*            PrintIpv4Address(struct in_addr addr);
