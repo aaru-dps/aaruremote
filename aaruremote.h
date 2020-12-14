@@ -64,6 +64,7 @@
 #define AARUREMOTE_PACKET_TYPE_RESPONSE_AM_I_ROOT 27
 #define AARUREMOTE_PACKET_TYPE_MULTI_COMMAND_SDHCI 28
 #define AARUREMOTE_PACKET_TYPE_RESPONSE_MULTI_SDHCI 29
+#define AARUREMOTE_PACKET_TYPE_COMMAND_REOPEN 30
 #define AARUREMOTE_PROTOCOL_MAX 2
 #define AARUREMOTE_PACKET_NOP_REASON_OOO 0
 #define AARUREMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
@@ -71,6 +72,8 @@
 #define AARUREMOTE_PACKET_NOP_REASON_ERROR_LIST_DEVICES 3
 #define AARUREMOTE_PACKET_NOP_REASON_OPEN_OK 4
 #define AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR 5
+#define AARUREMOTE_PACKET_NOP_REASON_REOPEN_OK 6
+#define AARUREMOTE_PACKET_NOP_REASON_CLOSE_ERROR 5
 #define AARUREMOTE_DEVICE_TYPE_UNKNOWN -1
 #define AARUREMOTE_DEVICE_TYPE_ATA 1
 #define AARUREMOTE_DEVICE_TYPE_ATAPI 2
@@ -497,6 +500,11 @@ typedef struct
     AaruResSdhci     responses[0];
 } AaruPacketMultiResSdhci;
 
+typedef struct
+{
+    AaruPacketHeader hdr;
+} AaruPacketCmdReOpen;
+
 #pragma pack(pop)
 
 typedef struct
@@ -622,4 +630,5 @@ void             Initialize();
 void             PlatformLoop(AaruPacketHello* pkt_server_hello);
 void*            WorkingLoop(void* arguments);
 uint8_t          AmIRoot();
+int32_t          ReOpen(void *device_ctx, uint32_t* closeFailed);
 #endif

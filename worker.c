@@ -1195,6 +1195,42 @@ void* WorkingLoop(void* arguments)
                     free(pkt_res_sdhci);
 
                     continue;
+                case AARUREMOTE_PACKET_TYPE_COMMAND_REOPEN:
+                    in_buf = malloc(le32toh(pkt_hdr->len));
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        continue;
+                    }
+
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
+
+                    ret = ReOpen(device_ctx, &sense);
+                    memset(&pkt_nop->reason, 0, 256);
+
+                    if(ret)
+                    {
+                        pkt_nop->error_no = htole32(ret);
+
+                        // Error on close
+                        if(sense != 0) pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_CLOSE_ERROR;
+                        else
+                            pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR;
+                    }
+                    else
+                    {
+                        pkt_nop->error_no    = 0;
+                        pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_REOPEN_OK;
+                    }
+
+                    NetWrite(cli_ctx, pkt_nop, sizeof(AaruPacketNop));
+
+                    free(in_buf);
+
+                    continue;
                 default:
                     pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);
