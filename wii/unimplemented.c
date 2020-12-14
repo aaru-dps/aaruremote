@@ -55,3 +55,20 @@ int32_t SendSdhciCommand(void*     device_ctx,
 {
     return -1;
 }
+
+int32_t SendMultiSdhciCommand(void*            device_ctx,
+                              uint64_t         count,
+                              MmcSingleCommand commands[],
+                              uint32_t*        duration,
+                              uint32_t*        sense)
+{
+    return -1;
+}
+int32_t ReOpen(void* device_ctx, uint32_t* closeFailed)
+{
+    *closeFailed = 1;
+
+    return -1;
+}
+
+int32_t OsRead(void* device_ctx, char* buffer, uint64_t offset, uint32_t length, uint32_t* duration) { return -1; }
