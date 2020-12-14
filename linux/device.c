@@ -321,3 +321,26 @@ int32_t GetDeviceType(void* device_ctx)
     return dev_type;
 #endif
 }
+
+int32_t ReOpen(void* device_ctx, uint32_t* closeFailed)
+{
+    DeviceContext* ctx = device_ctx;
+    int            ret;
+    *closeFailed = 0;
+
+    if(!ctx) return -1;
+
+    ret = close(ctx->fd);
+
+    if(ret < 0)
+    {
+        *closeFailed = 1;
+        return errno;
+    }
+
+    ctx->fd = open(ctx->device_path, O_RDWR | O_NONBLOCK | O_CREAT);
+
+    if((ctx->fd < 0) && (errno == EACCES || errno == EROFS)) ctx->fd = open(ctx->device_path, O_RDONLY | O_NONBLOCK);
+
+    return ctx->fd <= 0 ? errno : 0;
+}
