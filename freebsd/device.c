@@ -115,3 +115,23 @@ int32_t ReOpen(void* device_ctx, uint32_t* closeFailed)
 
     return ctx->device == 0 ? errno : 0;
 }
+
+int32_t OsRead(void* device_ctx, char* buffer, uint64_t offset, uint32_t length, uint32_t* duration)
+{
+    DeviceContext* ctx = device_ctx;
+    ssize_t        ret;
+    *duration = 0;
+    off_t pos;
+
+    if(!ctx) return -1;
+
+    // TODO: Timing
+    pos = lseek(ctx->device.fd, (off_t)offset, SEEK_SET);
+
+    if(pos < 0) return errno;
+
+    // TODO: Timing
+    ret = read(ctx->device.fd, (void*)buffer, (size_t)length);
+
+    return ret < 0 ? errno : 0;
+}
