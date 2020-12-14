@@ -34,7 +34,7 @@ int32_t SendSdhciCommand(void*     device_ctx,
                          uint32_t* duration,
                          uint32_t* sense)
 {
-    return 0;
+    return -1;
 }
 
 int32_t GetSdhciRegisters(void*     device_ctx,
@@ -47,5 +47,14 @@ int32_t GetSdhciRegisters(void*     device_ctx,
                           uint32_t* ocr_len,
                           uint32_t* scr_len)
 {
-    return 0;
+    return -1;
+}
+
+int32_t SendMultiSdhciCommand(void*            device_ctx,
+                              uint64_t         count,
+                              MmcSingleCommand commands[],
+                              uint32_t*        duration,
+                              uint32_t*        sense)
+{
+    return -1;
 }
