@@ -62,7 +62,9 @@
 #define AARUREMOTE_PACKET_TYPE_COMMAND_CLOSE_DEVICE 25
 #define AARUREMOTE_PACKET_TYPE_COMMAND_AM_I_ROOT 26
 #define AARUREMOTE_PACKET_TYPE_RESPONSE_AM_I_ROOT 27
-#define AARUREMOTE_PROTOCOL_MAX 1
+#define AARUREMOTE_PACKET_TYPE_MULTI_COMMAND_SDHCI 28
+#define AARUREMOTE_PACKET_TYPE_RESPONSE_MULTI_SDHCI 29
+#define AARUREMOTE_PROTOCOL_MAX 2
 #define AARUREMOTE_PACKET_NOP_REASON_OOO 0
 #define AARUREMOTE_PACKET_NOP_REASON_NOT_IMPLEMENTED 1
 #define AARUREMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED 2
@@ -356,26 +358,36 @@ typedef struct
 
 typedef struct
 {
-    AaruPacketHeader hdr;
-    uint8_t          command;
-    uint8_t          write;
-    uint8_t          application;
-    uint32_t         flags;
-    uint32_t         argument;
-    uint32_t         block_size;
-    uint32_t         blocks;
-    uint32_t         buf_len;
-    uint32_t         timeout;
-} AaruPacketCmdSdhci;
+    uint8_t  command;
+    uint8_t  write;
+    uint8_t  application;
+    uint32_t flags;
+    uint32_t argument;
+    uint32_t block_size;
+    uint32_t blocks;
+    uint32_t buf_len;
+    uint32_t timeout;
+} AaruCmdSdhci;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-    uint32_t         buf_len;
-    uint32_t         response[4];
-    uint32_t         duration;
-    uint32_t         sense;
-    uint32_t         error_no;
+    AaruCmdSdhci     command;
+} AaruPacketCmdSdhci;
+
+typedef struct
+{
+    uint32_t buf_len;
+    uint32_t response[4];
+    uint32_t duration;
+    uint32_t sense;
+    uint32_t error_no;
+} AaruResSdhci;
+
+typedef struct
+{
+    AaruPacketHeader hdr;
+    AaruResSdhci     res;
 } AaruPacketResSdhci;
 
 typedef struct
@@ -471,7 +483,35 @@ typedef struct
     uint32_t         am_i_root;
 } AaruPacketResAmIRoot;
 
+typedef struct
+{
+    AaruPacketHeader hdr;
+    uint64_t         cmd_count;
+    AaruCmdSdhci     commands[0];
+} AaruPacketMultiCmdSdhci;
+
+typedef struct
+{
+    AaruPacketHeader hdr;
+    uint64_t         cmd_count;
+    AaruResSdhci     responses[0];
+} AaruPacketMultiResSdhci;
+
 #pragma pack(pop)
+
+typedef struct
+{
+    uint32_t argument;
+    uint32_t blocks;
+    uint32_t block_size;
+    uint32_t buf_len;
+    char*    buffer;
+    uint8_t  command;
+    uint32_t flags;
+    uint8_t  application;
+    uint32_t response[4];
+    uint8_t  write;
+} MmcSingleCommand;
 
 DeviceInfoList*  ListDevices();
 void             FreeDeviceInfoList(DeviceInfoList* start);
@@ -563,6 +603,11 @@ int32_t          SendSdhciCommand(void*     device_ctx,
                                   uint32_t* response,
                                   uint32_t* duration,
                                   uint32_t* sense);
+int32_t          SendMultiSdhciCommand(void*            device_ctx,
+                                       uint64_t         count,
+                                       MmcSingleCommand commands[],
+                                       uint32_t*        duration,
+                                       uint32_t*        sense);
 AaruPacketHello* GetHello();
 int              PrintNetworkAddresses();
 char*            PrintIpv4Address(struct in_addr addr);

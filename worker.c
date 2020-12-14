@@ -53,6 +53,7 @@ void* WorkingLoop(void* arguments)
     AaruPacketCmdOpen*              pkt_dev_open;
     AaruPacketCmdScsi*              pkt_cmd_scsi;
     AaruPacketCmdSdhci*             pkt_cmd_sdhci;
+    AaruPacketMultiCmdSdhci*        pkt_cmd_multi_sdhci;
     AaruPacketHeader*               pkt_hdr;
     AaruPacketHello*                pkt_server_hello;
     AaruPacketHello*                pkt_client_hello;
@@ -69,6 +70,7 @@ void* WorkingLoop(void* arguments)
     AaruPacketResListDevs*          pkt_res_devinfo;
     AaruPacketResScsi*              pkt_res_scsi;
     AaruPacketResSdhci*             pkt_res_sdhci;
+    AaruPacketMultiResSdhci*        pkt_res_multi_sdhci;
     int                             skip_next_hdr;
     int                             ret;
     socklen_t                       cli_len;
@@ -84,6 +86,7 @@ void* WorkingLoop(void* arguments)
     void*                           net_ctx    = NULL;
     void*                           cli_ctx    = NULL;
     long                            off;
+    MmcSingleCommand*               multi_sdhci_commands;
 
     if(!arguments)
     {
@@ -984,7 +987,7 @@ void* WorkingLoop(void* arguments)
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(le32toh(pkt_cmd_sdhci->buf_len) > 0) buffer = in_buf + sizeof(AaruPacketCmdSdhci);
+                    if(le32toh(pkt_cmd_sdhci->command.buf_len) > 0) buffer = in_buf + sizeof(AaruPacketCmdSdhci);
                     else
                         buffer = NULL;
 
@@ -993,21 +996,21 @@ void* WorkingLoop(void* arguments)
                     duration = 0;
                     sense    = 1;
                     ret      = SendSdhciCommand(device_ctx,
-                                           pkt_cmd_sdhci->command,
-                                           pkt_cmd_sdhci->write,
-                                           pkt_cmd_sdhci->application,
-                                           le32toh(pkt_cmd_sdhci->flags),
-                                           le32toh(pkt_cmd_sdhci->argument),
-                                           le32toh(pkt_cmd_sdhci->block_size),
-                                           le32toh(pkt_cmd_sdhci->blocks),
+                                           pkt_cmd_sdhci->command.command,
+                                           pkt_cmd_sdhci->command.write,
+                                           pkt_cmd_sdhci->command.application,
+                                           le32toh(pkt_cmd_sdhci->command.flags),
+                                           le32toh(pkt_cmd_sdhci->command.argument),
+                                           le32toh(pkt_cmd_sdhci->command.block_size),
+                                           le32toh(pkt_cmd_sdhci->command.blocks),
                                            buffer,
-                                           le32toh(pkt_cmd_sdhci->buf_len),
-                                           le32toh(pkt_cmd_sdhci->timeout),
+                                           le32toh(pkt_cmd_sdhci->command.buf_len),
+                                           le32toh(pkt_cmd_sdhci->command.timeout),
                                            (uint32_t*)&sdhci_response,
                                            &duration,
                                            &sense);
 
-                    out_buf = malloc(sizeof(AaruPacketResSdhci) + le32toh(pkt_cmd_sdhci->buf_len));
+                    out_buf = malloc(sizeof(AaruPacketResSdhci) + le32toh(pkt_cmd_sdhci->command.buf_len));
 
                     if(!out_buf)
                     {
@@ -1019,9 +1022,11 @@ void* WorkingLoop(void* arguments)
                     }
 
                     pkt_res_sdhci = (AaruPacketResSdhci*)out_buf;
-                    if(buffer) memcpy(out_buf + sizeof(AaruPacketResSdhci), buffer, le32toh(pkt_cmd_sdhci->buf_len));
+                    if(buffer)
+                        memcpy(out_buf + sizeof(AaruPacketResSdhci), buffer, le32toh(pkt_cmd_sdhci->command.buf_len));
 
-                    pkt_res_sdhci->hdr.len = htole32(sizeof(AaruPacketResSdhci) + le32toh(pkt_cmd_sdhci->buf_len));
+                    pkt_res_sdhci->hdr.len =
+                        htole32(sizeof(AaruPacketResSdhci) + le32toh(pkt_cmd_sdhci->command.buf_len));
                     pkt_res_sdhci->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_SDHCI;
                     pkt_res_sdhci->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_sdhci->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
@@ -1032,11 +1037,11 @@ void* WorkingLoop(void* arguments)
                     sdhci_response[2] = htole32(sdhci_response[2]);
                     sdhci_response[3] = htole32(sdhci_response[3]);
 
-                    memcpy((char*)&pkt_res_sdhci->response, (char*)&sdhci_response, sizeof(uint32_t) * 4);
-                    pkt_res_sdhci->buf_len  = pkt_cmd_sdhci->buf_len;
-                    pkt_res_sdhci->duration = htole32(duration);
-                    pkt_res_sdhci->sense    = htole32(sense);
-                    pkt_res_sdhci->error_no = htole32(ret);
+                    memcpy((char*)&pkt_res_sdhci->res.response, (char*)&sdhci_response, sizeof(uint32_t) * 4);
+                    pkt_res_sdhci->res.buf_len  = pkt_cmd_sdhci->command.buf_len;
+                    pkt_res_sdhci->res.duration = htole32(duration);
+                    pkt_res_sdhci->res.sense    = htole32(sense);
+                    pkt_res_sdhci->res.error_no = htole32(ret);
 
                     NetWrite(cli_ctx, pkt_res_sdhci, le32toh(pkt_res_sdhci->hdr.len));
                     free(pkt_cmd_sdhci);
@@ -1082,6 +1087,114 @@ void* WorkingLoop(void* arguments)
                     NetWrite(cli_ctx, pkt_res_am_i_root, le32toh(pkt_res_am_i_root->hdr.len));
                     free(pkt_res_am_i_root);
                     continue;
+                case AARUREMOTE_PACKET_TYPE_MULTI_COMMAND_SDHCI:
+                    in_buf = malloc(le32toh(pkt_hdr->len));
+
+                    if(!in_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        continue;
+                    }
+
+                    NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
+
+                    pkt_cmd_multi_sdhci = (AaruPacketMultiCmdSdhci*)in_buf;
+
+                    pkt_cmd_multi_sdhci->cmd_count = le64toh(pkt_cmd_multi_sdhci->cmd_count);
+
+                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+                    multi_sdhci_commands = malloc(sizeof(MmcSingleCommand) * pkt_cmd_multi_sdhci->cmd_count);
+
+                    if(!multi_sdhci_commands)
+                    {
+                        printf("Fatal error %d allocating memory for commands, closing connection...\n", errno);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        NetClose(cli_ctx);
+                        continue;
+                    }
+
+                    memset(multi_sdhci_commands, 0, sizeof(MmcSingleCommand) * pkt_cmd_multi_sdhci->cmd_count);
+
+                    for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++)
+                    {
+                        multi_sdhci_commands[n].argument    = le32toh(pkt_cmd_multi_sdhci->commands[n].argument);
+                        multi_sdhci_commands[n].block_size  = le32toh(pkt_cmd_multi_sdhci->commands[n].block_size);
+                        multi_sdhci_commands[n].blocks      = le32toh(pkt_cmd_multi_sdhci->commands[n].blocks);
+                        multi_sdhci_commands[n].command     = pkt_cmd_multi_sdhci->commands[n].command;
+                        multi_sdhci_commands[n].flags       = le32toh(pkt_cmd_multi_sdhci->commands[n].flags);
+                        multi_sdhci_commands[n].application = pkt_cmd_multi_sdhci->commands[n].application;
+                        multi_sdhci_commands[n].write       = pkt_cmd_multi_sdhci->commands[n].write;
+                        multi_sdhci_commands[n].buf_len     = le32toh(pkt_cmd_multi_sdhci->commands[n].buf_len);
+                    }
+
+                    off = (long)(sizeof(AaruPacketMultiCmdSdhci) +
+                                 (sizeof(AaruCmdSdhci) * pkt_cmd_multi_sdhci->cmd_count));
+
+                    for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++)
+                    {
+                        multi_sdhci_commands[n].buffer = (char*)pkt_cmd_multi_sdhci + off;
+                        off += multi_sdhci_commands[n].buf_len;
+                    }
+
+                    ret = SendMultiSdhciCommand(
+                        device_ctx, pkt_cmd_multi_sdhci->cmd_count, multi_sdhci_commands, &duration, &sense);
+
+                    off =
+                        (long)(sizeof(AaruPacketMultiResSdhci) + sizeof(AaruResSdhci) * pkt_cmd_multi_sdhci->cmd_count);
+
+                    for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++) off += multi_sdhci_commands[n].buf_len;
+
+                    out_buf = malloc(off);
+
+                    if(!out_buf)
+                    {
+                        printf("Fatal error %d allocating memory for packet, continuing...\n", errno);
+                        free(multi_sdhci_commands);
+                        free(pkt_hdr);
+                        free(in_buf);
+                        NetClose(cli_ctx);
+                        continue;
+                    }
+
+                    pkt_res_multi_sdhci = (AaruPacketMultiResSdhci*)out_buf;
+
+                    pkt_res_multi_sdhci->hdr.len         = htole32(off);
+                    pkt_res_multi_sdhci->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_MULTI_SDHCI;
+                    pkt_res_multi_sdhci->hdr.version     = AARUREMOTE_PACKET_VERSION;
+                    pkt_res_multi_sdhci->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
+                    pkt_res_multi_sdhci->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
+                    pkt_res_multi_sdhci->cmd_count       = htole64(pkt_cmd_multi_sdhci->cmd_count);
+
+                    for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++)
+                    {
+                        pkt_res_multi_sdhci->responses[n].duration    = htole32(duration);
+                        pkt_res_multi_sdhci->responses[n].error_no    = htole32(ret);
+                        pkt_res_multi_sdhci->responses[n].sense       = htole32(sense);
+                        pkt_res_multi_sdhci->responses[n].buf_len     = htole32(multi_sdhci_commands[n].buf_len);
+                        pkt_res_multi_sdhci->responses[n].response[0] = htole32(multi_sdhci_commands[n].response[0]);
+                        pkt_res_multi_sdhci->responses[n].response[1] = htole32(multi_sdhci_commands[n].response[1]);
+                        pkt_res_multi_sdhci->responses[n].response[2] = htole32(multi_sdhci_commands[n].response[2]);
+                        pkt_res_multi_sdhci->responses[n].response[3] = htole32(multi_sdhci_commands[n].response[3]);
+                    }
+
+                    off =
+                        (long)(sizeof(AaruPacketMultiResSdhci) + sizeof(AaruResSdhci) * pkt_cmd_multi_sdhci->cmd_count);
+
+                    for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++)
+                    {
+                        memcpy(out_buf + off, multi_sdhci_commands[n].buffer, multi_sdhci_commands->buf_len);
+                        off += multi_sdhci_commands->buf_len;
+                    }
+
+                    NetWrite(cli_ctx, pkt_res_sdhci, le32toh(pkt_res_sdhci->hdr.len));
+                    free(multi_sdhci_commands);
+                    free(pkt_cmd_sdhci);
+                    free(pkt_res_sdhci);
+
+                    continue;
                 default:
                     pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);
@@ -1103,6 +1216,6 @@ void* WorkingLoop(void* arguments)
             }
         }
     }
-    
+
     free(pkt_nop);
 }
