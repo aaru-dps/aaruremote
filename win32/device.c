@@ -23,7 +23,6 @@
 
 #include "win32.h"
 #include "../aaruremote.h"
-#include "ntioctl.h"
 
 void* DeviceOpen(const char* device_path)
 {
@@ -120,4 +119,24 @@ int32_t GetDeviceType(void* device_ctx)
     free(buf);
 
     return returned;
+}
+
+int32_t ReOpen(void* device_ctx, uint32_t* closeFailed)
+{
+    DeviceContext* ctx = device_ctx;
+    *closeFailed       = 0;
+
+    if(!ctx) return -1;
+
+    CloseHandle(ctx->handle);
+
+    ctx->handle = CreateFile(ctx->device_path,
+                             GENERIC_READ | GENERIC_WRITE,
+                             FILE_SHARE_READ | FILE_SHARE_WRITE,
+                             NULL,
+                             OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL,
+                             NULL);
+
+    return ctx->handle == INVALID_HANDLE_VALUE ? GetLastError() : 0;
 }
