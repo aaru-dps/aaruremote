@@ -171,7 +171,7 @@ UsbHub_t* GetRootHub(UsbController_t* controller)
 
     if(h == INVALID_HANDLE_VALUE) return root;
 
-    memset(&hubName, 0, sizeof(USB_ROOT_HUB_NAME) + USB_BUFFER_SIZE - 1);
+    memset(hubName, 0, sizeof(USB_ROOT_HUB_NAME) + USB_BUFFER_SIZE - 1);
     nBytes = sizeof(USB_ROOT_HUB_NAME) + USB_BUFFER_SIZE - 1;
 
     // get the Hub Name
