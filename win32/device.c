@@ -140,3 +140,25 @@ int32_t ReOpen(void* device_ctx, uint32_t* closeFailed)
 
     return ctx->handle == INVALID_HANDLE_VALUE ? GetLastError() : 0;
 }
+
+int32_t OsRead(void* device_ctx, char* buffer, uint64_t offset, uint32_t length, uint32_t* duration)
+{
+    DeviceContext* ctx = device_ctx;
+    BOOL           ret;
+    LARGE_INTEGER  liDistanceToMove;
+    DWORD          nNumberOfBytesRead;
+    *duration                 = 0;
+    liDistanceToMove.QuadPart = offset;
+
+    if(!ctx) return -1;
+
+    // TODO: Timing
+    ret = SetFilePointerEx(ctx->handle, liDistanceToMove, NULL, FILE_BEGIN);
+
+    if(!ret) return GetLastError();
+
+    // TODO: Timing
+    ret = ReadFile(ctx->handle, buffer, length, &nNumberOfBytesRead, NULL);
+
+    return !ret ? GetLastError() : 0;
+}
