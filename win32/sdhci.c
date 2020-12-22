@@ -251,3 +251,62 @@ int32_t GetSdhciRegisters(void*     device_ctx,
 
     return *csd_len > 0 || *cid_len > 0 || *scr_len > 0 || *ocr_len > 0;
 }
+
+int32_t SendMultiSdhciCommand(void*            device_ctx,
+                              uint64_t         count,
+                              MmcSingleCommand commands[],
+                              uint32_t*        duration,
+                              uint32_t*        sense)
+{
+    DeviceContext* ctx = device_ctx;
+    *duration          = 0;
+    *sense             = 0;
+    uint64_t i;
+    int32_t  error = 0, single_error;
+    uint32_t single_sense, single_duration;
+
+    if(!ctx) return -1;
+
+    if(count == 3 && commands[0].command == 16 && // SET_BLOCK_LEN
+       commands[1].command == 18 &&               // READ_MULTIPLE_BLOCK
+       commands[2].command == 12)                 // STOP_TRANSMISSION
+        return SendSdhciCommand(device_ctx,
+                                commands[1].command,
+                                commands[1].write,
+                                commands[1].application,
+                                commands[1].flags,
+                                commands[1].argument,
+                                commands[1].block_size,
+                                commands[1].blocks,
+                                commands[1].buffer,
+                                commands[1].buf_len,
+                                0,
+                                commands[1].response,
+                                duration,
+                                sense);
+
+    for(i = 0; i < count; i++)
+    {
+        single_error = SendSdhciCommand(device_ctx,
+                                        commands[i].command,
+                                        commands[i].write,
+                                        commands[i].application,
+                                        commands[i].flags,
+                                        commands[i].argument,
+                                        commands[i].block_size,
+                                        commands[i].blocks,
+                                        commands[i].buffer,
+                                        commands[i].buf_len,
+                                        0,
+                                        commands[i].response,
+                                        &single_duration,
+                                        &single_sense);
+        if(error == 0 && single_error != 0) error = single_error;
+
+        *duration += single_duration;
+
+        if(single_sense) *sense = TRUE;
+    }
+
+    return error;
+}
