@@ -71,8 +71,9 @@ int32_t SendSdhciCommand(void*     device_ctx,
     cmd_descriptor->Cmd               = command;
     cmd_descriptor->CmdClass          = application ? SDCC_APP_CMD : SDCC_STANDARD;
     cmd_descriptor->TransferDirection = write ? SDTD_WRITE : SDTD_READ;
-    cmd_descriptor->TransferType      = (flags & AARUREMOTE_MMC_COMMAND_ADTC) ? SDTT_SINGLE_BLOCK : SDTT_CMD_ONLY;
     cmd_descriptor->ResponseType      = 0;
+    cmd_descriptor->TransferType =
+        (flags & AARUREMOTE_MMC_COMMAND_ADTC) ? (command == 18) ? SDTT_MULTI_BLOCK : SDTT_SINGLE_BLOCK : SDTT_CMD_ONLY;
 
     if((flags & AARUREMOTE_MMC_RESPONSE_R1) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R1))
         cmd_descriptor->ResponseType = SDRT_1;
