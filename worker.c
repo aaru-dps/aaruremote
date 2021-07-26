@@ -516,9 +516,9 @@ void* WorkingLoop(void* arguments)
 
                     pkt_res_scsi = (AaruPacketResScsi*)out_buf;
                     if(sense_buf) memcpy(out_buf + sizeof(AaruPacketResScsi), sense_buf, sense_len);
-                    if(buffer) memcpy(out_buf + sizeof(AaruPacketResScsi) + sense_len, buffer, pkt_cmd_scsi->buf_len);
+                    if(buffer) memcpy(out_buf + sizeof(AaruPacketResScsi) + sense_len, buffer, le32toh(pkt_cmd_scsi->buf_len));
 
-                    pkt_res_scsi->hdr.len = htole32(sizeof(AaruPacketResScsi) + sense_len + pkt_cmd_scsi->buf_len);
+                    pkt_res_scsi->hdr.len = htole32(sizeof(AaruPacketResScsi) + sense_len + le32toh(pkt_cmd_scsi->buf_len));
                     pkt_res_scsi->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_SCSI;
                     pkt_res_scsi->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_scsi->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
