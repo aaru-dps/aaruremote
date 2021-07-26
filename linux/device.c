@@ -242,7 +242,14 @@ int32_t GetDeviceType(void* device_ctx)
     }
 
     ret    = 0;
-    chrptr = strchr(dev_path, ':') - 1;
+    chrptr = strchr(dev_path, ':');
+
+    if(!chrptr)
+    {
+        chrptr = strrchr(dev_path, '.');
+    }
+
+    chrptr--;
 
     while(chrptr != dev_path)
     {
