@@ -296,12 +296,12 @@ int32_t SendAtaLba48Command(void*                   device_ctx,
 
     camccb->ataio.cmd.command          = registers.command;
     camccb->ataio.cmd.device           = 0x40 | registers.device_head;
-    camccb->ataio.cmd.lba_high_exp     = (registers.lba_high & 0xFF00) >> 8;
-    camccb->ataio.cmd.lba_high         = registers.lba_high & 0xFF;
-    camccb->ataio.cmd.lba_mid_exp      = (registers.lba_mid & 0xFF00) >> 8;
-    camccb->ataio.cmd.lba_mid          = registers.lba_mid & 0xFF;
-    camccb->ataio.cmd.lba_low_exp      = (registers.lba_low & 0xFF00) >> 8;
-    camccb->ataio.cmd.lba_low          = registers.lba_low & 0xFF;
+    camccb->ataio.cmd.lba_high_exp     = registers.lba_high_cur;
+    camccb->ataio.cmd.lba_high         = registers.lba_high_prev;
+    camccb->ataio.cmd.lba_mid_exp      = registers.lba_mid_cur;
+    camccb->ataio.cmd.lba_mid          = registers.lba_mid_prev;
+    camccb->ataio.cmd.lba_low_exp      = registers.lba_low_cur;
+    camccb->ataio.cmd.lba_low          = registers.lba_low_prev;
     camccb->ataio.cmd.features_exp     = (registers.feature & 0xFF00) >> 8;
     camccb->ataio.cmd.features         = registers.feature & 0xFF;
     camccb->ataio.cmd.sector_count_exp = (registers.sector_count & 0xFF00) >> 8;

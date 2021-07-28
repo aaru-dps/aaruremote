@@ -321,9 +321,12 @@ typedef struct
 {
     uint16_t feature;
     uint16_t sector_count;
-    uint16_t lba_low;
-    uint16_t lba_mid;
-    uint16_t lba_high;
+    uint8_t  lba_low_prev;
+    uint8_t  lba_low_cur;
+    uint8_t  lba_mid_prev;
+    uint8_t  lba_mid_cur;
+    uint8_t  lba_high_prev;
+    uint8_t  lba_high_cur;
     uint8_t  device_head;
     uint8_t  command;
 } AtaRegistersLba48;
@@ -333,9 +336,12 @@ typedef struct
     uint8_t  status;
     uint8_t  error;
     uint16_t sector_count;
-    uint16_t lba_low;
-    uint16_t lba_mid;
-    uint16_t lba_high;
+    uint8_t  lba_low_prev;
+    uint8_t  lba_low_cur;
+    uint8_t  lba_mid_prev;
+    uint8_t  lba_mid_cur;
+    uint8_t  lba_high_prev;
+    uint8_t  lba_high_cur;
     uint8_t  device_head;
 } AtaErrorRegistersLba48;
 

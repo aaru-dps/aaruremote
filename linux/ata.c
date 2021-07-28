@@ -236,12 +236,12 @@ int32_t SendAtaLba48Command(void*                   device_ctx,
     cdb[4]  = (registers.feature & 0xFF);
     cdb[5]  = ((registers.sector_count & 0xFF00) >> 8);
     cdb[6]  = (registers.sector_count & 0xFF);
-    cdb[7]  = ((registers.lba_low & 0xFF00) >> 8);
-    cdb[8]  = (registers.lba_low & 0xFF);
-    cdb[9]  = ((registers.lba_mid & 0xFF00) >> 8);
-    cdb[10] = (registers.lba_mid & 0xFF);
-    cdb[11] = ((registers.lba_high & 0xFF00) >> 8);
-    cdb[12] = (registers.lba_high & 0xFF);
+    cdb[7]  = registers.lba_low_prev;
+    cdb[8]  = registers.lba_low_cur;
+    cdb[9]  = registers.lba_mid_prev;
+    cdb[10] = registers.lba_mid_cur;
+    cdb[11] = registers.lba_high_prev;
+    cdb[12] = registers.lba_high_cur;
     cdb[13] = registers.device_head;
     cdb[14] = registers.command;
 
@@ -261,12 +261,15 @@ int32_t SendAtaLba48Command(void*                   device_ctx,
 
     error_registers->error = sense_buf[11];
 
-    error_registers->sector_count = (uint16_t)((sense_buf[12] << 8) + sense_buf[13]);
-    error_registers->lba_low      = (uint16_t)((sense_buf[14] << 8) + sense_buf[15]);
-    error_registers->lba_mid      = (uint16_t)((sense_buf[16] << 8) + sense_buf[17]);
-    error_registers->lba_high     = (uint16_t)((sense_buf[18] << 8) + sense_buf[19]);
-    error_registers->device_head  = sense_buf[20];
-    error_registers->status       = sense_buf[21];
+    error_registers->sector_count  = (uint16_t)((sense_buf[12] << 8) + sense_buf[13]);
+    error_registers->lba_low_prev  = sense_buf[14];
+    error_registers->lba_low_cur   = sense_buf[15];
+    error_registers->lba_mid_prev  = sense_buf[16];
+    error_registers->lba_mid_cur   = sense_buf[17];
+    error_registers->lba_high_prev = sense_buf[18];
+    error_registers->lba_high_cur  = sense_buf[19];
+    error_registers->device_head   = sense_buf[20];
+    error_registers->status        = sense_buf[21];
 
     *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
 
