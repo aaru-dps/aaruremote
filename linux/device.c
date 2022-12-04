@@ -162,6 +162,7 @@ int32_t GetDeviceType(const char* device_path)
     char*       fc_path;
     char*       sas_path;
     int         ret;
+    char        delim;
     char*       chrptr;
     char*       sysfs_path_scr;
     FILE*       file;
@@ -240,23 +241,26 @@ int32_t GetDeviceType(const char* device_path)
     }
 
     ret    = 0;
-    chrptr = strchr(dev_path, ':');
+    delim  = '.';
+    chrptr = strrchr(dev_path, delim);
 
     if(!chrptr)
     {
-        chrptr = strrchr(dev_path, '.');
-        if(!chrptr)
-        {
-            free((void*)sysfs_path);
-            free((void*)dev_path);
-            free((void*)host_no);
-            free((void*)iscsi_path);
-            free((void*)scsi_path);
-            free((void*)spi_path);
-            free((void*)fc_path);
-            free((void*)sas_path);
-            return dev_type;
-        }
+        delim  = ':';
+        chrptr = strrchr(dev_path, delim);
+    }
+
+    if(!chrptr)
+    {
+        free((void*)sysfs_path);
+        free((void*)dev_path);
+        free((void*)host_no);
+        free((void*)iscsi_path);
+        free((void*)scsi_path);
+        free((void*)spi_path);
+        free((void*)fc_path);
+        free((void*)sas_path);
+        return dev_type;
     }
 
     chrptr--;
@@ -268,8 +272,15 @@ int32_t GetDeviceType(const char* device_path)
             chrptr++;
             break;
         }
+        else if(chrptr[0] == delim)
+        {
+            ret = 0;
+        }
+        else
+        {
+            ret++;
+        }
 
-        ret++;
         chrptr--;
     }
 
