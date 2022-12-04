@@ -65,11 +65,9 @@ void DeviceClose(void* device_ctx)
     free(ctx);
 }
 
-int32_t GetDeviceType(void* device_ctx)
+int32_t GetDeviceType(const char* device_path)
 {
-    DeviceContext* ctx = device_ctx;
-
-    if(!ctx) return -1;
+    if(!device_path) return -1;
 
 #ifdef HAS_UDEV
     struct udev*        udev;
@@ -82,7 +80,7 @@ int32_t GetDeviceType(void* device_ctx)
 
     if(!udev) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
-    chrptr = strrchr(ctx->device_path, '/');
+    chrptr = strrchr(device_path, '/');
     if(chrptr == 0) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     chrptr++;
@@ -169,13 +167,13 @@ int32_t GetDeviceType(void* device_ctx)
     FILE*       file;
     size_t      len = 4096;
 
-    if(strlen(ctx->device_path) <= 5) return dev_type;
+    if(strlen(device_path) <= 5) return dev_type;
 
-    if(strstr(ctx->device_path, "nvme")) return AARUREMOTE_DEVICE_TYPE_NVME;
+    if(strstr(device_path, "nvme")) return AARUREMOTE_DEVICE_TYPE_NVME;
 
-    dev_name = ctx->device_path + 5;
+    dev_name = device_path + 5;
 
-    if(strstr(ctx->device_path, "mmcblk"))
+    if(strstr(device_path, "mmcblk"))
     {
         dev_type = AARUREMOTE_DEVICE_TYPE_MMC;
 

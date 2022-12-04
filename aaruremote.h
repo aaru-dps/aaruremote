@@ -548,7 +548,7 @@ void             FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t         DeviceInfoListCount(DeviceInfoList* start);
 void*            DeviceOpen(const char* device_path);
 void             DeviceClose(void* device_ctx);
-int32_t          GetDeviceType(void* device_ctx);
+int32_t          GetDeviceType(const char* device_path);
 int32_t          SendScsiCommand(void*     device_ctx,
                                  char*     cdb,
                                  char*     buffer,

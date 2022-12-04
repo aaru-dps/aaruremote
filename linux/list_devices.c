@@ -58,7 +58,7 @@ DeviceInfoList* ListDevices()
 
     while(dirent)
     {
-        if(dirent->d_type != DT_REG && dirent->d_type != DT_LNK)
+        if((dirent->d_type != DT_DIR && dirent->d_type != DT_LNK) || dirent->d_name[0] == '.')
         {
             dirent = readdir(dir);
             continue;
