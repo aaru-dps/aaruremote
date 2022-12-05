@@ -49,6 +49,8 @@ DeviceInfoList* ListDevices()
 
     udev     = udev_new();
     has_udev = udev != 0;
+#else
+    DeviceContext   tmp_ctx;
 #endif
 
     dir = opendir(PATH_SYS_DEVBLOCK);
@@ -58,7 +60,7 @@ DeviceInfoList* ListDevices()
 
     while(dirent)
     {
-        if(dirent->d_type != DT_REG && dirent->d_type != DT_LNK)
+        if((dirent->d_type != DT_DIR && dirent->d_type != DT_LNK) || dirent->d_name[0] == '.')
         {
             dirent = readdir(dir);
             continue;
@@ -137,11 +139,10 @@ DeviceInfoList* ListDevices()
 #else // Use sysfs
         if(!has_udev && !strstr(dirent->d_name, "loop"))
         {
-            tmp_string = malloc(1024);
-            memset((void*)tmp_string, 0, 1024);
-            snprintf((char*)tmp_string, 1024, "/dev/%s", dirent->d_name);
+            memset((void*)tmp_ctx.device_path, 0, 4096);
+            snprintf((char*)tmp_ctx.device_path, 4096, "/dev/%s", dirent->d_name);
 
-            switch(GetDeviceType(tmp_string))
+            switch(GetDeviceType(&tmp_ctx))
             {
                 case AARUREMOTE_DEVICE_TYPE_ATA: strncpy(list_next->this.bus, "ATA", 256); break;
                 case AARUREMOTE_DEVICE_TYPE_ATAPI: strncpy(list_next->this.bus, "ATAPI", 256); break;
@@ -149,6 +150,7 @@ DeviceInfoList* ListDevices()
                 case AARUREMOTE_DEVICE_TYPE_SECURE_DIGITAL: strncpy(list_next->this.bus, "MMC/SD", 256); break;
                 case AARUREMOTE_DEVICE_TYPE_NVME: strncpy(list_next->this.bus, "NVMe", 256); break;
                 case AARUREMOTE_DEVICE_TYPE_SCSI:
+                    tmp_string = malloc(1024);
                     memset((void*)tmp_string, 0, 1024);
                     snprintf((char*)tmp_string, 1024, "%s/%s/device", PATH_SYS_DEVBLOCK, dirent->d_name);
                     line_str = malloc(1024);
@@ -208,11 +210,10 @@ DeviceInfoList* ListDevices()
                         free(line_str);
                     }
 
+                    free((void*)tmp_string);
                     break;
                 default: memset(&list_next->this.bus, 0, 256); break;
             }
-
-            free((void*)tmp_string);
         }
 #endif
 
