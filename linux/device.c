@@ -17,6 +17,7 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -33,9 +34,19 @@ void* DeviceOpen(const char* device_path)
 {
     DeviceContext* ctx;
 
+    char *real_device_path = realpath(device_path, NULL);
+    if(real_device_path != NULL)
+    {
+        device_path = real_device_path;
+    }
+
     ctx = malloc(sizeof(DeviceContext));
 
-    if(!ctx) return NULL;
+    if(!ctx)
+    {
+        free(real_device_path);
+        return NULL;
+    }
 
     memset(ctx, 0, sizeof(DeviceContext));
 
@@ -45,11 +56,14 @@ void* DeviceOpen(const char* device_path)
 
     if(ctx->fd <= 0)
     {
+        free(real_device_path);
         free(ctx);
         return NULL;
     }
 
     strncpy(ctx->device_path, device_path, 4096);
+
+    free(real_device_path);
 
     return ctx;
 }
