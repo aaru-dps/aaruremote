@@ -157,6 +157,7 @@ int32_t GetDeviceType(void* device_ctx)
     const char* dev_name;
     const char* sysfs_path;
     char*       dev_path;
+    char*       dev_path2;
     char*       host_no;
     char*       scsi_path;
     char*       iscsi_path;
@@ -164,7 +165,6 @@ int32_t GetDeviceType(void* device_ctx)
     char*       fc_path;
     char*       sas_path;
     int         ret;
-    char        delim;
     char*       chrptr;
     char*       sysfs_path_scr;
     FILE*       file;
@@ -242,14 +242,21 @@ int32_t GetDeviceType(void* device_ctx)
         return dev_type;
     }
 
-    ret    = 0;
-    delim  = '.';
-    chrptr = strrchr(dev_path, delim);
+    dev_path2 = strrchr(dev_path, '/');
+    if(dev_path2)
+    {
+        ++dev_path2;
+    }
+    else
+    {
+        dev_path2 = dev_path;
+    }
+
+    chrptr = strchr(dev_path2, '.');
 
     if(!chrptr)
     {
-        delim  = ':';
-        chrptr = strrchr(dev_path, delim);
+        chrptr = strchr(dev_path2, ':');
     }
 
     if(!chrptr)
@@ -265,28 +272,7 @@ int32_t GetDeviceType(void* device_ctx)
         return dev_type;
     }
 
-    chrptr--;
-
-    while(chrptr != dev_path)
-    {
-        if(chrptr[0] == '/')
-        {
-            chrptr++;
-            break;
-        }
-        else if(chrptr[0] == delim)
-        {
-            ret = 0;
-        }
-        else
-        {
-            ret++;
-        }
-
-        chrptr--;
-    }
-
-    memcpy((void*)host_no, chrptr, ret);
+    memcpy((void*)host_no, dev_path2, (chrptr - dev_path2));
 
     snprintf(spi_path, len, "/sys/class/spi_host/host%s", host_no);
     snprintf(fc_path, len, "/sys/class/fc_host/host%s", host_no);
