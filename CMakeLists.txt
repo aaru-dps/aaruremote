@@ -5,6 +5,36 @@ include(CheckLibraryExists)
 include(TestBigEndian)
 set(CMAKE_C_STANDARD 90)
 
+set(AARUREMOTE_VERSION_BASE     "0.99")
+set(AARUREMOTE_VERSION_FALLBACK "${AARUREMOTE_VERSION_BASE}-unknown"
+    CACHE STRING "Fallback aaruremote version when git metadata is unavailable")
+set(AARUREMOTE_VERSION          "${AARUREMOTE_VERSION_FALLBACK}")
+
+find_package(Git QUIET)
+
+if(GIT_FOUND)
+    execute_process(COMMAND "${GIT_EXECUTABLE}" rev-parse --short HEAD
+                    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+                    RESULT_VARIABLE AARUREMOTE_GIT_COMMIT_RESULT
+                    OUTPUT_VARIABLE AARUREMOTE_GIT_COMMIT_OUTPUT
+                    ERROR_QUIET
+                    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    if(AARUREMOTE_GIT_COMMIT_RESULT EQUAL 0 AND NOT "${AARUREMOTE_GIT_COMMIT_OUTPUT}" STREQUAL "")
+        set(AARUREMOTE_VERSION "${AARUREMOTE_VERSION_BASE}-${AARUREMOTE_GIT_COMMIT_OUTPUT}")
+    endif ()
+endif ()
+
+set(AARUREMOTE_VERSION_C "${AARUREMOTE_VERSION}")
+string(REPLACE "\\" "\\\\" AARUREMOTE_VERSION_C "${AARUREMOTE_VERSION_C}")
+string(REPLACE "\"" "\\\"" AARUREMOTE_VERSION_C "${AARUREMOTE_VERSION_C}")
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/aaruremote_version.h.in
+               ${CMAKE_CURRENT_BINARY_DIR}/aaruremote_version.h @ONLY)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+add_definitions(-DHAVE_AARUREMOTE_VERSION_H)
+message(STATUS "aaruremote version: ${AARUREMOTE_VERSION}")
+
 set(MAIN_SOURCES aaruremote.h endian.h hex2bin.c list_devices.c main.c worker.c)
 
 add_library(aaruremotecore ${MAIN_SOURCES})

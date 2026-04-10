@@ -29,7 +29,15 @@
 #endif
 
 #define AARUREMOTE_NAME "Aaru Remote Server"
-#define AARUREMOTE_VERSION "0.99.195"
+
+#ifdef HAVE_AARUREMOTE_VERSION_H
+#include "aaruremote_version.h"
+#endif
+
+#ifndef AARUREMOTE_VERSION
+#define AARUREMOTE_VERSION "0.99-unknown"
+#endif
+
 #define AARUREMOTE_PORT 6666
 #define AARUREMOTE_REMOTE_ID 0x52434944 // "DICR"
 #define AARUREMOTE_PACKET_ID 0x544B4350 // "PCKT"
