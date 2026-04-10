@@ -8,7 +8,7 @@ instance, sends it to a local device, and returns the data to the instance.
 The main motivation for this is the desire to update Aaru to the latest and greatest features of .NET and C#.
 This creates a problem, as some people have old devices that do not work in modern Linux distributions.
 
-This remote will be supported in older versions of Linux, and will in future versions be supported in FreeBSD, Windows,
+This remote is supported on Linux and now also on macOS, with FreeBSD and Windows support maintained in parallel,
 and possibly
 network-enabled game consoles (like PSP, Wii, etc).
 
@@ -29,12 +29,13 @@ All commands that support devices are supported, with a URI with the following s
 Feature matrix
 ==============
 
-|              | Minimum OS<sup>*1</sup> | SCSI            | CHS ATA         | 28-bit LBA ATA  | 48-bit LBA ATA  | Secure Digital | MultiMediaCard | USB                  | FireWire             | PCMCIA           | Special<sup>*2</sup> |
-|--------------|-------------------------|-----------------|-----------------|-----------------|-----------------|----------------|----------------|----------------------|----------------------|------------------|----------------------|
-| FreeBSD      | 12                      | Yes             | Yes             | Yes             | Yes             | Not yet        | Not yet        | Not yet<sup>*4</sup> | Not yet<sup>*4</sup> | No<sup>*5</sup>  |                      |
-| Linux        | 2.6                     | Yes             | Yes             | Yes             | Yes             | Yes            | Yes            | Yes                  | Yes                  | Yes<sup>*6</sup> |                      |
-| Nintendo Wii | 4.3                     | No<sup>*3</sup> | No<sup>*3</sup> | No<sup>*3</sup> | No<sup>*3</sup> | Not yet        | Not yet        | Not yet              | No<sup>*3</sup>      | No<sup>*3</sup>  | Not yet              |
-| Windows NT   | XP                      | Yes             | Yes             | Yes             | Yes             | Yes            | Yes            | Yes                  | Not yet<sup>*4</sup> | No<sup>*5</sup>  |                      |
+|              | Minimum OS<sup>*1</sup> | SCSI            | CHS ATA                  | 28-bit LBA ATA           | 48-bit LBA ATA           | Secure Digital | MultiMediaCard | USB                  | FireWire             | PCMCIA           | Special<sup>*2</sup> |
+|--------------|-------------------------|-----------------|--------------------------|--------------------------|--------------------------|----------------|----------------|----------------------|----------------------|------------------|----------------------|
+| FreeBSD      | 12                      | Yes             | Yes                      | Yes                      | Yes                      | Not yet        | Not yet        | Not yet<sup>*4</sup> | Not yet<sup>*4</sup> | No<sup>*5</sup>  |                      |
+| Linux        | 2.6                     | Yes             | Yes                      | Yes                      | Yes                      | Yes            | Yes            | Yes                  | Yes                  | Yes<sup>*6</sup> |                      |
+| macOS        | 10.0                    | Yes             | Best effort<sup>*7</sup> | Best effort<sup>*7</sup> | Best effort<sup>*7</sup> | Not yet        | Not yet        | Yes                  | Yes                  | No               |                      |
+| Nintendo Wii | 4.3                     | No<sup>*3</sup> | No<sup>*3</sup>          | No<sup>*3</sup>          | No<sup>*3</sup>          | Not yet        | Not yet        | Not yet              | No<sup>*3</sup>      | No<sup>*3</sup>  | Not yet              |
+| Windows NT   | XP                      | Yes             | Yes                      | Yes                      | Yes                      | Yes            | Yes            | Yes                  | Not yet<sup>*4</sup> | No<sup>*5</sup>  |                      |
 
 1. Minimum operating system version where aaruremote has been tested. May work on early version.
 2. Special storage media only available on that environment.
@@ -42,6 +43,7 @@ Feature matrix
 4. As SCSI device, not possible to retrieve special data.
 5. As ATA device, not possible to retrieve special data.
 6. Only ATA devices, not linear memory devices.
+7. ATA passthrough on macOS is attempted through the IOKit storage stack and SAT-compatible bridges, but modern macOS may restrict raw low-level access depending on the device and OS version.
 
 TODO
 ====
