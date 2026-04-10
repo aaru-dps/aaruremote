@@ -543,9 +543,14 @@ typedef struct
     uint8_t  write;
 } MmcSingleCommand;
 
+#define AARUREMOTE_IDLE_ACTION_NONE         0
+#define AARUREMOTE_IDLE_ACTION_LIST_DEVICES 1
+#define AARUREMOTE_IDLE_ACTION_EXIT         2
+
 DeviceInfoList*  ListDevices();
 void             FreeDeviceInfoList(DeviceInfoList* start);
 uint16_t         DeviceInfoListCount(DeviceInfoList* start);
+void             PrintDeviceList();
 void*            DeviceOpen(const char* device_path);
 void             DeviceClose(void* device_ctx);
 int32_t          GetDeviceType(void* device_ctx);
@@ -649,8 +654,11 @@ void*            NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addr
 int32_t          NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags);
 int32_t          NetWrite(void* net_ctx, const void* buf, int32_t size);
 int32_t          NetClose(void* net_ctx);
+int32_t          NetPoll(void* net_ctx, uint32_t timeout_ms);
 void             Initialize();
 void             PlatformLoop(AaruPacketHello* pkt_server_hello);
+void             PlatformResetIdleInput();
+uint8_t          PlatformGetIdleAction();
 void*            WorkingLoop(void* arguments);
 uint8_t          AmIRoot();
 int32_t          ReOpen(void* device_ctx, uint32_t* closeFailed);

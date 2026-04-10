@@ -132,6 +132,23 @@ int32_t NetWrite(void *net_ctx, const void *buf, int32_t size)
     return net_write(ctx->fd, buf, size);
 }
 
+int32_t NetPoll(void *net_ctx, uint32_t timeout_ms)
+{
+    fd_set          readfds;
+    struct timeval  timeout;
+    NetworkContext *ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    FD_ZERO(&readfds);
+    FD_SET(ctx->fd, &readfds);
+
+    timeout.tv_sec  = timeout_ms / 1000;
+    timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+    return net_select(ctx->fd + 1, &readfds, NULL, NULL, &timeout);
+}
+
 int32_t NetClose(void *net_ctx)
 {
     int             ret;

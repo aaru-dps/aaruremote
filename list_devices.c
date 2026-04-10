@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 
 #ifdef _WIN32
@@ -27,9 +28,9 @@
 
 #include "aaruremote.h"
 
-void FreeDeviceInfoList(DeviceInfoList* start)
+void FreeDeviceInfoList(DeviceInfoList *start)
 {
-    DeviceInfoList* current;
+    DeviceInfoList *current;
 
     while(start)
     {
@@ -39,10 +40,10 @@ void FreeDeviceInfoList(DeviceInfoList* start)
     }
 }
 
-uint16_t DeviceInfoListCount(DeviceInfoList* start)
+uint16_t DeviceInfoListCount(DeviceInfoList *start)
 {
     uint16_t        count = 0;
-    DeviceInfoList* current;
+    DeviceInfoList *current;
 
     while(start)
     {
@@ -52,4 +53,48 @@ uint16_t DeviceInfoListCount(DeviceInfoList* start)
     }
 
     return count;
+}
+
+void PrintDeviceList()
+{
+    DeviceInfoList *current;
+    DeviceInfoList *start;
+    uint16_t        count;
+    uint16_t        i = 1;
+
+    start = ListDevices();
+
+    if(!start)
+    {
+        printf("Could not get device list.\n");
+        return;
+    }
+
+    count = DeviceInfoListCount(start);
+    printf("Detected %u device(s):\n", count);
+    printf("+----+--------------------------+------------------+--------------------------+----------------------+-----"
+           "---------+-----------+\n");
+    printf("| #  | Path                     | Vendor           | Model                    | Serial               | Bus "
+           "         | Supported |\n");
+    printf("+----+--------------------------+------------------+--------------------------+----------------------+-----"
+           "---------+-----------+\n");
+
+    current = start;
+
+    while(current)
+    {
+        printf("| %-2u | %-24.24s | %-16.16s | %-24.24s | %-20.20s | %-12.12s | %-9.9s |\n", i,
+               current->this.path[0] ? current->this.path : "(unknown)",
+               current->this.vendor[0] ? current->this.vendor : "(unknown)",
+               current->this.model[0] ? current->this.model : "(unknown)",
+               current->this.serial[0] ? current->this.serial : "(unknown)",
+               current->this.bus[0] ? current->this.bus : "(unknown)", current->this.supported ? "yes" : "no");
+        current = current->next;
+        i++;
+    }
+
+    printf("+----+--------------------------+------------------+--------------------------+----------------------+-----"
+           "---------+-----------+\n");
+
+    FreeDeviceInfoList(start);
 }

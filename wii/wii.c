@@ -42,26 +42,21 @@ void Initialize()
     if(rmode->viTVMode & VI_NON_INTERLACE) VIDEO_WaitVSync();
 }
 
-void PlatformLoop(AaruPacketHello *pkt_server_hello)
+void PlatformLoop(AaruPacketHello *pkt_server_hello) { WorkingLoop(pkt_server_hello); }
+
+void PlatformResetIdleInput() {}
+
+uint8_t PlatformGetIdleAction()
 {
-    static lwp_t worker = (lwp_t)NULL;
-    int          buttonsDown;
-    LWP_CreateThread(&worker,          /* thread handle */
-                     WorkingLoop,      /* code */
-                     pkt_server_hello, /* arg pointer for thread */
-                     NULL,             /* stack base */
-                     16 * 1024,        /* stack size */
-                     50 /* thread priority */);
+    int buttonsDown;
 
-    while(true)
-    {
-        VIDEO_WaitVSync();
-        WPAD_ScanPads();
+    WPAD_ScanPads();
+    buttonsDown = WPAD_ButtonsDown(0);
 
-        buttonsDown = WPAD_ButtonsDown(0);
+    if(buttonsDown & WPAD_BUTTON_HOME) return AARUREMOTE_IDLE_ACTION_EXIT;
+    if(buttonsDown & WPAD_BUTTON_A) return AARUREMOTE_IDLE_ACTION_LIST_DEVICES;
 
-        if(buttonsDown & WPAD_BUTTON_HOME) { return; }
-    }
+    return AARUREMOTE_IDLE_ACTION_NONE;
 }
 
 uint8_t AmIRoot() { return 1; }

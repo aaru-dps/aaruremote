@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <conio.h>
 #include <windows.h>
 
 #include "win32.h"
@@ -26,7 +27,25 @@ void Initialize()
     // Do nothing
 }
 
-void PlatformLoop(AaruPacketHello* pkt_server_hello) { WorkingLoop(pkt_server_hello); }
+void PlatformLoop(AaruPacketHello *pkt_server_hello) { WorkingLoop(pkt_server_hello); }
+
+void PlatformResetIdleInput()
+{
+    while(_kbhit()) _getch();
+}
+
+uint8_t PlatformGetIdleAction()
+{
+    int key;
+
+    if(!_kbhit()) return AARUREMOTE_IDLE_ACTION_NONE;
+
+    key = _getch();
+
+    if(key == 'd' || key == 'D') return AARUREMOTE_IDLE_ACTION_LIST_DEVICES;
+
+    return AARUREMOTE_IDLE_ACTION_NONE;
+}
 
 uint8_t AmIRoot()
 {
@@ -34,8 +53,8 @@ uint8_t AmIRoot()
     SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
     PSID                     AdministratorsGroup;
 
-    b = AllocateAndInitializeSid(
-        &NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup);
+    b = AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0,
+                                 0, &AdministratorsGroup);
 
     if(b)
     {

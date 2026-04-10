@@ -15,15 +15,15 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 
 #include <iphlpapi.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "win32.h"
 #include "../aaruremote.h"
+#include "win32.h"
 
 int PrintNetworkAddresses()
 {
@@ -35,7 +35,7 @@ int PrintNetworkAddresses()
     PIP_ADAPTER_UNICAST_ADDRESS pUnicast       = NULL;
     ULONG                       outBufLen      = 32768;
 
-    pAddresses = (IP_ADAPTER_ADDRESSES*)HeapAlloc(GetProcessHeap(), 0, outBufLen);
+    pAddresses = (IP_ADAPTER_ADDRESSES *)HeapAlloc(GetProcessHeap(), 0, outBufLen);
 
     if(pAddresses == NULL)
     {
@@ -62,8 +62,7 @@ int PrintNetworkAddresses()
 
         while(pUnicast != NULL)
         {
-            printf("%s port %d\n",
-                   inet_ntoa(((struct sockaddr_in*)pUnicast->Address.lpSockaddr)->sin_addr),
+            printf("%s port %d\n", inet_ntoa(((struct sockaddr_in *)pUnicast->Address.lpSockaddr)->sin_addr),
                    AARUREMOTE_PORT);
             pUnicast = pUnicast->Next;
         }
@@ -76,13 +75,13 @@ int PrintNetworkAddresses()
     return 0;
 }
 
-char* PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
+char *PrintIpv4Address(struct in_addr addr) { return inet_ntoa(addr); }
 
-void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
+void *NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
 {
     WSADATA         ws;
     int             ret;
-    NetworkContext* ctx;
+    NetworkContext *ctx;
 
     ret = WSAStartup(MAKEWORD(2, 0), &ws);
 
@@ -108,28 +107,28 @@ void* NetSocket(uint32_t domain, uint32_t type, uint32_t protocol)
     return ctx;
 }
 
-int32_t NetBind(void* net_ctx, struct sockaddr* addr, socklen_t addrlen)
+int32_t NetBind(void *net_ctx, struct sockaddr *addr, socklen_t addrlen)
 {
-    NetworkContext* ctx = net_ctx;
+    NetworkContext *ctx = net_ctx;
 
     if(!ctx) return -1;
 
     return bind(ctx->socket, addr, addrlen);
 }
 
-int32_t NetListen(void* net_ctx, uint32_t backlog)
+int32_t NetListen(void *net_ctx, uint32_t backlog)
 {
-    NetworkContext* ctx = net_ctx;
+    NetworkContext *ctx = net_ctx;
 
     if(!ctx) return -1;
 
     return listen(ctx->socket, backlog);
 }
 
-void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
+void *NetAccept(void *net_ctx, struct sockaddr *addr, socklen_t *addrlen)
 {
-    NetworkContext* ctx = net_ctx;
-    NetworkContext* cli_ctx;
+    NetworkContext *ctx = net_ctx;
+    NetworkContext *cli_ctx;
 
     if(!ctx) return NULL;
 
@@ -148,10 +147,10 @@ void* NetAccept(void* net_ctx, struct sockaddr* addr, socklen_t* addrlen)
     return cli_ctx;
 }
 
-int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
+int32_t NetRecv(void *net_ctx, void *buf, int32_t len, uint32_t flags)
 {
-    NetworkContext* ctx     = net_ctx;
-    char*           charbuf = buf;
+    NetworkContext *ctx     = net_ctx;
+    char           *charbuf = buf;
     int32_t         got_once;
     int32_t         got_total = 0;
 
@@ -171,19 +170,36 @@ int32_t NetRecv(void* net_ctx, void* buf, int32_t len, uint32_t flags)
     return got_total;
 }
 
-int32_t NetWrite(void* net_ctx, const void* buf, int32_t size)
+int32_t NetWrite(void *net_ctx, const void *buf, int32_t size)
 {
-    NetworkContext* ctx = net_ctx;
+    NetworkContext *ctx = net_ctx;
 
     if(!ctx) return -1;
 
     return send(ctx->socket, buf, size, 0);
 }
 
-int32_t NetClose(void* net_ctx)
+int32_t NetPoll(void *net_ctx, uint32_t timeout_ms)
+{
+    fd_set          readfds;
+    struct timeval  timeout;
+    NetworkContext *ctx = net_ctx;
+
+    if(!ctx) return -1;
+
+    FD_ZERO(&readfds);
+    FD_SET(ctx->socket, &readfds);
+
+    timeout.tv_sec  = timeout_ms / 1000;
+    timeout.tv_usec = (timeout_ms % 1000) * 1000;
+
+    return select(0, &readfds, NULL, NULL, &timeout);
+}
+
+int32_t NetClose(void *net_ctx)
 {
     int             ret;
-    NetworkContext* ctx = net_ctx;
+    NetworkContext *ctx = net_ctx;
 
     if(!ctx) return -1;
 

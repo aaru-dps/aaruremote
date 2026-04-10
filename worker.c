@@ -22,8 +22,8 @@
 
 #ifdef _WIN32
 #define ssize_t int
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 
 #include "win32/win32.h"
 #else
@@ -33,62 +33,62 @@
 #include "aaruremote.h"
 #include "endian.h"
 
-void* WorkingLoop(void* arguments)
+void *WorkingLoop(void *arguments)
 {
     AtaErrorRegistersChs            ata_chs_error_regs;
     AtaErrorRegistersLba28          ata_lba28_error_regs;
     AtaErrorRegistersLba48          ata_lba48_error_regs;
-    char*                           buffer;
-    char*                           cdb_buf;
-    char*                           cid;
-    char*                           csd;
-    char*                           in_buf;
-    char*                           ocr;
-    char*                           out_buf;
-    char*                           scr;
-    char*                           sense_buf;
-    AaruPacketCmdAtaChs*            pkt_cmd_ata_chs;
-    AaruPacketCmdAtaLba28*          pkt_cmd_ata_lba28;
-    AaruPacketCmdAtaLba48*          pkt_cmd_ata_lba48;
-    AaruPacketCmdOpen*              pkt_dev_open;
-    AaruPacketCmdScsi*              pkt_cmd_scsi;
-    AaruPacketCmdSdhci*             pkt_cmd_sdhci;
-    AaruPacketMultiCmdSdhci*        pkt_cmd_multi_sdhci;
-    AaruPacketHeader*               pkt_hdr;
-    AaruPacketHello*                pkt_server_hello;
-    AaruPacketHello*                pkt_client_hello;
-    AaruPacketNop*                  pkt_nop;
-    AaruPacketResAmIRoot*           pkt_res_am_i_root;
-    AaruPacketResAtaChs*            pkt_res_ata_chs;
-    AaruPacketResAtaLba28*          pkt_res_ata_lba28;
-    AaruPacketResAtaLba48*          pkt_res_ata_lba48;
-    AaruPacketResGetDeviceType*     pkt_dev_type;
-    AaruPacketResGetFireWireData*   pkt_res_firewire;
-    AaruPacketResGetPcmciaData*     pkt_res_pcmcia;
-    AaruPacketResGetSdhciRegisters* pkt_res_sdhci_registers;
-    AaruPacketResGetUsbData*        pkt_res_usb;
-    AaruPacketResListDevs*          pkt_res_devinfo;
-    AaruPacketResScsi*              pkt_res_scsi;
-    AaruPacketResSdhci*             pkt_res_sdhci;
-    AaruPacketMultiResSdhci*        pkt_res_multi_sdhci;
-    AaruPacketCmdOsRead*            pkt_cmd_osread;
-    AaruPacketResOsRead*            pkt_res_osread;
+    char                           *buffer;
+    char                           *cdb_buf;
+    char                           *cid;
+    char                           *csd;
+    char                           *in_buf;
+    char                           *ocr;
+    char                           *out_buf;
+    char                           *scr;
+    char                           *sense_buf;
+    AaruPacketCmdAtaChs            *pkt_cmd_ata_chs;
+    AaruPacketCmdAtaLba28          *pkt_cmd_ata_lba28;
+    AaruPacketCmdAtaLba48          *pkt_cmd_ata_lba48;
+    AaruPacketCmdOpen              *pkt_dev_open;
+    AaruPacketCmdScsi              *pkt_cmd_scsi;
+    AaruPacketCmdSdhci             *pkt_cmd_sdhci;
+    AaruPacketMultiCmdSdhci        *pkt_cmd_multi_sdhci;
+    AaruPacketHeader               *pkt_hdr;
+    AaruPacketHello                *pkt_server_hello;
+    AaruPacketHello                *pkt_client_hello;
+    AaruPacketNop                  *pkt_nop;
+    AaruPacketResAmIRoot           *pkt_res_am_i_root;
+    AaruPacketResAtaChs            *pkt_res_ata_chs;
+    AaruPacketResAtaLba28          *pkt_res_ata_lba28;
+    AaruPacketResAtaLba48          *pkt_res_ata_lba48;
+    AaruPacketResGetDeviceType     *pkt_dev_type;
+    AaruPacketResGetFireWireData   *pkt_res_firewire;
+    AaruPacketResGetPcmciaData     *pkt_res_pcmcia;
+    AaruPacketResGetSdhciRegisters *pkt_res_sdhci_registers;
+    AaruPacketResGetUsbData        *pkt_res_usb;
+    AaruPacketResListDevs          *pkt_res_devinfo;
+    AaruPacketResScsi              *pkt_res_scsi;
+    AaruPacketResSdhci             *pkt_res_sdhci;
+    AaruPacketMultiResSdhci        *pkt_res_multi_sdhci;
+    AaruPacketCmdOsRead            *pkt_cmd_osread;
+    AaruPacketResOsRead            *pkt_res_osread;
     int                             skip_next_hdr;
     int                             ret;
     socklen_t                       cli_len;
     ssize_t                         recv_size;
-    struct DeviceInfoList*          device_info_list;
+    struct DeviceInfoList          *device_info_list;
     struct sockaddr_in              cli_addr, serv_addr;
     uint32_t                        duration;
     uint32_t                        sdhci_response[4];
     uint32_t                        sense;
     uint32_t                        sense_len;
     uint32_t                        n;
-    void*                           device_ctx = NULL;
-    void*                           net_ctx    = NULL;
-    void*                           cli_ctx    = NULL;
+    void                           *device_ctx = NULL;
+    void                           *net_ctx    = NULL;
+    void                           *cli_ctx    = NULL;
     long                            off;
-    MmcSingleCommand*               multi_sdhci_commands;
+    MmcSingleCommand               *multi_sdhci_commands;
 
     if(!arguments)
     {
@@ -96,7 +96,7 @@ void* WorkingLoop(void* arguments)
         return NULL;
     }
 
-    pkt_server_hello = (AaruPacketHello*)arguments;
+    pkt_server_hello = (AaruPacketHello *)arguments;
 
     printf("Opening socket.\n");
     net_ctx = NetSocket(AF_INET, SOCK_STREAM, 0);
@@ -110,7 +110,7 @@ void* WorkingLoop(void* arguments)
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port        = htons(AARUREMOTE_PORT);
 
-    if(NetBind(net_ctx, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
+    if(NetBind(net_ctx, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
         printf("Error %d binding socket.\n", errno);
         NetClose(net_ctx);
@@ -145,11 +145,46 @@ void* WorkingLoop(void* arguments)
 
     for(;;)
     {
+        PlatformResetIdleInput();
         printf("\n");
         printf("Waiting for a client...\n");
 
+        for(;;)
+        {
+            switch(PlatformGetIdleAction())
+            {
+                case AARUREMOTE_IDLE_ACTION_LIST_DEVICES:
+                    PrintDeviceList();
+                    printf("\n");
+                    printf("Waiting for a client...\n");
+                    break;
+                case AARUREMOTE_IDLE_ACTION_EXIT:
+                    free(pkt_nop);
+                    NetClose(net_ctx);
+                    return NULL;
+                default:
+                    break;
+            }
+
+            ret = NetPoll(net_ctx, 100);
+
+#ifndef _WIN32
+            if(ret < 0 && errno == EINTR) continue;
+#endif
+
+            if(ret < 0)
+            {
+                printf("Error %d waiting for incoming connection.\n", errno);
+                free(pkt_nop);
+                NetClose(net_ctx);
+                return NULL;
+            }
+
+            if(ret > 0) break;
+        }
+
         cli_len = sizeof(cli_addr);
-        cli_ctx = NetAccept(net_ctx, (struct sockaddr*)&cli_addr, &cli_len);
+        cli_ctx = NetAccept(net_ctx, (struct sockaddr *)&cli_addr, &cli_len);
 
         if(!cli_ctx)
         {
@@ -239,9 +274,7 @@ void* WorkingLoop(void* arguments)
         }
 
         printf("Client application: %s %s\n", pkt_client_hello->application, pkt_client_hello->version);
-        printf("Client operating system: %s %s (%s)\n",
-               pkt_client_hello->sysname,
-               pkt_client_hello->release,
+        printf("Client operating system: %s %s (%s)\n", pkt_client_hello->sysname, pkt_client_hello->release,
                pkt_client_hello->machine);
         printf("Client maximum protocol: %d\n", pkt_client_hello->max_protocol);
 
@@ -344,10 +377,10 @@ void* WorkingLoop(void* arguments)
 
                     n      = sizeof(AaruPacketResListDevs) + le16toh(pkt_res_devinfo->devices) * sizeof(DeviceInfo);
                     in_buf = malloc(n);
-                    ((AaruPacketResListDevs*)in_buf)->hdr.len = htole32(n);
-                    ((AaruPacketResListDevs*)in_buf)->devices = pkt_res_devinfo->devices;
+                    ((AaruPacketResListDevs *)in_buf)->hdr.len = htole32(n);
+                    ((AaruPacketResListDevs *)in_buf)->devices = pkt_res_devinfo->devices;
                     free(pkt_res_devinfo);
-                    pkt_res_devinfo = (AaruPacketResListDevs*)in_buf;
+                    pkt_res_devinfo = (AaruPacketResListDevs *)in_buf;
 
                     pkt_res_devinfo->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
                     pkt_res_devinfo->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
@@ -355,17 +388,17 @@ void* WorkingLoop(void* arguments)
                     pkt_res_devinfo->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_LIST_DEVICES;
 
                     // Save list start
-                    in_buf = (char*)device_info_list;
+                    in_buf = (char *)device_info_list;
                     off    = sizeof(AaruPacketResListDevs);
 
                     while(device_info_list)
                     {
-                        memcpy(((char*)pkt_res_devinfo) + off, &device_info_list->this, sizeof(DeviceInfo));
+                        memcpy(((char *)pkt_res_devinfo) + off, &device_info_list->this, sizeof(DeviceInfo));
                         device_info_list = device_info_list->next;
                         off += sizeof(DeviceInfo);
                     }
 
-                    device_info_list = (struct DeviceInfoList*)in_buf;
+                    device_info_list = (struct DeviceInfoList *)in_buf;
                     FreeDeviceInfoList(device_info_list);
 
                     NetWrite(cli_ctx, pkt_res_devinfo, le32toh(pkt_res_devinfo->hdr.len));
@@ -463,7 +496,7 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
-                    pkt_cmd_scsi = (AaruPacketCmdScsi*)in_buf;
+                    pkt_cmd_scsi = (AaruPacketCmdScsi *)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
@@ -478,8 +511,7 @@ void* WorkingLoop(void* arguments)
                     if(le32toh(pkt_cmd_scsi->buf_len) > 0)
                     {
                         buffer = malloc(le32toh(pkt_cmd_scsi->buf_len));
-                        memcpy(buffer,
-                               in_buf + le32toh(pkt_cmd_scsi->cdb_len) + sizeof(AaruPacketCmdScsi),
+                        memcpy(buffer, in_buf + le32toh(pkt_cmd_scsi->cdb_len) + sizeof(AaruPacketCmdScsi),
                                le32toh(pkt_cmd_scsi->buf_len));
                     }
                     else
@@ -488,17 +520,9 @@ void* WorkingLoop(void* arguments)
                     // Swap buf_len
                     pkt_cmd_scsi->buf_len = le32toh(pkt_cmd_scsi->buf_len);
 
-                    ret = SendScsiCommand(device_ctx,
-                                          cdb_buf,
-                                          buffer,
-                                          &sense_buf,
-                                          le32toh(pkt_cmd_scsi->timeout),
-                                          le32toh(pkt_cmd_scsi->direction),
-                                          &duration,
-                                          &sense,
-                                          le32toh(pkt_cmd_scsi->cdb_len),
-                                          &pkt_cmd_scsi->buf_len,
-                                          &sense_len);
+                    ret = SendScsiCommand(device_ctx, cdb_buf, buffer, &sense_buf, le32toh(pkt_cmd_scsi->timeout),
+                                          le32toh(pkt_cmd_scsi->direction), &duration, &sense,
+                                          le32toh(pkt_cmd_scsi->cdb_len), &pkt_cmd_scsi->buf_len, &sense_len);
 
                     // Swap buf_len back
                     pkt_cmd_scsi->buf_len = htole32(pkt_cmd_scsi->buf_len);
@@ -514,7 +538,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    pkt_res_scsi = (AaruPacketResScsi*)out_buf;
+                    pkt_res_scsi = (AaruPacketResScsi *)out_buf;
                     if(sense_buf) memcpy(out_buf + sizeof(AaruPacketResScsi), sense_buf, sense_len);
                     if(buffer)
                         memcpy(out_buf + sizeof(AaruPacketResScsi) + sense_len, buffer, le32toh(pkt_cmd_scsi->buf_len));
@@ -569,15 +593,10 @@ void* WorkingLoop(void* arguments)
                     pkt_res_sdhci_registers->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_sdhci_registers->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
                     pkt_res_sdhci_registers->hdr.len         = htole32(sizeof(AaruPacketResGetSdhciRegisters));
-                    pkt_res_sdhci_registers->is_sdhci        = GetSdhciRegisters(device_ctx,
-                                                                                 &csd,
-                                                                                 &cid,
-                                                                                 &ocr,
-                                                                                 &scr,
-                                                                                 &pkt_res_sdhci_registers->csd_len,
-                                                                                 &pkt_res_sdhci_registers->cid_len,
-                                                                                 &pkt_res_sdhci_registers->ocr_len,
-                                                                                 &pkt_res_sdhci_registers->scr_len);
+                    pkt_res_sdhci_registers->is_sdhci =
+                        GetSdhciRegisters(device_ctx, &csd, &cid, &ocr, &scr, &pkt_res_sdhci_registers->csd_len,
+                                          &pkt_res_sdhci_registers->cid_len, &pkt_res_sdhci_registers->ocr_len,
+                                          &pkt_res_sdhci_registers->scr_len);
 
                     if(pkt_res_sdhci_registers->csd_len > 0 && csd != NULL)
                     {
@@ -648,14 +667,9 @@ void* WorkingLoop(void* arguments)
                     pkt_res_usb->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_usb->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
                     pkt_res_usb->hdr.len         = htole32(sizeof(AaruPacketResGetUsbData));
-                    pkt_res_usb->is_usb          = GetUsbData(device_ctx,
-                                                              &pkt_res_usb->desc_len,
-                                                              pkt_res_usb->descriptors,
-                                                              &pkt_res_usb->id_vendor,
-                                                              &pkt_res_usb->id_product,
-                                                              pkt_res_usb->manufacturer,
-                                                              pkt_res_usb->product,
-                                                              pkt_res_usb->serial);
+                    pkt_res_usb->is_usb          = GetUsbData(
+                        device_ctx, &pkt_res_usb->desc_len, pkt_res_usb->descriptors, &pkt_res_usb->id_vendor,
+                        &pkt_res_usb->id_product, pkt_res_usb->manufacturer, pkt_res_usb->product, pkt_res_usb->serial);
 
                     // Swap parameters
                     pkt_res_usb->desc_len = htole32(pkt_res_usb->desc_len);
@@ -694,12 +708,9 @@ void* WorkingLoop(void* arguments)
                     pkt_res_firewire->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_firewire->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA;
                     pkt_res_firewire->hdr.len         = htole32(sizeof(AaruPacketResGetFireWireData));
-                    pkt_res_firewire->is_firewire     = GetFireWireData(device_ctx,
-                                                                        &pkt_res_firewire->id_model,
-                                                                        &pkt_res_firewire->id_vendor,
-                                                                        &pkt_res_firewire->guid,
-                                                                        pkt_res_firewire->vendor,
-                                                                        pkt_res_firewire->model);
+                    pkt_res_firewire->is_firewire =
+                        GetFireWireData(device_ctx, &pkt_res_firewire->id_model, &pkt_res_firewire->id_vendor,
+                                        &pkt_res_firewire->guid, pkt_res_firewire->vendor, pkt_res_firewire->model);
 
                     // TODO: Need to swap IDs?
 
@@ -758,11 +769,12 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
-                    pkt_cmd_ata_chs = (AaruPacketCmdAtaChs*)in_buf;
+                    pkt_cmd_ata_chs = (AaruPacketCmdAtaChs *)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(le32toh(pkt_cmd_ata_chs->buf_len) > 0) buffer = in_buf + sizeof(AaruPacketCmdAtaChs);
+                    if(le32toh(pkt_cmd_ata_chs->buf_len) > 0)
+                        buffer = in_buf + sizeof(AaruPacketCmdAtaChs);
                     else
                         buffer = NULL;
 
@@ -772,17 +784,10 @@ void* WorkingLoop(void* arguments)
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendAtaChsCommand(device_ctx,
-                                                 pkt_cmd_ata_chs->registers,
-                                                 &ata_chs_error_regs,
-                                                 pkt_cmd_ata_chs->protocol,
-                                                 pkt_cmd_ata_chs->transfer_register,
-                                                 buffer,
-                                                 le32toh(pkt_cmd_ata_chs->timeout),
-                                                 pkt_cmd_ata_chs->transfer_blocks,
-                                                 &duration,
-                                                 &sense,
-                                                 &pkt_cmd_ata_chs->buf_len);
+                    ret      = SendAtaChsCommand(device_ctx, pkt_cmd_ata_chs->registers, &ata_chs_error_regs,
+                                                 pkt_cmd_ata_chs->protocol, pkt_cmd_ata_chs->transfer_register, buffer,
+                                                 le32toh(pkt_cmd_ata_chs->timeout), pkt_cmd_ata_chs->transfer_blocks,
+                                                 &duration, &sense, &pkt_cmd_ata_chs->buf_len);
 
                     out_buf = malloc(sizeof(AaruPacketResAtaChs) + pkt_cmd_ata_chs->buf_len);
 
@@ -797,7 +802,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    pkt_res_ata_chs = (AaruPacketResAtaChs*)out_buf;
+                    pkt_res_ata_chs = (AaruPacketResAtaChs *)out_buf;
                     if(buffer) memcpy(out_buf + sizeof(AaruPacketResAtaChs), buffer, htole32(pkt_cmd_ata_chs->buf_len));
 
                     pkt_res_ata_chs->hdr.len = htole32(sizeof(AaruPacketResAtaChs) + htole32(pkt_cmd_ata_chs->buf_len));
@@ -830,11 +835,12 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
-                    pkt_cmd_ata_lba28 = (AaruPacketCmdAtaLba28*)in_buf;
+                    pkt_cmd_ata_lba28 = (AaruPacketCmdAtaLba28 *)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(le32toh(pkt_cmd_ata_lba28->buf_len) > 0) buffer = in_buf + sizeof(AaruPacketCmdAtaLba28);
+                    if(le32toh(pkt_cmd_ata_lba28->buf_len) > 0)
+                        buffer = in_buf + sizeof(AaruPacketCmdAtaLba28);
                     else
                         buffer = NULL;
 
@@ -844,17 +850,10 @@ void* WorkingLoop(void* arguments)
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendAtaLba28Command(device_ctx,
-                                                   pkt_cmd_ata_lba28->registers,
-                                                   &ata_lba28_error_regs,
-                                                   pkt_cmd_ata_lba28->protocol,
-                                                   pkt_cmd_ata_lba28->transfer_register,
-                                                   buffer,
-                                                   le32toh(pkt_cmd_ata_lba28->timeout),
-                                                   pkt_cmd_ata_lba28->transfer_blocks,
-                                                   &duration,
-                                                   &sense,
-                                                   &pkt_cmd_ata_lba28->buf_len);
+                    ret      = SendAtaLba28Command(device_ctx, pkt_cmd_ata_lba28->registers, &ata_lba28_error_regs,
+                                                   pkt_cmd_ata_lba28->protocol, pkt_cmd_ata_lba28->transfer_register, buffer,
+                                                   le32toh(pkt_cmd_ata_lba28->timeout), pkt_cmd_ata_lba28->transfer_blocks,
+                                                   &duration, &sense, &pkt_cmd_ata_lba28->buf_len);
 
                     out_buf                    = malloc(sizeof(AaruPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len);
                     pkt_cmd_ata_lba28->buf_len = htole32(pkt_cmd_ata_lba28->buf_len);
@@ -868,7 +867,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    pkt_res_ata_lba28 = (AaruPacketResAtaLba28*)out_buf;
+                    pkt_res_ata_lba28 = (AaruPacketResAtaLba28 *)out_buf;
                     if(buffer)
                         memcpy(out_buf + sizeof(AaruPacketResAtaLba28), buffer, le32toh(pkt_cmd_ata_lba28->buf_len));
 
@@ -903,11 +902,12 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
-                    pkt_cmd_ata_lba48 = (AaruPacketCmdAtaLba48*)in_buf;
+                    pkt_cmd_ata_lba48 = (AaruPacketCmdAtaLba48 *)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(le32toh(pkt_cmd_ata_lba48->buf_len) > 0) buffer = in_buf + sizeof(AaruPacketCmdAtaLba48);
+                    if(le32toh(pkt_cmd_ata_lba48->buf_len) > 0)
+                        buffer = in_buf + sizeof(AaruPacketCmdAtaLba48);
                     else
                         buffer = NULL;
 
@@ -919,17 +919,10 @@ void* WorkingLoop(void* arguments)
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendAtaLba48Command(device_ctx,
-                                                   pkt_cmd_ata_lba48->registers,
-                                                   &ata_lba48_error_regs,
-                                                   pkt_cmd_ata_lba48->protocol,
-                                                   pkt_cmd_ata_lba48->transfer_register,
-                                                   buffer,
-                                                   le32toh(pkt_cmd_ata_lba48->timeout),
-                                                   pkt_cmd_ata_lba48->transfer_blocks,
-                                                   &duration,
-                                                   &sense,
-                                                   &pkt_cmd_ata_lba48->buf_len);
+                    ret      = SendAtaLba48Command(device_ctx, pkt_cmd_ata_lba48->registers, &ata_lba48_error_regs,
+                                                   pkt_cmd_ata_lba48->protocol, pkt_cmd_ata_lba48->transfer_register, buffer,
+                                                   le32toh(pkt_cmd_ata_lba48->timeout), pkt_cmd_ata_lba48->transfer_blocks,
+                                                   &duration, &sense, &pkt_cmd_ata_lba48->buf_len);
 
                     out_buf                    = malloc(sizeof(AaruPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len);
                     pkt_cmd_ata_lba48->buf_len = htole32(pkt_cmd_ata_lba48->buf_len);
@@ -943,7 +936,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    pkt_res_ata_lba48 = (AaruPacketResAtaLba48*)out_buf;
+                    pkt_res_ata_lba48 = (AaruPacketResAtaLba48 *)out_buf;
                     if(buffer)
                         memcpy(out_buf + sizeof(AaruPacketResAtaLba48), buffer, le32toh(pkt_cmd_ata_lba48->buf_len));
 
@@ -981,32 +974,25 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
-                    pkt_cmd_sdhci = (AaruPacketCmdSdhci*)in_buf;
+                    pkt_cmd_sdhci = (AaruPacketCmdSdhci *)in_buf;
 
                     // TODO: Check size of buffers + size of packet is not bigger than size in header
 
-                    if(le32toh(pkt_cmd_sdhci->command.buf_len) > 0) buffer = in_buf + sizeof(AaruPacketCmdSdhci);
+                    if(le32toh(pkt_cmd_sdhci->command.buf_len) > 0)
+                        buffer = in_buf + sizeof(AaruPacketCmdSdhci);
                     else
                         buffer = NULL;
 
-                    memset((char*)&sdhci_response, 0, sizeof(uint32_t) * 4);
+                    memset((char *)&sdhci_response, 0, sizeof(uint32_t) * 4);
 
                     duration = 0;
                     sense    = 1;
-                    ret      = SendSdhciCommand(device_ctx,
-                                                pkt_cmd_sdhci->command.command,
-                                                pkt_cmd_sdhci->command.write,
-                                                pkt_cmd_sdhci->command.application,
-                                                le32toh(pkt_cmd_sdhci->command.flags),
-                                                le32toh(pkt_cmd_sdhci->command.argument),
-                                                le32toh(pkt_cmd_sdhci->command.block_size),
-                                                le32toh(pkt_cmd_sdhci->command.blocks),
-                                                buffer,
-                                                le32toh(pkt_cmd_sdhci->command.buf_len),
-                                                le32toh(pkt_cmd_sdhci->command.timeout),
-                                                (uint32_t*)&sdhci_response,
-                                                &duration,
-                                                &sense);
+                    ret      = SendSdhciCommand(
+                        device_ctx, pkt_cmd_sdhci->command.command, pkt_cmd_sdhci->command.write,
+                        pkt_cmd_sdhci->command.application, le32toh(pkt_cmd_sdhci->command.flags),
+                        le32toh(pkt_cmd_sdhci->command.argument), le32toh(pkt_cmd_sdhci->command.block_size),
+                        le32toh(pkt_cmd_sdhci->command.blocks), buffer, le32toh(pkt_cmd_sdhci->command.buf_len),
+                        le32toh(pkt_cmd_sdhci->command.timeout), (uint32_t *)&sdhci_response, &duration, &sense);
 
                     out_buf = malloc(sizeof(AaruPacketResSdhci) + le32toh(pkt_cmd_sdhci->command.buf_len));
 
@@ -1019,7 +1005,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    pkt_res_sdhci = (AaruPacketResSdhci*)out_buf;
+                    pkt_res_sdhci = (AaruPacketResSdhci *)out_buf;
                     if(buffer)
                         memcpy(out_buf + sizeof(AaruPacketResSdhci), buffer, le32toh(pkt_cmd_sdhci->command.buf_len));
 
@@ -1035,7 +1021,7 @@ void* WorkingLoop(void* arguments)
                     sdhci_response[2] = htole32(sdhci_response[2]);
                     sdhci_response[3] = htole32(sdhci_response[3]);
 
-                    memcpy((char*)&pkt_res_sdhci->res.response, (char*)&sdhci_response, sizeof(uint32_t) * 4);
+                    memcpy((char *)&pkt_res_sdhci->res.response, (char *)&sdhci_response, sizeof(uint32_t) * 4);
                     pkt_res_sdhci->res.buf_len  = pkt_cmd_sdhci->command.buf_len;
                     pkt_res_sdhci->res.duration = htole32(duration);
                     pkt_res_sdhci->res.sense    = htole32(sense);
@@ -1098,7 +1084,7 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
-                    pkt_cmd_multi_sdhci = (AaruPacketMultiCmdSdhci*)in_buf;
+                    pkt_cmd_multi_sdhci = (AaruPacketMultiCmdSdhci *)in_buf;
 
                     pkt_cmd_multi_sdhci->cmd_count = le64toh(pkt_cmd_multi_sdhci->cmd_count);
 
@@ -1133,12 +1119,12 @@ void* WorkingLoop(void* arguments)
 
                     for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++)
                     {
-                        multi_sdhci_commands[n].buffer = (char*)pkt_cmd_multi_sdhci + off;
+                        multi_sdhci_commands[n].buffer = (char *)pkt_cmd_multi_sdhci + off;
                         off += multi_sdhci_commands[n].buf_len;
                     }
 
-                    ret = SendMultiSdhciCommand(
-                        device_ctx, pkt_cmd_multi_sdhci->cmd_count, multi_sdhci_commands, &duration, &sense);
+                    ret = SendMultiSdhciCommand(device_ctx, pkt_cmd_multi_sdhci->cmd_count, multi_sdhci_commands,
+                                                &duration, &sense);
 
                     off =
                         (long)(sizeof(AaruPacketMultiResSdhci) + sizeof(AaruResSdhci) * pkt_cmd_multi_sdhci->cmd_count);
@@ -1157,7 +1143,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    pkt_res_multi_sdhci = (AaruPacketMultiResSdhci*)out_buf;
+                    pkt_res_multi_sdhci = (AaruPacketMultiResSdhci *)out_buf;
 
                     pkt_res_multi_sdhci->hdr.len         = htole32(off);
                     pkt_res_multi_sdhci->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_MULTI_SDHCI;
@@ -1214,7 +1200,8 @@ void* WorkingLoop(void* arguments)
                         pkt_nop->error_no = htole32(ret);
 
                         // Error on close
-                        if(sense != 0) pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_CLOSE_ERROR;
+                        if(sense != 0)
+                            pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_CLOSE_ERROR;
                         else
                             pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR;
                     }
@@ -1242,7 +1229,7 @@ void* WorkingLoop(void* arguments)
 
                     NetRecv(cli_ctx, in_buf, le32toh(pkt_hdr->len), 0);
 
-                    pkt_cmd_osread = (AaruPacketCmdOsRead*)in_buf;
+                    pkt_cmd_osread = (AaruPacketCmdOsRead *)in_buf;
 
                     buffer = malloc(le32toh(pkt_cmd_osread->length));
 
@@ -1257,10 +1244,7 @@ void* WorkingLoop(void* arguments)
 
                     memset(buffer, 0, le32toh(pkt_cmd_osread->length));
 
-                    ret = OsRead(device_ctx,
-                                 buffer,
-                                 le64toh(pkt_cmd_osread->offset),
-                                 le32toh(pkt_cmd_osread->length),
+                    ret = OsRead(device_ctx, buffer, le64toh(pkt_cmd_osread->offset), le32toh(pkt_cmd_osread->length),
                                  &duration);
 
                     out_buf = malloc(sizeof(AaruPacketResOsRead) + le32toh(pkt_cmd_osread->length));
@@ -1275,7 +1259,7 @@ void* WorkingLoop(void* arguments)
                         continue;
                     }
 
-                    pkt_res_osread = (AaruPacketResOsRead*)out_buf;
+                    pkt_res_osread = (AaruPacketResOsRead *)out_buf;
 
                     pkt_res_osread->hdr.len = htole32(sizeof(AaruPacketResOsRead) + le32toh(pkt_cmd_osread->length));
                     pkt_res_osread->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_OSREAD;
@@ -1297,14 +1281,10 @@ void* WorkingLoop(void* arguments)
                     pkt_nop->reason_code = AARUREMOTE_PACKET_NOP_REASON_NOT_RECOGNIZED;
                     memset(&pkt_nop->reason, 0, 256);
 #ifdef _WIN32
-                    sprintf_s(pkt_nop->reason,
-                              256,
-                              "Received unrecognized packet with type %d, skipping...",
+                    sprintf_s(pkt_nop->reason, 256, "Received unrecognized packet with type %d, skipping...",
                               pkt_hdr->packet_type);
 #else
-                    snprintf(pkt_nop->reason,
-                             256,
-                             "Received unrecognized packet with type %d, skipping...",
+                    snprintf(pkt_nop->reason, 256, "Received unrecognized packet with type %d, skipping...",
                              pkt_hdr->packet_type);
 #endif
                     NetWrite(cli_ctx, pkt_nop, sizeof(AaruPacketNop));
