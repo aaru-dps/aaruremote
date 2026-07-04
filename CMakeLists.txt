@@ -59,6 +59,42 @@ else ()
             add_definitions(-D__BYTE_ORDER=1234)
         endif ()
     endif ()
+
+    option(AARUREMOTE_BASELINE_ISA "Compile for the baseline instruction set of the target CPU architecture, ignoring any host-native tuning" ON)
+
+    if (AARUREMOTE_BASELINE_ISA AND CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        include(CheckCCompilerFlag)
+
+        string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" AARU_PROCESSOR_LOWER)
+
+        if (AARU_PROCESSOR_LOWER MATCHES "^(x86_64|amd64)$")
+            set(AARU_BASELINE_ISA_FLAG "-march=x86-64")
+        elseif (AARU_PROCESSOR_LOWER MATCHES "^(i386|i486|i586|i686|x86)$")
+            set(AARU_BASELINE_ISA_FLAG "-march=i386")
+        elseif (AARU_PROCESSOR_LOWER MATCHES "^(aarch64|arm64)")
+            set(AARU_BASELINE_ISA_FLAG "-march=armv8-a")
+        elseif (AARU_PROCESSOR_LOWER MATCHES "^arm")
+            set(AARU_BASELINE_ISA_FLAG "-march=armv6")
+        elseif (AARU_PROCESSOR_LOWER MATCHES "^mips64")
+            set(AARU_BASELINE_ISA_FLAG "-march=mips3")
+        elseif (AARU_PROCESSOR_LOWER MATCHES "^mips")
+            set(AARU_BASELINE_ISA_FLAG "-march=mips2")
+        elseif (AARU_PROCESSOR_LOWER MATCHES "^(ppc64|powerpc64)")
+            set(AARU_BASELINE_ISA_FLAG "-mcpu=powerpc64")
+        elseif (AARU_PROCESSOR_LOWER MATCHES "^(ppc|powerpc)")
+            set(AARU_BASELINE_ISA_FLAG "-mcpu=powerpc")
+        endif ()
+
+        if (AARU_BASELINE_ISA_FLAG)
+            string(REGEX REPLACE "[^A-Za-z0-9]" "_" AARU_BASELINE_ISA_FLAG_VAR "HAVE_C_FLAG_${AARU_BASELINE_ISA_FLAG}")
+            CHECK_C_COMPILER_FLAG("${AARU_BASELINE_ISA_FLAG}" ${AARU_BASELINE_ISA_FLAG_VAR})
+
+            if (${AARU_BASELINE_ISA_FLAG_VAR})
+                set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${AARU_BASELINE_ISA_FLAG}")
+                message(STATUS "aaruremote: targeting baseline ISA with ${AARU_BASELINE_ISA_FLAG}")
+            endif ()
+        endif ()
+    endif ()
 endif ()
 
 
