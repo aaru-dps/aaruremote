@@ -324,7 +324,15 @@ void *WorkingLoop(void *arguments)
                     continue;
                 }
 
-                RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                {
+                    printf("Client closed connection, closing connection...\n");
+                    free(in_buf);
+                    free(pkt_hdr);
+                    NetClose(cli_ctx);
+                    cli_ctx = NULL;
+                    continue;
+                }
                 free(in_buf);
                 skip_next_hdr = 0;
             }
@@ -386,8 +394,6 @@ void *WorkingLoop(void *arguments)
                     skip_next_hdr = 1;
                     continue;
                 case AARUREMOTE_PACKET_TYPE_COMMAND_LIST_DEVICES:
-                    device_info_list = ListDevices();
-
                     // Packet only contains header so, dummy
                     in_buf = malloc(le32toh(pkt_hdr->len));
 
@@ -400,8 +406,18 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
                     free(in_buf);
+
+                    device_info_list = ListDevices();
 
                     if(!device_info_list)
                     {
@@ -483,7 +499,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, pkt_dev_open);
+                    if(RecvPacket(cli_ctx, pkt_hdr, pkt_dev_open) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(pkt_dev_open);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     // Close any device still open from a previous request
                     DeviceClose(device_ctx);
@@ -510,7 +534,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
                     free(in_buf);
 
                     pkt_dev_type = malloc(sizeof(AaruPacketResGetDeviceType));
@@ -549,7 +581,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     pkt_cmd_scsi = (AaruPacketCmdScsi *)in_buf;
 
@@ -639,7 +679,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
                     free(in_buf);
 
                     pkt_res_sdhci_registers = malloc(sizeof(AaruPacketResGetSdhciRegisters));
@@ -721,7 +769,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
                     free(in_buf);
 
                     pkt_res_usb = malloc(sizeof(AaruPacketResGetUsbData));
@@ -765,7 +821,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
                     free(in_buf);
 
                     pkt_res_firewire = malloc(sizeof(AaruPacketResGetFireWireData));
@@ -808,7 +872,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
                     free(in_buf);
 
                     pkt_res_pcmcia = malloc(sizeof(AaruPacketResGetPcmciaData));
@@ -848,7 +920,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     pkt_cmd_ata_chs = (AaruPacketCmdAtaChs *)in_buf;
 
@@ -916,7 +996,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     pkt_cmd_ata_lba28 = (AaruPacketCmdAtaLba28 *)in_buf;
 
@@ -985,7 +1073,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     pkt_cmd_ata_lba48 = (AaruPacketCmdAtaLba48 *)in_buf;
 
@@ -1060,7 +1156,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     pkt_cmd_sdhci = (AaruPacketCmdSdhci *)in_buf;
 
@@ -1138,7 +1242,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
                     free(in_buf);
 
                     pkt_res_am_i_root = malloc(sizeof(AaruPacketResAmIRoot));
@@ -1174,7 +1286,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     pkt_cmd_multi_sdhci = (AaruPacketMultiCmdSdhci *)in_buf;
 
@@ -1287,7 +1407,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     ret = ReOpen(device_ctx, &sense);
                     memset(&pkt_nop->reason, 0, 256);
@@ -1325,7 +1453,15 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    RecvPacket(cli_ctx, pkt_hdr, in_buf);
+                    if(RecvPacket(cli_ctx, pkt_hdr, in_buf) != (int32_t)le32toh(pkt_hdr->len))
+                    {
+                        printf("Client closed connection, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     pkt_cmd_osread = (AaruPacketCmdOsRead *)in_buf;
 
