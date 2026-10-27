@@ -48,10 +48,17 @@ size_t Hexs2Bin(const char* hex, unsigned char** out)
     len /= 2;
 
     *out = malloc(len);
+    if(*out == NULL) return 0;
+
     memset(*out, 'A', len);
     for(i = 0; i < len; i++)
     {
-        if(!Hexchr2Bin(hex[i * 2], &b1) || !Hexchr2Bin(hex[i * 2 + 1], &b2)) return 0;
+        if(!Hexchr2Bin(hex[i * 2], &b1) || !Hexchr2Bin(hex[i * 2 + 1], &b2))
+        {
+            free(*out);
+            *out = NULL;
+            return 0;
+        }
 
         (*out)[i] = (b1 << 4) | b2;
     }
