@@ -282,7 +282,7 @@ void *WorkingLoop(void *arguments)
 
         skip_next_hdr = 0;
 
-        for(;;)
+        while(cli_ctx)
         {
             if(skip_next_hdr)
             {
@@ -293,6 +293,7 @@ void *WorkingLoop(void *arguments)
                     printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                     free(pkt_hdr);
                     NetClose(cli_ctx);
+                    cli_ctx = NULL;
                     continue;
                 }
 
@@ -307,6 +308,7 @@ void *WorkingLoop(void *arguments)
             {
                 printf("Error %d reading response from client, closing connection...\n", errno);
                 NetClose(cli_ctx);
+                cli_ctx = NULL;
                 free(pkt_hdr);
                 break;
             }
@@ -315,6 +317,7 @@ void *WorkingLoop(void *arguments)
             {
                 printf("Client closed connection, closing connection...\n");
                 NetClose(cli_ctx);
+                cli_ctx = NULL;
                 free(pkt_hdr);
                 break;
             }
@@ -324,6 +327,7 @@ void *WorkingLoop(void *arguments)
             {
                 printf("Received data is not a correct aaruremote packet, closing connection...\n");
                 NetClose(cli_ctx);
+                cli_ctx = NULL;
                 free(pkt_hdr);
                 break;
             }
@@ -356,6 +360,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -430,6 +435,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -454,6 +460,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -467,6 +474,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -491,6 +499,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -540,6 +549,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -577,6 +587,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -589,6 +600,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -657,6 +669,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -669,6 +682,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -698,6 +712,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -710,6 +725,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -737,6 +753,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -749,6 +766,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -775,6 +793,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -810,6 +829,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -841,6 +861,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -875,6 +896,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -908,6 +930,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -944,6 +967,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -980,6 +1004,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1013,6 +1038,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1056,6 +1082,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1068,6 +1095,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1090,6 +1118,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1108,6 +1137,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1151,6 +1181,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1198,6 +1229,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1235,6 +1267,7 @@ void *WorkingLoop(void *arguments)
                         printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
                         free(pkt_hdr);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1250,6 +1283,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
@@ -1267,6 +1301,7 @@ void *WorkingLoop(void *arguments)
                         free(pkt_hdr);
                         free(in_buf);
                         NetClose(cli_ctx);
+                        cli_ctx = NULL;
                         continue;
                     }
 
