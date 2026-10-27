@@ -40,7 +40,7 @@ static void FillScsiDeviceInfo(DeviceInfo *info, union ccb *camccb, struct cam_d
     info->supported = true;
 }
 
-#ifdef HAS_ATA_IOCTL
+#if defined(HAS_ATA_IOCTL) || defined(HAS_ATA_DEVICE_IOCTL)
 // Copies a string from ATA identify data, which is padded with spaces, without the padding
 static void CopyAtaString(char *dest, const u_int8_t *src, int len)
 {
@@ -49,12 +49,40 @@ static void CopyAtaString(char *dest, const u_int8_t *src, int len)
     while(len > 0 && (dest[len - 1] == ' ' || dest[len - 1] == 0)) dest[--len] = 0;
 }
 
+// Appends an ATA disk attached to ata(4) to the device list, returning the new last entry
+static DeviceInfoList *AppendAtaDevice(DeviceInfoList **list_start, DeviceInfoList *list_current, const char *name,
+                                       struct ata_params *params)
+{
+    DeviceInfoList *list_next;
+
+    list_next = malloc(sizeof(DeviceInfoList));
+
+    if(!list_next) return list_current;
+
+    memset(list_next, 0, sizeof(DeviceInfoList));
+
+    snprintf(list_next->this.path, 1024, "/dev/%s", name);
+    strncpy(list_next->this.vendor, "ATA", 3);
+    CopyAtaString(list_next->this.model, params->model, 40);
+    CopyAtaString(list_next->this.serial, params->serial, 20);
+    strncpy(list_next->this.bus, "ATA", 4);
+    list_next->this.supported = true;
+
+    if(!*list_start) *list_start = list_next;
+
+    if(list_current) list_current->next = list_next;
+
+    return list_next;
+}
+#endif
+
+#ifdef HAS_ATA_IOCTL
+
 // Appends the ATA disks attached to ata(4) instead of CAM to the device list, returning the new last entry
 static DeviceInfoList *ListAtaDevices(DeviceInfoList **list_start, DeviceInfoList *list_current)
 {
-    struct ata_cmd  iocmd;
-    DeviceInfoList *list_next;
-    int             ata_fd, channel, max_channel, unit;
+    struct ata_cmd iocmd;
+    int            ata_fd, channel, max_channel, unit;
 
     ata_fd = open("/dev/ata", O_RDWR);
 
@@ -78,24 +106,43 @@ static DeviceInfoList *ListAtaDevices(DeviceInfoList **list_start, DeviceInfoLis
             // ATAPI devices are only supported through atapicam
             if(!iocmd.u.param.type[unit] || iocmd.u.param.params[unit].config & ATA_PROTO_ATAPI_12) continue;
 
-            list_next = malloc(sizeof(DeviceInfoList));
+            list_current =
+                AppendAtaDevice(list_start, list_current, iocmd.u.param.name[unit], &iocmd.u.param.params[unit]);
+        }
+    }
 
-            if(!list_next) break;
+    close(ata_fd);
 
-            memset(list_next, 0, sizeof(DeviceInfoList));
+    return list_current;
+}
+#endif
 
-            snprintf(list_next->this.path, 1024, "/dev/%s", iocmd.u.param.name[unit]);
-            strncpy(list_next->this.vendor, "ATA", 3);
-            CopyAtaString(list_next->this.model, iocmd.u.param.params[unit].model, 40);
-            CopyAtaString(list_next->this.serial, iocmd.u.param.params[unit].serial, 20);
-            strncpy(list_next->this.bus, "ATA", 4);
-            list_next->this.supported = true;
+#ifdef HAS_ATA_DEVICE_IOCTL
+// Appends the ATA disks attached to ata(4) instead of CAM to the device list, returning the new last entry
+static DeviceInfoList *ListAtaDevices(DeviceInfoList **list_start, DeviceInfoList *list_current)
+{
+    struct ata_ioc_devices devices;
+    int                    ata_fd, channel, max_channel, unit;
 
-            if(!*list_start) *list_start = list_next;
+    ata_fd = open("/dev/ata", O_RDWR);
 
-            if(list_current) list_current->next = list_next;
+    if(ata_fd < 0) return list_current;
 
-            list_current = list_next;
+    if(ioctl(ata_fd, IOCATAGMAXCHANNEL, &max_channel) < 0) max_channel = 0;
+
+    for(channel = 0; channel < max_channel; channel++)
+    {
+        memset(&devices, 0, sizeof(struct ata_ioc_devices));
+        devices.channel = channel;
+
+        if(ioctl(ata_fd, IOCATADEVICES, &devices) < 0) continue;
+
+        for(unit = 0; unit < 2; unit++)
+        {
+            // ATAPI devices are only supported through atapicam
+            if(!devices.name[unit][0] || devices.params[unit].config & ATA_PROTO_ATAPI_12) continue;
+
+            list_current = AppendAtaDevice(list_start, list_current, devices.name[unit], &devices.params[unit]);
         }
     }
 
@@ -239,7 +286,7 @@ DeviceInfoList *ListDevices()
 
     closedir(dir);
 
-#ifdef HAS_ATA_IOCTL
+#if defined(HAS_ATA_IOCTL) || defined(HAS_ATA_DEVICE_IOCTL)
     list_current = ListAtaDevices(&list_start, list_current);
 #endif
 
