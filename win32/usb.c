@@ -390,13 +390,19 @@ UsbHub_t* GetPortHub(UsbPort_t* port)
     USB_NODE_INFORMATION      nodeInfo;
     UsbDevice_t*              device;
 
+    if(port == NULL || !port->PortIsHub) return NULL;
+
     nodeName = malloc(sizeof(USB_NODE_CONNECTION_NAME) + USB_BUFFER_SIZE - 1);
 
-    if(port == NULL || port->PortIsHub || nodeName == NULL) return NULL;
+    if(nodeName == NULL) return NULL;
 
     hub = malloc(sizeof(UsbHub_t));
 
-    if(!hub) return NULL;
+    if(!hub)
+    {
+        free(nodeName);
+        return NULL;
+    }
 
     hub->HubIsRootHub = FALSE;
     strncpy(hub->HubDeviceDesc, "External Hub", 12);
@@ -452,6 +458,7 @@ UsbHub_t* GetPortHub(UsbPort_t* port)
         free(device);
     }
 
+    free(nodeName);
     CloseHandle(h);
     return hub;
 }
