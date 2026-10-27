@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -122,7 +123,7 @@ uint8_t GetFireWireData(void *device_ctx, uint32_t *id_model, uint32_t *id_vendo
             file = fopen(tmp_path, "r");
             if(file != NULL)
             {
-                fscanf(file, "%16lx", guid);
+                fscanf(file, "%" SCNx64, guid);
                 fclose(file);
             }
         }
