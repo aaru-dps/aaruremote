@@ -43,7 +43,9 @@ else
 VERSION := $(VERSION_BASE)-$(GIT_COMMIT)
 endif
 
-AARU_CFLAGS   := -std=gnu89
+# Old compilers do not know -std
+AARU_CFLAGS   := $(shell echo 'int main(void){return 0;}' | \
+                   $(CC) -std=gnu89 -x c - -o /dev/null >/dev/null 2>&1 && echo -std=gnu89)
 AARU_CPPFLAGS := -DAARUREMOTE_VERSION=\"$(VERSION)\" -DHAVE_ENDIAN_H
 AARU_LIBS     :=
 
