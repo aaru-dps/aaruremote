@@ -64,6 +64,7 @@ typedef struct
     int                ata_fd;      // ata(4) device taking raw ATA commands, for ATA disks not attached to CAM
     int                ata_channel; // ata(4) channel of the disk
     int                ata_unit;    // ata(4) unit of the disk, 0 for master and 1 for slave
+    int                ata_atapi;   // Whether the ata(4) device is an ATAPI device
     int                fd;          // The disk itself, for operating system reads of ata(4) disks
 } DeviceContext;
 

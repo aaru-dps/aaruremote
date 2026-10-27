@@ -88,7 +88,7 @@ static int OpenAtaDevice(DeviceContext *ctx)
 #endif
 
 #ifdef HAS_ATA_DEVICE_IOCTL
-// Opens an ATA disk attached to ata(4) instead of CAM, which takes the raw ATA commands itself
+// Opens an ATA or ATAPI device attached to ata(4) instead of CAM, which takes the raw commands itself
 static int OpenAtaDevice(DeviceContext *ctx)
 {
     struct ata_params params;
@@ -100,10 +100,10 @@ static int OpenAtaDevice(DeviceContext *ctx)
 
     if(ctx->fd < 0) return 0;
 
-    // ATAPI devices are only supported through atapicam
-    if(ioctl(ctx->fd, IOCATAGPARM, &params) == 0 && !(params.config & ATA_PROTO_ATAPI_12))
+    if(ioctl(ctx->fd, IOCATAGPARM, &params) == 0)
     {
-        ctx->ata_fd = ctx->fd;
+        ctx->ata_fd    = ctx->fd;
+        ctx->ata_atapi = (params.config & ATA_PROTO_ATAPI_12) != 0;
         return 1;
     }
 
@@ -129,9 +129,10 @@ static void CloseDevice(DeviceContext *ctx)
 // Opens the device through CAM, or through ata(4) for ATA disks that are not attached to CAM
 static int OpenDevice(DeviceContext *ctx)
 {
-    ctx->ata_fd = -1;
-    ctx->fd     = -1;
-    ctx->device = cam_open_device(ctx->device_path, O_RDWR);
+    ctx->ata_fd    = -1;
+    ctx->ata_atapi = 0;
+    ctx->fd        = -1;
+    ctx->device    = cam_open_device(ctx->device_path, O_RDWR);
 
     if(ctx->device) return 1;
 
@@ -185,8 +186,7 @@ int32_t GetDeviceType(void *device_ctx)
 
     if(!ctx) return -1;
 
-    // Only ATA disks are opened through ata(4)
-    if(ctx->ata_fd >= 0) return AARUREMOTE_DEVICE_TYPE_ATA;
+    if(ctx->ata_fd >= 0) return ctx->ata_atapi ? AARUREMOTE_DEVICE_TYPE_ATAPI : AARUREMOTE_DEVICE_TYPE_ATA;
 
     if(!ctx->device) return -1;
 
