@@ -326,13 +326,16 @@ int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaEr
 
     if((camccb->ccb_h.status & CAM_STATUS_MASK) == CAM_ATA_STATUS_ERROR) *sense = true;
 
-    error_registers->lba_high     = (camccb->ataio.res.lba_high_exp << 8) + camccb->ataio.res.lba_high;
-    error_registers->lba_mid      = (camccb->ataio.res.lba_mid_exp << 8) + camccb->ataio.res.lba_mid;
-    error_registers->lba_low      = (camccb->ataio.res.lba_low_exp << 8) + camccb->ataio.res.lba_low;
-    error_registers->sector_count = (camccb->ataio.res.sector_count_exp << 8) + camccb->ataio.res.sector_count;
-    error_registers->device_head  = camccb->ataio.res.device;
-    error_registers->error        = camccb->ataio.res.error;
-    error_registers->status       = camccb->ataio.res.status;
+    error_registers->lba_high_prev = camccb->ataio.res.lba_high_exp;
+    error_registers->lba_high_cur  = camccb->ataio.res.lba_high;
+    error_registers->lba_mid_prev  = camccb->ataio.res.lba_mid_exp;
+    error_registers->lba_mid_cur   = camccb->ataio.res.lba_mid;
+    error_registers->lba_low_prev  = camccb->ataio.res.lba_low_exp;
+    error_registers->lba_low_cur   = camccb->ataio.res.lba_low;
+    error_registers->sector_count  = (camccb->ataio.res.sector_count_exp << 8) + camccb->ataio.res.sector_count;
+    error_registers->device_head   = camccb->ataio.res.device;
+    error_registers->error         = camccb->ataio.res.error;
+    error_registers->status        = camccb->ataio.res.status;
 
     cam_freeccb(camccb);
 
