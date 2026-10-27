@@ -649,7 +649,7 @@ UsbDevice_t* FindDeviceNumber(DWORD devNum, GUID diskGuid)
     }
 
     // Did we find an InterfaceID of a USB device?
-    if(strlen(instanceId) > 0 && strncmp(instanceId, "USB\\", 3) == 0) foundDevice = FindDeviceByInstanceId(instanceId);
+    if(strlen(instanceId) > 0 && strncmp(instanceId, "USB\\", 4) == 0) foundDevice = FindDeviceByInstanceId(instanceId);
 
     free(instanceId);
     free(didd);
