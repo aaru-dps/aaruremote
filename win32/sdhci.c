@@ -216,10 +216,11 @@ int32_t GetSdhciRegisters(void*     device_ctx,
     if(*scr)
     {
         *scr_len = 8;
+        // SEND_SCR is ACMD51
         SendSdhciCommand(device_ctx,
-                         10,
+                         51,
                          0,
-                         0,
+                         1,
                          AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
                          0,
                          8,
