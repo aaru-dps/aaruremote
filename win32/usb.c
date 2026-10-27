@@ -175,7 +175,7 @@ UsbHub_t* GetRootHub(UsbController_t* controller)
     nBytes = sizeof(USB_ROOT_HUB_NAME) + USB_BUFFER_SIZE - 1;
 
     // get the Hub Name
-    if(DeviceIoControl(h, IOCTL_USB_GET_ROOT_HUB_NAME, &hubName, nBytes, &hubName, nBytes, &k, NULL))
+    if(DeviceIoControl(h, IOCTL_USB_GET_ROOT_HUB_NAME, hubName, nBytes, hubName, nBytes, &k, NULL))
         sprintf_s(root->HubDevicePath, USB_BUFFER_SIZE, "\\\\.\\%ws", hubName->RootHubName);
 
     // TODO: Get DriverKeyName for Root Hub
