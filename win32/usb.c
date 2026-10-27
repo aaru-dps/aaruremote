@@ -475,7 +475,6 @@ static void SearchHubInstanceId(UsbHub_t* hub, UsbDevice_t** foundDevice, const 
     DWORD        i;
     UsbDevice_t* device;
     UsbHub_t*    childHub;
-    *foundDevice = NULL;
 
     if(hub == NULL) return;
 
@@ -494,13 +493,22 @@ static void SearchHubInstanceId(UsbHub_t* hub, UsbDevice_t** foundDevice, const 
             SearchHubInstanceId(childHub, foundDevice, instanceId);
 
             free(childHub);
+
+            if(*foundDevice != NULL) break;
         }
         else
         {
             if(!portList[i].PortIsDeviceConnected) continue;
 
             device = GetPortDevice(&portList[i]);
-            if(device == NULL || strncmp(device->InstanceId, instanceId, USB_BUFFER_SIZE) != 0) continue;
+
+            if(device == NULL) continue;
+
+            if(strncmp(device->InstanceId, instanceId, USB_BUFFER_SIZE) != 0)
+            {
+                free(device);
+                continue;
+            }
 
             *foundDevice = device;
             break;
