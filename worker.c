@@ -301,6 +301,22 @@ void *WorkingLoop(void *arguments)
             continue;
         }
 
+        if(le32toh(pkt_hdr->len) < sizeof(AaruPacketHello))
+        {
+            printf("Received hello packet is too small, closing connection...\n");
+            NetClose(cli_ctx);
+            free(pkt_hdr);
+            free(pkt_client_hello);
+            continue;
+        }
+
+        // The strings are not required to be terminated
+        pkt_client_hello->application[sizeof(pkt_client_hello->application) - 1] = '\0';
+        pkt_client_hello->version[sizeof(pkt_client_hello->version) - 1]         = '\0';
+        pkt_client_hello->sysname[sizeof(pkt_client_hello->sysname) - 1]         = '\0';
+        pkt_client_hello->release[sizeof(pkt_client_hello->release) - 1]         = '\0';
+        pkt_client_hello->machine[sizeof(pkt_client_hello->machine) - 1]         = '\0';
+
         printf("Client application: %s %s\n", pkt_client_hello->application, pkt_client_hello->version);
         printf("Client operating system: %s %s (%s)\n", pkt_client_hello->sysname, pkt_client_hello->release,
                pkt_client_hello->machine);
