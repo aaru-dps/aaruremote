@@ -1221,7 +1221,17 @@ void *WorkingLoop(void *arguments)
 
                     pkt_cmd_sdhci = (AaruPacketCmdSdhci *)in_buf;
 
-                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+                    // The data buffer is used in place, so it must fit in the packet
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketCmdSdhci) ||
+                       le32toh(pkt_cmd_sdhci->command.buf_len) > le32toh(pkt_hdr->len) - sizeof(AaruPacketCmdSdhci))
+                    {
+                        printf("Received SD/MMC packet does not fit its length, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     if(le32toh(pkt_cmd_sdhci->command.buf_len) > 0)
                         buffer = in_buf + sizeof(AaruPacketCmdSdhci);
