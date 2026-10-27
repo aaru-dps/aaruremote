@@ -144,11 +144,27 @@ int32_t NetRecv(void *net_ctx, void *buf, int32_t len, uint32_t flags)
 
 int32_t NetWrite(void *net_ctx, const void *buf, int32_t size)
 {
-    NetworkContext *ctx = net_ctx;
+    NetworkContext *ctx     = net_ctx;
+    const char     *charbuf = buf;
+    int32_t         sent_once;
+    int32_t         sent_total = 0;
 
     if(!ctx) return -1;
 
-    return write(ctx->fd, buf, size);
+    while(size > 0)
+    {
+        sent_once = write(ctx->fd, charbuf, size);
+
+        if(sent_once < 0 && sent_total == 0) return -1;
+
+        if(sent_once <= 0) break;
+
+        charbuf += sent_once;
+        sent_total += sent_once;
+        size -= sent_once;
+    }
+
+    return sent_total;
 }
 
 int32_t NetPoll(void *net_ctx, uint32_t timeout_ms)
