@@ -217,5 +217,7 @@ int32_t SendMultiSdhciCommand(void *device_ctx, uint64_t count, MmcSingleCommand
     for(i = 0; i < count; i++)
         memcpy((char *)commands[i].response, (char *)mmc_ioc_multi_cmd->cmds[i].response, sizeof(uint32_t) * 4);
 
+    free(mmc_ioc_multi_cmd);
+
     return error;
 }
