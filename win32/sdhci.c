@@ -244,10 +244,11 @@ int32_t GetSdhciRegisters(void*     device_ctx,
     if(*ocr)
     {
         *ocr_len = 4;
+        // SD cards report the OCR with ACMD41, MMC cards with CMD1
         SendSdhciCommand(device_ctx,
                          *scr_len > 0 ? 41 : 1,
                          0,
-                         0,
+                         *scr_len > 0 ? 1 : 0,
                          AARUREMOTE_MMC_RESPONSE_SPI_R1 | AARUREMOTE_MMC_RESPONSE_R1 | AARUREMOTE_MMC_COMMAND_ADTC,
                          0,
                          4,
