@@ -1214,8 +1214,10 @@ void *WorkingLoop(void *arguments)
                         off += multi_sdhci_commands[n].buf_len;
                     }
 
-                    ret = SendMultiSdhciCommand(device_ctx, pkt_cmd_multi_sdhci->cmd_count, multi_sdhci_commands,
-                                                &duration, &sense);
+                    duration = 0;
+                    sense    = 1;
+                    ret      = SendMultiSdhciCommand(device_ctx, pkt_cmd_multi_sdhci->cmd_count, multi_sdhci_commands,
+                                                     &duration, &sense);
 
                     off =
                         (long)(sizeof(AaruPacketMultiResSdhci) + sizeof(AaruResSdhci) * pkt_cmd_multi_sdhci->cmd_count);
