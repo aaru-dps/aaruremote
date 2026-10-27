@@ -134,8 +134,9 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
     {
         *sense             = (camccb->ccb_h.status & CAM_STATUS_MASK) == CAM_SCSI_STATUS_ERROR;
         *sense_len         = camccb->csio.sense_len - camccb->csio.sense_resid;
-        (*sense_buffer)[0] = camccb->csio.sense_data.error_code;
-        memcpy((*sense_buffer) + 1, camccb->csio.sense_data.sense_buf, *sense_len - 1);
+
+        // Copied as raw bytes, as the layout of struct scsi_sense_data differs between FreeBSD releases
+        memcpy(*sense_buffer, &camccb->csio.sense_data, *sense_len);
     }
 
     *buf_len = camccb->csio.dxfer_len;
