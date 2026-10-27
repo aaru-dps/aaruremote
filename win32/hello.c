@@ -269,10 +269,10 @@ AaruPacketHello* GetHello()
                 {
                     if(osvi.wProductType == VER_NT_WORKSTATION)
                     {
-                        strncpy(pkt_server_hello->sysname, w2k12, 255);
+                        strncpy(pkt_server_hello->sysname, w8, 255);
                         return pkt_server_hello;
                     }
-                    strncpy(pkt_server_hello->sysname, w8, 255);
+                    strncpy(pkt_server_hello->sysname, w2k12, 255);
                     return pkt_server_hello;
                 }
 
@@ -280,10 +280,10 @@ AaruPacketHello* GetHello()
                 {
                     if(osvi.wProductType == VER_NT_WORKSTATION)
                     {
-                        strncpy(pkt_server_hello->sysname, w2k12r2, 255);
+                        strncpy(pkt_server_hello->sysname, w81, 255);
                         return pkt_server_hello;
                     }
-                    strncpy(pkt_server_hello->sysname, w81, 255);
+                    strncpy(pkt_server_hello->sysname, w2k12r2, 255);
                     return pkt_server_hello;
                 }
             }
@@ -292,10 +292,10 @@ AaruPacketHello* GetHello()
             {
                 if(osvi.wProductType == VER_NT_WORKSTATION)
                 {
-                    strncpy(pkt_server_hello->sysname, w2k16, 255);
+                    strncpy(pkt_server_hello->sysname, w10, 255);
                     return pkt_server_hello;
                 }
-                strncpy(pkt_server_hello->sysname, w10, 255);
+                strncpy(pkt_server_hello->sysname, w2k16, 255);
                 return pkt_server_hello;
             }
         }
