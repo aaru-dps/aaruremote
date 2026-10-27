@@ -101,7 +101,8 @@ uint8_t GetPcmciaData(void *device_ctx, uint16_t *cis_len, char *cis)
         file = fopen(tmp_path, "r");
         if(!file) return 0;
 
-        *cis_len = fread(cis, 65536, 1, file);
+        // cis_len cannot hold 65536
+        *cis_len = (uint16_t)fread(cis, 1, 65535, file);
 
         fclose(file);
 
