@@ -310,7 +310,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
             // the Request structure.  Because this location is not "covered"
             // by the structure allocation, we're forced to zero out this
             // chunk of memory by using the StringToHGlobalAuto() hack above
-            descriptor = (PUSB_STRING_DESCRIPTOR)(request + sizeof(USB_DESCRIPTOR_REQUEST));
+            descriptor = (PUSB_STRING_DESCRIPTOR)((PUCHAR)request + sizeof(USB_DESCRIPTOR_REQUEST));
             sprintf_s(device->Manufacturer, USB_BUFFER_SIZE, "%ws", descriptor->bString);
         }
     }
@@ -331,7 +331,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
             // the Request structure.  Because this location is not "covered"
             // by the structure allocation, we're forced to zero out this
             // chunk of memory by using the StringToHGlobalAuto() hack above
-            descriptor = (PUSB_STRING_DESCRIPTOR)(request + sizeof(USB_DESCRIPTOR_REQUEST));
+            descriptor = (PUSB_STRING_DESCRIPTOR)((PUCHAR)request + sizeof(USB_DESCRIPTOR_REQUEST));
             sprintf_s(device->Product, USB_BUFFER_SIZE, "%ws", descriptor->bString);
         }
     }
@@ -352,7 +352,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
             // the Request structure.  Because this location is not "covered"
             // by the structure allocation, we're forced to zero out this
             // chunk of memory by using the StringToHGlobalAuto() hack above
-            descriptor = (PUSB_STRING_DESCRIPTOR)(request + sizeof(USB_DESCRIPTOR_REQUEST));
+            descriptor = (PUSB_STRING_DESCRIPTOR)((PUCHAR)request + sizeof(USB_DESCRIPTOR_REQUEST));
             sprintf_s(device->SerialNumber, USB_BUFFER_SIZE, "%ws", descriptor->bString);
         }
     }
@@ -369,9 +369,14 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
     if(DeviceIoControl(
            h, IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION, request, nBytes, request, nBytes, &nBytesReturned, NULL))
     {
+        // The returned length includes the request header
+        nBytesReturned = nBytesReturned > sizeof(USB_DESCRIPTOR_REQUEST)
+                             ? nBytesReturned - (DWORD)sizeof(USB_DESCRIPTOR_REQUEST)
+                             : 0;
+
         if(nBytesReturned > USB_BUFFER_SIZE) nBytesReturned = USB_BUFFER_SIZE;
 
-        memcpy(&device->BinaryDeviceDescriptors, request + sizeof(USB_DESCRIPTOR_REQUEST), nBytesReturned);
+        memcpy(&device->BinaryDeviceDescriptors, (PUCHAR)request + sizeof(USB_DESCRIPTOR_REQUEST), nBytesReturned);
         device->BinaryDeviceDescriptorsLength = nBytesReturned;
     }
 
