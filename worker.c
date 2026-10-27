@@ -491,7 +491,7 @@ void *WorkingLoop(void *arguments)
 
                     pkt_nop->reason_code = device_ctx == NULL ? AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR
                                                               : AARUREMOTE_PACKET_NOP_REASON_OPEN_OK;
-                    pkt_nop->error_no    = errno;
+                    pkt_nop->error_no    = htole32(errno);
                     memset(&pkt_nop->reason, 0, 256);
                     NetWrite(cli_ctx, pkt_nop, sizeof(AaruPacketNop));
 
