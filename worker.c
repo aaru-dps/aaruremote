@@ -377,15 +377,23 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
-                    pkt_res_devinfo          = malloc(sizeof(AaruPacketResListDevs));
-                    pkt_res_devinfo->devices = htole16(DeviceInfoListCount(device_info_list));
+                    off             = DeviceInfoListCount(device_info_list);
+                    n               = sizeof(AaruPacketResListDevs) + off * sizeof(DeviceInfo);
+                    pkt_res_devinfo = malloc(n);
 
-                    n      = sizeof(AaruPacketResListDevs) + le16toh(pkt_res_devinfo->devices) * sizeof(DeviceInfo);
-                    in_buf = malloc(n);
-                    ((AaruPacketResListDevs *)in_buf)->hdr.len = htole32(n);
-                    ((AaruPacketResListDevs *)in_buf)->devices = pkt_res_devinfo->devices;
-                    free(pkt_res_devinfo);
-                    pkt_res_devinfo = (AaruPacketResListDevs *)in_buf;
+                    if(!pkt_res_devinfo)
+                    {
+                        printf("Fatal error %d allocating memory for packet, closing connection...\n", errno);
+                        FreeDeviceInfoList(device_info_list);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
+
+                    memset(pkt_res_devinfo, 0, n);
+                    pkt_res_devinfo->hdr.len = htole32(n);
+                    pkt_res_devinfo->devices = htole16((uint16_t)off);
 
                     pkt_res_devinfo->hdr.remote_id   = htole32(AARUREMOTE_REMOTE_ID);
                     pkt_res_devinfo->hdr.packet_id   = htole32(AARUREMOTE_PACKET_ID);
