@@ -18,6 +18,8 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
+#include <sys/ioctl.h>
 #include <time.h>
 
 #include "../aaruremote.h"
@@ -347,6 +349,91 @@ static int32_t CamSendAtaLba48Command(void *device_ctx, AtaRegistersLba48 regist
 }
 #endif
 
+#ifdef HAS_ATA_IOCTL
+// ata(4) times a command out immediately when given a timeout of 0, so use the one it uses for its own commands
+#define AARUREMOTE_ATA_IOCTL_DEFAULT_TIMEOUT 5
+
+// Sends an LBA28 ATA command through the ata(4) control device. ata(4) does not return the status and error
+// registers, only whether the command failed, and only returns the count and LBA registers for commands without
+// data.
+static int32_t AtaIoctlSendLba28Command(DeviceContext *ctx, AtaRegistersLba28 registers,
+                                        AtaErrorRegistersLba28 *error_registers, uint8_t protocol, char *buffer,
+                                        uint32_t timeout, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
+{
+    struct ata_cmd  iocmd;
+    int             error;
+    int             clock_error;
+    struct timespec start_tp;
+    struct timespec end_tp;
+    double          start, end;
+
+    memset(&iocmd, 0, sizeof(struct ata_cmd));
+
+    iocmd.channel                 = ctx->ata_channel;
+    iocmd.device                  = ctx->ata_unit;
+    iocmd.cmd                     = ATAREQUEST;
+    iocmd.u.request.u.ata.command = registers.command;
+    iocmd.u.request.u.ata.feature = registers.feature;
+    iocmd.u.request.u.ata.count   = registers.sector_count;
+    iocmd.u.request.u.ata.lba     = ((u_int64_t)(registers.device_head & 0x0F) << 24) |
+                                    ((u_int64_t)registers.lba_high << 16) | ((u_int64_t)registers.lba_mid << 8) |
+                                    registers.lba_low;
+    iocmd.u.request.data          = buffer;
+    iocmd.u.request.count         = buffer ? *buf_len : 0;
+    iocmd.u.request.timeout       = timeout ? timeout : AARUREMOTE_ATA_IOCTL_DEFAULT_TIMEOUT;
+
+    switch(protocol)
+    {
+        case AARUREMOTE_ATA_PROTOCOL_PIO_IN:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_IN:
+            iocmd.u.request.flags = ATA_CMD_READ;
+            break;
+        case AARUREMOTE_ATA_PROTOCOL_PIO_OUT:
+        case AARUREMOTE_ATA_PROTOCOL_UDMA_OUT:
+            iocmd.u.request.flags = ATA_CMD_WRITE;
+            break;
+        default:
+            iocmd.u.request.flags = ATA_CMD_CONTROL;
+            break;
+    }
+
+    clock_error = clock_gettime(CLOCK_REALTIME_PRECISE, &start_tp);
+
+    error = ioctl(ctx->ata_fd, IOCATA, &iocmd) < 0 ? errno : iocmd.u.request.error;
+
+    if(!clock_error) clock_error = clock_gettime(CLOCK_REALTIME_PRECISE, &end_tp);
+
+    if(!clock_error)
+    {
+        start = (double)start_tp.tv_sec * 1000.0;
+        start += (double)start_tp.tv_nsec / 1000000.0;
+        end = (double)end_tp.tv_sec * 1000.0;
+        end += (double)end_tp.tv_nsec / 1000000.0;
+
+        *duration = (uint32_t)(end - start);
+    }
+
+    // Without the real registers, report a failed command with the status error bit
+    if(error)
+    {
+        error_registers->status = 0x01;
+        *sense                  = true;
+        return error;
+    }
+
+    if(iocmd.u.request.flags & ATA_CMD_CONTROL)
+    {
+        error_registers->sector_count = iocmd.u.request.u.ata.count;
+        error_registers->lba_low      = iocmd.u.request.u.ata.lba & 0xFF;
+        error_registers->lba_mid      = (iocmd.u.request.u.ata.lba >> 8) & 0xFF;
+        error_registers->lba_high     = (iocmd.u.request.u.ata.lba >> 16) & 0xFF;
+        error_registers->device_head  = (registers.device_head & 0xF0) | ((iocmd.u.request.u.ata.lba >> 24) & 0x0F);
+    }
+
+    return 0;
+}
+#endif
+
 int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorRegistersChs *error_registers,
                           uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
                           uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
@@ -382,6 +469,12 @@ int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaEr
     if(ctx->device)
         return CamSendAtaLba28Command(device_ctx, registers, error_registers, protocol, transfer_register, buffer,
                                       timeout, transfer_blocks, duration, sense, buf_len);
+#endif
+
+#ifdef HAS_ATA_IOCTL
+    if(ctx->ata_fd >= 0)
+        return AtaIoctlSendLba28Command(ctx, registers, error_registers, protocol, buffer, timeout, duration, sense,
+                                        buf_len);
 #endif
 
     return ENOTSUP;
