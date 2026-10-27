@@ -743,7 +743,7 @@ void *WorkingLoop(void *arguments)
                         &pkt_res_usb->id_product, pkt_res_usb->manufacturer, pkt_res_usb->product, pkt_res_usb->serial);
 
                     // Swap parameters
-                    pkt_res_usb->desc_len = htole32(pkt_res_usb->desc_len);
+                    pkt_res_usb->desc_len = htole16(pkt_res_usb->desc_len);
                     // TODO: Need to swap vendor, product?
 
                     NetWrite(cli_ctx, pkt_res_usb, le32toh(pkt_res_usb->hdr.len));
@@ -825,7 +825,7 @@ void *WorkingLoop(void *arguments)
                     pkt_res_pcmcia->is_pcmcia =
                         GetPcmciaData(device_ctx, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
 
-                    pkt_res_pcmcia->cis_len = htole32(pkt_res_pcmcia->cis_len);
+                    pkt_res_pcmcia->cis_len = htole16(pkt_res_pcmcia->cis_len);
 
                     NetWrite(cli_ctx, pkt_res_pcmcia, le32toh(pkt_res_pcmcia->hdr.len));
                     free(pkt_res_pcmcia);
