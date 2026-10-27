@@ -95,14 +95,12 @@ DeviceInfoList *ListDevices()
                 if(tmp_string)
                 {
                     strncpy(list_next->this.vendor, tmp_string, 256);
-                    free((void *)tmp_string);
                 }
 
                 tmp_string = udev_device_get_property_value(udev_device, "ID_MODEL");
                 if(tmp_string)
                 {
                     strncpy(list_next->this.model, tmp_string, 256);
-                    free((void *)tmp_string);
 
                     for(i = 0; i < 256; i++)
                     {
@@ -116,7 +114,6 @@ DeviceInfoList *ListDevices()
                 if(tmp_string)
                 {
                     strncpy(list_next->this.serial, tmp_string, 256);
-                    free((void *)tmp_string);
                 }
                 else
                 {
@@ -124,7 +121,6 @@ DeviceInfoList *ListDevices()
                     if(tmp_string)
                     {
                         strncpy(list_next->this.serial, tmp_string, 256);
-                        free((void *)tmp_string);
                     }
                 }
 
@@ -132,7 +128,6 @@ DeviceInfoList *ListDevices()
                 if(tmp_string)
                 {
                     strncpy(list_next->this.bus, tmp_string, 256);
-                    free((void *)tmp_string);
                 }
             }
         }
