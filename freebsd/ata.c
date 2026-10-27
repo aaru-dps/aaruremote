@@ -69,7 +69,6 @@ static int32_t CamSendAtaChsCommand(void *device_ctx, AtaRegistersChs registers,
 
     camccb->ccb_h.func_code   = XPT_ATA_IO;
     camccb->ccb_h.flags       = AtaProtocolToCamFlags(protocol);
-    camccb->ccb_h.xflags      = 0;
     camccb->ccb_h.retry_count = 1;
     camccb->ccb_h.cbfcnp      = NULL;
     camccb->ccb_h.timeout     = timeout;
@@ -167,7 +166,6 @@ static int32_t CamSendAtaLba28Command(void *device_ctx, AtaRegistersLba28 regist
 
     camccb->ccb_h.func_code   = XPT_ATA_IO;
     camccb->ccb_h.flags       = AtaProtocolToCamFlags(protocol);
-    camccb->ccb_h.xflags      = 0;
     camccb->ccb_h.retry_count = 1;
     camccb->ccb_h.cbfcnp      = NULL;
     camccb->ccb_h.timeout     = timeout;
@@ -267,7 +265,6 @@ static int32_t CamSendAtaLba48Command(void *device_ctx, AtaRegistersLba48 regist
 
     camccb->ccb_h.func_code   = XPT_ATA_IO;
     camccb->ccb_h.flags       = AtaProtocolToCamFlags(protocol);
-    camccb->ccb_h.xflags      = 0;
     camccb->ccb_h.retry_count = 1;
     camccb->ccb_h.cbfcnp      = NULL;
     camccb->ccb_h.timeout     = timeout;
