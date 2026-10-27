@@ -95,6 +95,7 @@ int32_t GetDeviceType(void *device_ctx)
         case PROTO_SCSI:
             device_type = AARUREMOTE_DEVICE_TYPE_SCSI;
             break;
+#if __FreeBSD_version >= 1200000
         case PROTO_NVME:
             device_type = AARUREMOTE_DEVICE_TYPE_NVME;
             break;
@@ -102,6 +103,7 @@ int32_t GetDeviceType(void *device_ctx)
             // TODO: MMC vs SD
             device_type = AARUREMOTE_DEVICE_TYPE_MMC;
             break;
+#endif
         default:
             device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
             break;

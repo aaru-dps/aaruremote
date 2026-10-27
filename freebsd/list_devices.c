@@ -132,6 +132,7 @@ DeviceInfoList *ListDevices()
                 list_next->this.supported = true;
 
                 break;
+#if __FreeBSD_version >= 1200000
             case PROTO_NVME:
                 strncpy(list_next->this.bus, "NVMe", 4);
                 list_next->this.supported = false;
@@ -140,6 +141,7 @@ DeviceInfoList *ListDevices()
                 strncpy(list_next->this.bus, "MMC/SD", 6);
                 list_next->this.supported = false;
                 break;
+#endif
             default:
                 dirent = readdir(dir);
                 cam_freeccb(camccb);

@@ -23,6 +23,8 @@
 #include <stdio.h>
 #endif
 
+#include <sys/param.h>
+
 #include <camlib.h>
 #include <time.h>
 
