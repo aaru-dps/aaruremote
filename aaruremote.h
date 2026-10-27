@@ -35,7 +35,7 @@
 #endif
 
 #ifndef AARUREMOTE_VERSION
-#define AARUREMOTE_VERSION "0.99-unknown"
+#define AARUREMOTE_VERSION "1.0-unknown"
 #endif
 
 #define AARUREMOTE_PORT 6666

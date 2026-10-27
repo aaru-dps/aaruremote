@@ -5,7 +5,7 @@ include(CheckLibraryExists)
 include(TestBigEndian)
 set(CMAKE_C_STANDARD 90)
 
-set(AARUREMOTE_VERSION_BASE     "0.99")
+set(AARUREMOTE_VERSION_BASE     "1.0")
 set(AARUREMOTE_VERSION_FALLBACK "${AARUREMOTE_VERSION_BASE}-unknown"
     CACHE STRING "Fallback aaruremote version when git metadata is unavailable")
 set(AARUREMOTE_VERSION          "${AARUREMOTE_VERSION_FALLBACK}")

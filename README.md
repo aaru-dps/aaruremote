@@ -27,7 +27,7 @@ All commands that support devices are supported, with a URI with the following s
 `aaru://<IP ADDRESS>/<DEVICE PATH>`.
 
 When configured with CMake from a git checkout, aaruremote derives its application version string as
-`0.99-<gitcommit>` using `git rev-parse --short HEAD`. If git metadata is unavailable, it falls back to `0.99-unknown`.
+`1.0-<gitcommit>` using `git rev-parse --short HEAD`. If git metadata is unavailable, it falls back to `1.0-unknown`.
 
 Feature matrix
 ==============
