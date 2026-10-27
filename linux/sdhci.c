@@ -55,7 +55,7 @@ int32_t SendSdhciCommand(void *device_ctx, uint8_t command, uint8_t write, uint8
         mmc_ioc_cmd.data_timeout_ns = timeout > 4 ? 0xFFFFFFFFU : timeout * 1000000000U;
         mmc_ioc_cmd.cmd_timeout_ms  = timeout * 1000;
     }
-    mmc_ioc_cmd.data_ptr = (uint64_t)buffer;
+    mmc_ioc_cmd.data_ptr = (uint64_t)(uintptr_t)buffer;
 
     // TODO: Timing
     error = ioctl(ctx->fd, MMC_IOC_CMD, &mmc_ioc_cmd);
@@ -205,7 +205,7 @@ int32_t SendMultiSdhciCommand(void *device_ctx, uint64_t count, MmcSingleCommand
             mmc_ioc_multi_cmd->cmds[i].cmd_timeout_ms  = commands[i].timeout * 1000;
         }
          */
-        mmc_ioc_multi_cmd->cmds[i].data_ptr   = (uint64_t)commands[i].buffer;
+        mmc_ioc_multi_cmd->cmds[i].data_ptr   = (uint64_t)(uintptr_t)commands[i].buffer;
     }
 
     error = ioctl(ctx->fd, MMC_IOC_MULTI_CMD, mmc_ioc_multi_cmd);
