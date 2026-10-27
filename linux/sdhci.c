@@ -143,7 +143,7 @@ int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, 
     memset(sysfs_path_cid, 0, len);
     memset(sysfs_path_scr, 0, len);
     memset(sysfs_path_ocr, 0, len);
-    memset(tmp_string, 0, strlen(ctx->device_path) - 5);
+    memset(tmp_string, 0, 1024);
 
     memcpy(tmp_string, ctx->device_path + 5, strlen(ctx->device_path) - 5);
     snprintf(sysfs_path_csd, len, "/sys/block/%s/device/csd", tmp_string);
