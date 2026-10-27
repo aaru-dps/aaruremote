@@ -299,7 +299,8 @@ void *WorkingLoop(void *arguments)
 
         if(recv_size != le32toh(pkt_hdr->len))
         {
-            printf("Expected %d bytes of packet, got %ld, closing connection...\n", le32toh(pkt_hdr->len), recv_size);
+            printf("Expected %d bytes of packet, got %ld, closing connection...\n", le32toh(pkt_hdr->len),
+                   (long)recv_size);
             NetClose(cli_ctx);
             free(pkt_hdr);
             free(pkt_client_hello);
