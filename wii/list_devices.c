@@ -32,6 +32,9 @@ DeviceInfoList *ListDevices()
     s32             sd_fd;
 
     list_next = malloc(sizeof(DeviceInfoList));
+
+    if(!list_next) return NULL;
+
     memset(list_next, 0, sizeof(DeviceInfoList));
 
     // All Wiis do have flash
