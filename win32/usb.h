@@ -49,6 +49,9 @@ typedef struct
     CHAR  DriverKey[USB_BUFFER_SIZE];
 } UsbHub_t;
 
+// The USB descriptor and IOCTL structures are byte-packed in usb100.h and usbioctl.h
+#pragma pack(push, 1)
+
 typedef struct _USB_DEVICE_DESCRIPTOR
 {
     UCHAR  bLength;
@@ -66,6 +69,8 @@ typedef struct _USB_DEVICE_DESCRIPTOR
     UCHAR  iSerialNumber;
     UCHAR  bNumConfigurations;
 } USB_DEVICE_DESCRIPTOR, *PUSB_DEVICE_DESCRIPTOR;
+
+#pragma pack(pop)
 
 typedef struct
 {
@@ -91,6 +96,8 @@ typedef struct
     BOOL                  PortIsHub;
     USB_DEVICE_DESCRIPTOR PortDeviceDescriptor;
 } UsbPort_t;
+
+#pragma pack(push, 1)
 
 typedef struct _USB_ROOT_HUB_NAME
 {
@@ -251,5 +258,7 @@ typedef struct _USB_NODE_CONNECTION_NAME
     ULONG ActualLength;
     WCHAR NodeName[1];
 } USB_NODE_CONNECTION_NAME, *PUSB_NODE_CONNECTION_NAME;
+
+#pragma pack(pop)
 
 #endif // AARUREMOTE_WIN32_USB_H_
