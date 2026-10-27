@@ -524,16 +524,22 @@ UsbDevice_t* FindDeviceByInstanceId(const char* instanceId)
     DWORD            controllers_len = 0;
     DWORD            i;
     UsbDevice_t*     foundDevice = NULL;
+    UsbHub_t*        rootHub;
 
     controllers = GetHostControllers(&controllers_len);
 
-    if(controllers == NULL || controllers_len == 0) return NULL;
+    if(controllers == NULL) return NULL;
 
     for(i = 0; i < controllers_len; i++)
     {
-        SearchHubInstanceId(GetRootHub(&controllers[i]), &foundDevice, instanceId);
+        rootHub = GetRootHub(&controllers[i]);
+        SearchHubInstanceId(rootHub, &foundDevice, instanceId);
+        free(rootHub);
+
         if(foundDevice != NULL) break;
     }
+
+    free(controllers);
 
     return foundDevice;
 }
