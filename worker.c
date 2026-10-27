@@ -998,6 +998,7 @@ void *WorkingLoop(void *arguments)
                     pkt_cmd_ata_lba48->buf_len = le32toh(pkt_cmd_ata_lba48->buf_len);
 
                     // Swapping
+                    pkt_cmd_ata_lba48->registers.feature      = le16toh(pkt_cmd_ata_lba48->registers.feature);
                     pkt_cmd_ata_lba48->registers.sector_count = le16toh(pkt_cmd_ata_lba48->registers.sector_count);
 
                     duration = 0;
