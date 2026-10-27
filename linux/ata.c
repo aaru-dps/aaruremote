@@ -243,7 +243,7 @@ int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaEr
 
     error_registers->error = sense_buf[11];
 
-    error_registers->sector_count  = (uint16_t)((sense_buf[12] << 8) + sense_buf[13]);
+    error_registers->sector_count  = (uint16_t)(((uint8_t)sense_buf[12] << 8) + (uint8_t)sense_buf[13]);
     error_registers->lba_low_prev  = sense_buf[14];
     error_registers->lba_low_cur   = sense_buf[15];
     error_registers->lba_mid_prev  = sense_buf[16];
