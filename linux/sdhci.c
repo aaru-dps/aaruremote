@@ -162,7 +162,7 @@ int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, 
     free(sysfs_path_ocr);
     free(tmp_string);
 
-    return csd_len != 0 || cid_len != 0 || scr_len != 0 || ocr_len != 0;
+    return *csd_len != 0 || *cid_len != 0 || *scr_len != 0 || *ocr_len != 0;
 }
 
 int32_t SendMultiSdhciCommand(void *device_ctx, uint64_t count, MmcSingleCommand commands[], uint32_t *duration,
