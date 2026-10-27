@@ -100,9 +100,9 @@ DeviceInfoList *ListDevices()
                 strncpy(list_next->this.model, (const char *)camccb->cgd.ident_data.model, 40);
 
                 // Trim spaces
-                for(i = 40; i > 0; i--)
+                for(i = 39; i >= 0; i--)
                 {
-                    if(list_next->this.model[i] != 0x20) break;
+                    if(list_next->this.model[i] != 0x20 && list_next->this.model[i] != 0) break;
 
                     list_next->this.model[i] = 0;
                 }
