@@ -54,10 +54,6 @@ DeviceInfoList *ListDevices()
 
         memset(list_next, 0, sizeof(DeviceInfoList));
 
-        if(!list_start) list_start = list_next;
-
-        if(list_current) list_current->next = list_next;
-
         snprintf(list_next->this.path, 1024, "/dev/%s", dirent->d_name);
 
         camdev = cam_open_device(list_next->this.path, O_RDWR);
@@ -152,6 +148,11 @@ DeviceInfoList *ListDevices()
 
         cam_freeccb(camccb);
         cam_close_device(camdev);
+
+        // Only link devices that were probed successfully, the others have been freed
+        if(!list_start) list_start = list_next;
+
+        if(list_current) list_current->next = list_next;
 
         list_current = list_next;
         dirent       = readdir(dir);
