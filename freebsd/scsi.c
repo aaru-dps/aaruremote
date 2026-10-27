@@ -67,7 +67,12 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
 
     camccb = cam_getccb(ctx->device);
 
-    if(!camccb) return -1;
+    if(!camccb)
+    {
+        free(*sense_buffer);
+        *sense_buffer = NULL;
+        return -1;
+    }
 
     camccb->ccb_h.func_code   = XPT_SCSI_IO;
     camccb->ccb_h.flags       = flags;
@@ -116,20 +121,20 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
         *sense = true;
     }
 
+    // The sense buffer holds 32 bytes, as many as were requested from CAM
     if((camccb->ccb_h.status & CAM_STATUS_MASK) == CAM_SCSI_STATUS_ERROR)
     {
         *sense             = true;
-        *sense_buffer      = malloc(1);
         (*sense_buffer)[0] = camccb->csio.scsi_status;
+        *sense_len         = 1;
     }
 
     if((camccb->ccb_h.status & CAM_AUTOSNS_VALID) && camccb->csio.sense_len - camccb->csio.sense_resid > 0)
     {
         *sense             = (camccb->ccb_h.status & CAM_STATUS_MASK) == CAM_SCSI_STATUS_ERROR;
-        *sense_buffer      = malloc(camccb->csio.sense_len - camccb->csio.sense_resid);
+        *sense_len         = camccb->csio.sense_len - camccb->csio.sense_resid;
         (*sense_buffer)[0] = camccb->csio.sense_data.error_code;
-        memcpy((*sense_buffer) + 1, camccb->csio.sense_data.sense_buf,
-               (camccb->csio.sense_len - camccb->csio.sense_resid) - 1);
+        memcpy((*sense_buffer) + 1, camccb->csio.sense_data.sense_buf, *sense_len - 1);
     }
 
     *buf_len = camccb->csio.dxfer_len;
