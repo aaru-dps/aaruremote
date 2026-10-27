@@ -90,6 +90,7 @@ int32_t GetDeviceType(void *device_ctx)
     struct udev_device *udev_device;
     const char         *tmp_string;
     char               *chrptr;
+    char               *sysfs_path_scr;
     int32_t             device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     udev = udev_new();
@@ -112,38 +113,30 @@ int32_t GetDeviceType(void *device_ctx)
             {
                 device_type = AARUREMOTE_DEVICE_TYPE_ATA;
 
-                free((void *)tmp_string);
                 tmp_string = udev_device_get_property_value(udev_device, "ID_TYPE");
 
-                if(tmp_string)
-                {
-                    // TODO: ATAPI removable non optical disks
-                    if(strncmp(tmp_string, "cd", 2) == 0) { device_type = AARUREMOTE_DEVICE_TYPE_ATAPI; }
-
-                    free((void *)tmp_string);
-                }
+                // TODO: ATAPI removable non optical disks
+                if(tmp_string && strncmp(tmp_string, "cd", 2) == 0) { device_type = AARUREMOTE_DEVICE_TYPE_ATAPI; }
             }
             else if(strncmp(tmp_string, "mmc", 3) == 0)
             {
-                free((void *)tmp_string);
-                tmp_string = malloc(1024);
+                sysfs_path_scr = malloc(1024);
 
                 device_type = AARUREMOTE_DEVICE_TYPE_MMC;
 
-                if(tmp_string)
+                if(sysfs_path_scr)
                 {
-                    memset((void *)tmp_string, 0, 1024);
-                    snprintf((char *)tmp_string, 1024, "/sys/block/%s/device/scr", chrptr);
+                    memset(sysfs_path_scr, 0, 1024);
+                    snprintf(sysfs_path_scr, 1024, "/sys/block/%s/device/scr", chrptr);
 
-                    if(access(tmp_string, R_OK) == 0) device_type = AARUREMOTE_DEVICE_TYPE_SECURE_DIGITAL;
+                    if(access(sysfs_path_scr, R_OK) == 0) device_type = AARUREMOTE_DEVICE_TYPE_SECURE_DIGITAL;
 
-                    free((void *)tmp_string);
+                    free(sysfs_path_scr);
                 }
             }
             else if(strncmp(tmp_string, "scsi", 4) == 0 || strncmp(tmp_string, "ieee1394", 8) == 0 ||
                     strncmp(tmp_string, "usb", 3) == 0)
             {
-                free((void *)tmp_string);
                 tmp_string = udev_device_get_property_value(udev_device, "ID_TYPE");
 
                 if(tmp_string)
@@ -151,15 +144,10 @@ int32_t GetDeviceType(void *device_ctx)
                     if(strncmp(tmp_string, "cd", 2) == 0 || strncmp(tmp_string, "disk", 4) == 0 ||
                        strncmp(tmp_string, "optical", 7) == 0)
                         device_type = AARUREMOTE_DEVICE_TYPE_SCSI;
-
-                    free((void *)tmp_string);
                 }
             }
             else if(strncmp(tmp_string, "nvme", 4) == 0)
-            {
-                free((void *)tmp_string);
                 device_type = AARUREMOTE_DEVICE_TYPE_NVME;
-            }
         }
     }
 
