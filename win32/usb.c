@@ -54,18 +54,28 @@ UsbController_t* GetHostControllers(DWORD* length)
 
     *length = 0;
 
-    didd = malloc(sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA) + USB_BUFFER_SIZE);
+    didd     = malloc(sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA) + USB_BUFFER_SIZE);
+    hostlist = malloc(sizeof(UsbController_t) * USB_MAX_CONTROLLERS);
 
-    hostlist = malloc(sizeof(UsbController_t) * 64);
-    if(!hostlist) return NULL;
+    if(!didd || !hostlist)
+    {
+        free(didd);
+        free(hostlist);
+        return NULL;
+    }
 
-    memset(hostlist, 0, sizeof(UsbController_t) * 64);
+    memset(hostlist, 0, sizeof(UsbController_t) * USB_MAX_CONTROLLERS);
 
     // We start at the "root" of the device tree and look for all
     // devices that match the interface GUID of a Hub Controller
     h = SetupDiGetClassDevs(&hostGuid, 0, NULL, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
 
-    if(h == INVALID_HANDLE_VALUE) return NULL;
+    if(h == INVALID_HANDLE_VALUE)
+    {
+        free(didd);
+        free(hostlist);
+        return NULL;
+    }
 
     i = 0;
 
@@ -111,9 +121,10 @@ UsbController_t* GetHostControllers(DWORD* length)
         }
 
         i++;
-    } while(success);
+    } while(success && *length < USB_MAX_CONTROLLERS);
 
     SetupDiDestroyDeviceInfoList(h);
+    free(didd);
 
     return hostlist;
 }

@@ -19,6 +19,7 @@
 #define AARUREMOTE_WIN32_USB_H_
 
 #define USB_BUFFER_SIZE 2048
+#define USB_MAX_CONTROLLERS 64
 
 #ifndef GUID_DEVINTERFACE_USB_HOST_CONTROLLER
 #define GUID_DEVINTERFACE_USB_HOST_CONTROLLER                                                                          \
