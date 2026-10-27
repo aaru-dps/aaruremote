@@ -44,7 +44,7 @@ DeviceInfoList *ListDevices()
     strncpy(list_next->this.bus, "NAND", 256);
     list_next->this.supported = false;  // TODO: Implement NAND reading
 
-    if(ES_GetDeviceID(&deviceId) < 0) snprintf(list_next->this.serial, 256, "%d", deviceId);
+    if(ES_GetDeviceID(&deviceId) >= 0) snprintf(list_next->this.serial, 256, "%u", deviceId);
 
     list_start   = list_next;
     list_current = list_start;
