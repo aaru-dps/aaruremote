@@ -245,7 +245,11 @@ UsbPort_t* GetHubPorts(UsbHub_t* hub, DWORD* length)
 
     portList = malloc(sizeof(UsbPort_t) * hub->HubPortCount);
 
-    if(!portList) return NULL;
+    if(!portList)
+    {
+        CloseHandle(h);
+        return NULL;
+    }
 
     for(i = 1; i <= hub->HubPortCount; i++)
     {
@@ -298,7 +302,12 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
     device  = malloc(sizeof(UsbDevice_t));
     request = malloc(nBytes);
 
-    if(!device) return NULL;
+    if(!device || !request)
+    {
+        free(device);
+        free(request);
+        return NULL;
+    }
 
     memset(device, 0, sizeof(UsbDevice_t));
 
@@ -309,7 +318,11 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
 
     // Open a handle to the Hub device
     h = CreateFile(port->PortHubDevicePath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
-    if(h == INVALID_HANDLE_VALUE) return device;
+    if(h == INVALID_HANDLE_VALUE)
+    {
+        free(request);
+        return device;
+    }
 
     // The iManufacturer, iProduct and iSerialNumber entries in the
     // Device Descriptor are really just indexes.  So, we have to
