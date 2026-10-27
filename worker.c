@@ -577,6 +577,8 @@ void *WorkingLoop(void *arguments)
 
                     sense_buf = NULL;
                     sense_len = 0;
+                    duration  = 0;
+                    sense     = 0;
 
                     ret = SendScsiCommand(device_ctx, cdb_buf, buffer, &sense_buf, le32toh(pkt_cmd_scsi->timeout),
                                           le32toh(pkt_cmd_scsi->direction), &duration, &sense,
@@ -1341,6 +1343,7 @@ void *WorkingLoop(void *arguments)
 
                     memset(buffer, 0, le32toh(pkt_cmd_osread->length));
 
+                    duration = 0;
                     ret = OsRead(device_ctx, buffer, le64toh(pkt_cmd_osread->offset), le32toh(pkt_cmd_osread->length),
                                  &duration);
 
