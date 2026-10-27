@@ -89,7 +89,7 @@ int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorR
     error = SendScsiCommand(device_ctx, (char *)cdb, buffer, &sense_buf, timeout, AtaProtocolToScsiDirection(protocol),
                             duration, sense, 16, buf_len, &sense_len);
 
-    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C))
+    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 || sense_buf[9] != 0x0C))
     {
         free(sense_buf);
         return error;
@@ -158,7 +158,7 @@ int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaEr
     error = SendScsiCommand(device_ctx, (char *)cdb, buffer, &sense_buf, timeout, AtaProtocolToScsiDirection(protocol),
                             duration, sense, 16, buf_len, &sense_len);
 
-    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C))
+    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 || sense_buf[9] != 0x0C))
     {
         free(sense_buf);
         return error;
@@ -233,7 +233,7 @@ int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaEr
     error = SendScsiCommand(device_ctx, (char *)cdb, buffer, &sense_buf, timeout, AtaProtocolToScsiDirection(protocol),
                             duration, sense, 16, buf_len, &sense_len);
 
-    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 && sense_buf[9] != 0x0C))
+    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 || sense_buf[9] != 0x0C))
     {
         free(sense_buf);
         return error;
