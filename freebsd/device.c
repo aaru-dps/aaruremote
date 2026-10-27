@@ -93,7 +93,10 @@ static int OpenAtaDevice(DeviceContext *ctx)
 {
     struct ata_params params;
 
+    // GEOM refuses to open disks with mounted file systems for writing, which commands do not need
     ctx->fd = open(ctx->device_path, O_RDWR);
+
+    if(ctx->fd < 0) ctx->fd = open(ctx->device_path, O_RDONLY);
 
     if(ctx->fd < 0) return 0;
 
