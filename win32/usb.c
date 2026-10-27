@@ -34,6 +34,9 @@
 #ifndef DIGCF_DEVICEINTERFACE
 #define DIGCF_DEVICEINTERFACE 0x00000010
 #endif
+#ifndef DIGCF_ALLCLASSES
+#define DIGCF_ALLCLASSES 0x00000004
+#endif
 
 UsbController_t* GetHostControllers(DWORD* length)
 {
@@ -287,15 +290,54 @@ UsbPort_t* GetHubPorts(UsbHub_t* hub, DWORD* length)
     return portList;
 }
 
+// Finds the instance ID of the USB device whose driver uses the given driver key
+static void GetInstanceIdByKeyName(const char* driverKey, char* instanceId)
+{
+    HDEVINFO        h;
+    SP_DEVINFO_DATA da;
+    DWORD           i;
+    DWORD           requiredSize;
+    DWORD           regType;
+    CHAR            ptrBuf[USB_BUFFER_SIZE];
+
+    h = SetupDiGetClassDevs(NULL, "USB", NULL, DIGCF_PRESENT | DIGCF_ALLCLASSES);
+
+    if(h == INVALID_HANDLE_VALUE) return;
+
+    for(i = 0;; i++)
+    {
+        memset(&da, 0, sizeof(SP_DEVINFO_DATA));
+        da.cbSize = sizeof(SP_DEVINFO_DATA);
+
+        if(!SetupDiEnumDeviceInfo(h, i, &da)) break;
+
+        memset(ptrBuf, 0, USB_BUFFER_SIZE);
+        regType = REG_SZ;
+
+        if(!SetupDiGetDeviceRegistryProperty(
+               h, &da, SPDRP_DRIVER, &regType, (PBYTE)ptrBuf, USB_BUFFER_SIZE - 1, &requiredSize))
+            continue;
+
+        if(_stricmp(ptrBuf, driverKey) != 0) continue;
+
+        if(!SetupDiGetDeviceInstanceId(h, &da, instanceId, USB_BUFFER_SIZE, &requiredSize)) instanceId[0] = 0;
+
+        break;
+    }
+
+    SetupDiDestroyDeviceInfoList(h);
+}
+
 UsbDevice_t* GetPortDevice(UsbPort_t* port)
 {
-    UsbDevice_t*            device;
-    HANDLE                  h;
-    DWORD                   nBytesReturned;
-    DWORD                   nBytes = USB_BUFFER_SIZE + sizeof(USB_DESCRIPTOR_REQUEST) + sizeof(USB_STRING_DESCRIPTOR);
-    PUSB_DESCRIPTOR_REQUEST request;
-    PUSB_STRING_DESCRIPTOR  descriptor;
-    DWORD                   k;
+    UsbDevice_t*                        device;
+    HANDLE                              h;
+    DWORD                               nBytesReturned;
+    DWORD nBytes = USB_BUFFER_SIZE + sizeof(USB_DESCRIPTOR_REQUEST) + sizeof(USB_STRING_DESCRIPTOR);
+    PUSB_DESCRIPTOR_REQUEST             request;
+    PUSB_STRING_DESCRIPTOR              descriptor;
+    DWORD                               k;
+    PUSB_NODE_CONNECTION_DRIVERKEY_NAME driverKeyName;
 
     if(port == NULL || !port->PortIsDeviceConnected) return NULL;
 
@@ -322,6 +364,17 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
     {
         free(request);
         return device;
+    }
+
+    // Get the Driver Key Name, which is used to find the device's Instance ID
+    memset(request, 0, nBytes);
+    driverKeyName                  = (PUSB_NODE_CONNECTION_DRIVERKEY_NAME)request;
+    driverKeyName->ConnectionIndex = port->PortPortNumber;
+
+    if(DeviceIoControl(h, IOCTL_USB_GET_NODE_CONNECTION_DRIVERKEY_NAME, request, nBytes, request, nBytes, &k, NULL))
+    {
+        sprintf_s(device->DriverKey, USB_BUFFER_SIZE, "%ws", driverKeyName->DriverKeyName);
+        GetInstanceIdByKeyName(device->DriverKey, device->InstanceId);
     }
 
     // The iManufacturer, iProduct and iSerialNumber entries in the
