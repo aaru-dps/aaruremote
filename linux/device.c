@@ -50,7 +50,7 @@ void *DeviceOpen(const char *device_path)
 
     memset(ctx, 0, sizeof(DeviceContext));
 
-    ctx->fd = open(device_path, O_RDWR | O_NONBLOCK | O_CREAT);
+    ctx->fd = open(device_path, O_RDWR | O_NONBLOCK);
 
     if((ctx->fd < 0) && (errno == EACCES || errno == EROFS)) { ctx->fd = open(device_path, O_RDONLY | O_NONBLOCK); }
 
@@ -368,7 +368,7 @@ int32_t ReOpen(void *device_ctx, uint32_t *closeFailed)
         return errno;
     }
 
-    ctx->fd = open(ctx->device_path, O_RDWR | O_NONBLOCK | O_CREAT);
+    ctx->fd = open(ctx->device_path, O_RDWR | O_NONBLOCK);
 
     if((ctx->fd < 0) && (errno == EACCES || errno == EROFS)) ctx->fd = open(ctx->device_path, O_RDONLY | O_NONBLOCK);
 
