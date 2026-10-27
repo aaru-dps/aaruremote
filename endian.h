@@ -15,10 +15,16 @@
 
 #if HAVE_ENDIAN_H
 #include <endian.h>
-#else
+#endif
 
+// Old C libraries, such as glibc before 2.9, have endian.h but not the conversion macros, so define whatever is missing
+#ifndef __LITTLE_ENDIAN
 #define __LITTLE_ENDIAN 1234
+#endif
+
+#ifndef __BIG_ENDIAN
 #define __BIG_ENDIAN 4321
+#endif
 
 #ifndef __BYTE_ORDER
 #define __BYTE_ORDER __LITTLE_ENDIAN
@@ -95,7 +101,5 @@
 
 #endif /* __BYTE_ORDER == __BIG_ENDIAN */
 #endif /* !htobe64 */
-
-#endif
 
 #endif // AARUREMOTE__ENDIAN_H_
