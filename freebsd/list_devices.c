@@ -25,6 +25,20 @@
 #include "../aaruremote.h"
 #include "freebsd.h"
 
+// Fills the device information of SCSI devices, and of ATAPI devices from their SCSI inquiry data
+static void FillScsiDeviceInfo(DeviceInfo *info, union ccb *camccb, struct cam_device *camdev)
+{
+    strncpy(info->vendor, camccb->cgd.inq_data.vendor, 8);
+    strncpy(info->model, camccb->cgd.inq_data.product, 16);
+
+    if(strncmp(camdev->sim_name, "ata", 3) == 0 || strncmp(camdev->sim_name, "ahcich", 6) == 0)
+        strncpy(info->bus, "ATAPI", 5);
+    else
+        strncpy(info->bus, "SCSI", 4);
+
+    info->supported = true;
+}
+
 DeviceInfoList *ListDevices()
 {
     DeviceInfoList    *list_start = NULL, *list_current = NULL, *list_next = NULL;
@@ -90,6 +104,10 @@ DeviceInfoList *ListDevices()
 
         strncpy(list_next->this.serial, (const char *)camdev->serial_num, camdev->serial_num_len);
 
+#ifndef HAS_CAM_ATA
+        // Before FreeBSD 8 CAM has no protocol information, and only has SCSI devices and ATAPI ones through atapicam
+        FillScsiDeviceInfo(&list_next->this, camccb, camdev);
+#else
         switch(camccb->cgd.protocol)
         {
             case PROTO_ATA:
@@ -116,21 +134,11 @@ DeviceInfoList *ListDevices()
 
                 list_next->this.supported = true;
 
-                if(camccb->cgd.protocol == PROTO_ATAPI) goto protocol_atapi;
+                if(camccb->cgd.protocol == PROTO_ATAPI) FillScsiDeviceInfo(&list_next->this, camccb, camdev);
 
                 break;
             case PROTO_SCSI:
-            protocol_atapi:
-                strncpy(list_next->this.vendor, camccb->cgd.inq_data.vendor, 8);
-                strncpy(list_next->this.model, camccb->cgd.inq_data.product, 16);
-
-                if(strncmp(camdev->sim_name, "ata", 3) == 0 || strncmp(camdev->sim_name, "ahcich", 6) == 0)
-                    strncpy(list_next->this.bus, "ATAPI", 5);
-                else
-                    strncpy(list_next->this.bus, "SCSI", 4);
-
-                list_next->this.supported = true;
-
+                FillScsiDeviceInfo(&list_next->this, camccb, camdev);
                 break;
 #if __FreeBSD_version >= 1200000
             case PROTO_NVME:
@@ -149,6 +157,7 @@ DeviceInfoList *ListDevices()
                 free(list_next);
                 continue;
         }
+#endif
 
         cam_freeccb(camccb);
         cam_close_device(camdev);
