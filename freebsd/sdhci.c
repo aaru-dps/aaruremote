@@ -29,7 +29,16 @@ int32_t SendSdhciCommand(void *device_ctx, uint8_t command, uint8_t write, uint8
 int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, char **scr, uint32_t *csd_len,
                           uint32_t *cid_len, uint32_t *ocr_len, uint32_t *scr_len)
 {
-    return -1;
+    *csd     = NULL;
+    *cid     = NULL;
+    *ocr     = NULL;
+    *scr     = NULL;
+    *csd_len = 0;
+    *cid_len = 0;
+    *ocr_len = 0;
+    *scr_len = 0;
+
+    return 0;
 }
 
 int32_t SendMultiSdhciCommand(void *device_ctx, uint64_t count, MmcSingleCommand commands[], uint32_t *duration,
