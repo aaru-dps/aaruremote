@@ -93,7 +93,7 @@ int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorR
     camccb->ataio.cmd.command      = registers.command;
     camccb->ataio.cmd.lba_high     = registers.cylinder_high;
     camccb->ataio.cmd.lba_mid      = registers.cylinder_low;
-    camccb->ataio.cmd.device       = 0x40 | registers.device_head;
+    camccb->ataio.cmd.device       = registers.device_head;
     camccb->ataio.cmd.features     = registers.feature;
     camccb->ataio.cmd.sector_count = registers.sector_count;
     camccb->ataio.cmd.lba_low      = registers.sector;
