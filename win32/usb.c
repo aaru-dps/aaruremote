@@ -645,7 +645,7 @@ UsbDevice_t* FindDeviceNumber(DWORD devNum, GUID diskGuid)
             i++;
         } while(success);
 
-        SetupDiDestroyClassImageList(h);
+        SetupDiDestroyDeviceInfoList(h);
     }
 
     // Did we find an InterfaceID of a USB device?
