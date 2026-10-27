@@ -75,7 +75,7 @@ The part after the IP address in an `aaru://` path is the device path on the ser
 | Server OS    | Typical device paths                                                                       |
 |--------------|--------------------------------------------------------------------------------------------|
 | Linux        | `/dev/sr0` (optical), `/dev/sda` (disks), `/dev/sg0` (SCSI generic), `/dev/mmcblk0` (SD/MMC) |
-| FreeBSD      | `/dev/pass0`                                                                               |
+| FreeBSD      | `/dev/pass0`, or `/dev/ad0` for ATA disks on FreeBSD 8 and older                           |
 | macOS        | `/dev/rdisk2`                                                                              |
 | Windows      | `\\.\PhysicalDrive0`, `\\.\CdRom0`, `\\.\Tape0`                                            |
 | Nintendo Wii | `/dev/flash` (NAND), `/dev/sdio/slot0` (SD card)                                           |
@@ -99,7 +99,7 @@ Supported platforms
 
 |              | Minimum OS<sup>*1</sup> | SCSI            | CHS ATA                  | 28-bit LBA ATA           | 48-bit LBA ATA           | Secure Digital | MultiMediaCard | USB                  | FireWire             | PCMCIA           | Special<sup>*2</sup> |
 |--------------|-------------------------|-----------------|--------------------------|--------------------------|--------------------------|----------------|----------------|----------------------|----------------------|------------------|----------------------|
-| FreeBSD      | 12                      | Yes             | Yes                      | Yes                      | Yes                      | Not yet        | Not yet        | Not yet<sup>*4</sup> | Not yet<sup>*4</sup> | No<sup>*5</sup>  |                      |
+| FreeBSD      | 5.5<sup>*8</sup>        | Yes             | Yes                      | Yes                      | Yes                      | Not yet        | Not yet        | Not yet<sup>*4</sup> | Not yet<sup>*4</sup> | No<sup>*5</sup>  |                      |
 | Linux        | 2.6                     | Yes             | Yes                      | Yes                      | Yes                      | Yes            | Yes            | Yes                  | Yes                  | Yes<sup>*6</sup> |                      |
 | macOS        | 10.0                    | Yes             | Best effort<sup>*7</sup> | Best effort<sup>*7</sup> | Best effort<sup>*7</sup> | Not yet        | Not yet        | Yes                  | Yes                  | No               |                      |
 | Nintendo Wii | 4.3                     | No<sup>*3</sup> | No<sup>*3</sup>          | No<sup>*3</sup>          | No<sup>*3</sup>          | Not yet        | Not yet        | Not yet              | No<sup>*3</sup>      | No<sup>*3</sup>  | Not yet              |
@@ -112,6 +112,7 @@ Supported platforms
 5. As ATA device, not possible to retrieve special data.
 6. Only ATA devices, not linear memory devices.
 7. ATA passthrough on macOS is attempted through the IOKit storage stack and SAT-compatible bridges, but modern macOS may restrict raw low-level access depending on the device and OS version.
+8. Tested on FreeBSD 5.5, 8.4 and 12.4. Before FreeBSD 9, ATA disks are attached to the legacy ata(4) driver instead of CAM, which only allows LBA28 commands and does not return the status and error registers, and ATAPI drives need a kernel built with `atapicam`.
 
 Troubleshooting
 ===============
