@@ -78,7 +78,6 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
 
     camccb->ccb_h.func_code   = XPT_SCSI_IO;
     camccb->ccb_h.flags       = flags;
-    camccb->ccb_h.xflags      = 0;
     camccb->ccb_h.retry_count = 1;
     camccb->ccb_h.cbfcnp      = NULL;
     camccb->ccb_h.timeout     = timeout;
