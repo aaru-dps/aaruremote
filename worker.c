@@ -744,7 +744,8 @@ void *WorkingLoop(void *arguments)
 
                     // Swap parameters
                     pkt_res_usb->desc_len = htole16(pkt_res_usb->desc_len);
-                    // TODO: Need to swap vendor, product?
+                    pkt_res_usb->id_vendor  = htole16(pkt_res_usb->id_vendor);
+                    pkt_res_usb->id_product = htole16(pkt_res_usb->id_product);
 
                     NetWrite(cli_ctx, pkt_res_usb, le32toh(pkt_res_usb->hdr.len));
                     free(pkt_res_usb);
@@ -785,7 +786,9 @@ void *WorkingLoop(void *arguments)
                         GetFireWireData(device_ctx, &pkt_res_firewire->id_model, &pkt_res_firewire->id_vendor,
                                         &pkt_res_firewire->guid, pkt_res_firewire->vendor, pkt_res_firewire->model);
 
-                    // TODO: Need to swap IDs?
+                    pkt_res_firewire->id_model  = htole32(pkt_res_firewire->id_model);
+                    pkt_res_firewire->id_vendor = htole32(pkt_res_firewire->id_vendor);
+                    pkt_res_firewire->guid      = htole64(pkt_res_firewire->guid);
 
                     NetWrite(cli_ctx, pkt_res_firewire, le32toh(pkt_res_firewire->hdr.len));
                     free(pkt_res_firewire);
