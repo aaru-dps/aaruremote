@@ -172,15 +172,25 @@ UsbHub_t* GetRootHub(UsbController_t* controller)
     root    = malloc(sizeof(UsbHub_t));
     hubName = malloc(sizeof(USB_ROOT_HUB_NAME) + USB_BUFFER_SIZE - 1);
 
-    if(!root) return NULL;
+    if(!root || !hubName)
+    {
+        free(root);
+        free(hubName);
+        return NULL;
+    }
 
+    memset(root, 0, sizeof(UsbHub_t));
     root->HubIsRootHub = TRUE;
     strncpy(root->HubDeviceDesc, "Root Hub", 8);
 
     // Open a handle to the Host Controller
     h = CreateFile(controller->ControllerDevicePath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 
-    if(h == INVALID_HANDLE_VALUE) return root;
+    if(h == INVALID_HANDLE_VALUE)
+    {
+        free(hubName);
+        return root;
+    }
 
     memset(hubName, 0, sizeof(USB_ROOT_HUB_NAME) + USB_BUFFER_SIZE - 1);
     nBytes = sizeof(USB_ROOT_HUB_NAME) + USB_BUFFER_SIZE - 1;
@@ -420,6 +430,7 @@ UsbHub_t* GetPortHub(UsbPort_t* port)
         return NULL;
     }
 
+    memset(hub, 0, sizeof(UsbHub_t));
     hub->HubIsRootHub = FALSE;
     strncpy(hub->HubDeviceDesc, "External Hub", 12);
 
