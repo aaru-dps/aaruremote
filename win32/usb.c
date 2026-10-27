@@ -676,16 +676,15 @@ uint8_t GetUsbData(void*     device_ctx,
 {
     DeviceContext* ctx    = device_ctx;
     UsbDevice_t*   device = NULL;
-    GUID*          guids;
+    GUID           guids[4];
     int            i;
 
-    guids    = malloc(sizeof(GUID) * 4);
+    if(!ctx) return 0;
+
     guids[0] = GUID_DEVINTERFACE_FLOPPY;
     guids[1] = GUID_DEVINTERFACE_CDROM;
     guids[2] = GUID_DEVINTERFACE_DISK;
     guids[3] = GUID_DEVINTERFACE_TAPE;
-
-    if(!ctx) return -1;
 
     for(i = 0; i < 4; i++)
     {
@@ -694,11 +693,7 @@ uint8_t GetUsbData(void*     device_ctx,
         if(device != NULL) break;
     }
 
-    if(device == NULL)
-    {
-        free(guids);
-        return 0;
-    }
+    if(device == NULL) return 0;
 
     memcpy(descriptors, device->BinaryDeviceDescriptors, device->BinaryDeviceDescriptorsLength);
     *desc_len   = (uint16_t)device->BinaryDeviceDescriptorsLength;
@@ -708,7 +703,7 @@ uint8_t GetUsbData(void*     device_ctx,
     strncpy(product, device->Product, 256);
     strncpy(serial, device->SerialNumber, 256);
 
-    free(guids);
+    free(device);
 
     return 1;
 }
