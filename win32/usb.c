@@ -662,7 +662,7 @@ UsbDevice_t* FindDrivePath(DeviceContext* ctx, GUID deviceGuid)
     // DriveLetter.  We'll use this later to find a matching
     // DevicePath "symbolic name"
     DWORD devNum = GetDeviceNumber(ctx->device_path);
-    return devNum < 0 ? NULL : FindDeviceNumber(devNum, deviceGuid);
+    return devNum == (DWORD)-1 ? NULL : FindDeviceNumber(devNum, deviceGuid);
 }
 
 uint8_t GetUsbData(void*     device_ctx,
