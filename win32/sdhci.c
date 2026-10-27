@@ -119,14 +119,18 @@ BOOL IsSdhci(HANDLE handle)
     GUID                               sdGuid  = GUID_SFF_PROTOCOL_SD;
     GUID                               mmcGuid = GUID_SFF_PROTOCOL_MMC;
 
-    DeviceIoControl(handle,
-                    IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL,
-                    NULL,
-                    0,
-                    &query,
-                    sizeof(SFFDISK_QUERY_DEVICE_PROTOCOL_DATA),
-                    &k,
-                    NULL);
+    memset(&query, 0, sizeof(SFFDISK_QUERY_DEVICE_PROTOCOL_DATA));
+    query.Size = sizeof(SFFDISK_QUERY_DEVICE_PROTOCOL_DATA);
+
+    if(!DeviceIoControl(handle,
+                        IOCTL_SFFDISK_QUERY_DEVICE_PROTOCOL,
+                        NULL,
+                        0,
+                        &query,
+                        sizeof(SFFDISK_QUERY_DEVICE_PROTOCOL_DATA),
+                        &k,
+                        NULL))
+        return FALSE;
 
     return GuidEquals(query.ProtocolGUID, sdGuid) || GuidEquals(query.ProtocolGUID, mmcGuid);
 }
