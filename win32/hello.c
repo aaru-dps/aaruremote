@@ -73,10 +73,15 @@ AaruPacketHello* GetHello()
     strncpy(pkt_server_hello->version, AARUREMOTE_VERSION, sizeof(AARUREMOTE_VERSION));
     pkt_server_hello->max_protocol = AARUREMOTE_PROTOCOL_MAX;
 
-    ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
 
-    GetVersionEx((LPOSVERSIONINFOA)&osvi);
+    // Versions before NT 4.0 SP6 only accept the basic structure
+    if(!GetVersionEx((LPOSVERSIONINFOA)&osvi))
+    {
+        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+        GetVersionEx((LPOSVERSIONINFOA)&osvi);
+    }
 
     if(osvi.dwPlatformId == VER_PLATFORM_WIN32s)
     {
