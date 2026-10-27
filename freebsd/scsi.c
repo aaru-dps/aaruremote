@@ -20,10 +20,76 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <time.h>
 
 #include "../aaruremote.h"
 #include "freebsd.h"
+
+#ifdef HAS_ATA_DEVICE_IOCTL
+// Sends a SCSI command to an ATAPI drive attached to ata(4) instead of CAM, which returns its sense data on errors
+static int32_t AtaIoctlSendScsiCommand(DeviceContext *ctx, char *cdb, char *buffer, char **sense_buffer,
+                                       uint32_t timeout, int32_t direction, uint32_t *duration, uint32_t *sense,
+                                       uint32_t cdb_len, uint32_t *buf_len, uint32_t *sense_len)
+{
+    struct ata_ioc_request ioc;
+    int                    error;
+    int                    clock_error;
+    struct timespec        start_tp;
+    struct timespec        end_tp;
+    double                 start, end;
+
+    if(cdb_len > sizeof(ioc.u.atapi.ccb)) return ENOTSUP;
+
+    memset(&ioc, 0, sizeof(struct ata_ioc_request));
+
+    memcpy(ioc.u.atapi.ccb, cdb, cdb_len);
+    ioc.data    = buffer;
+    ioc.count   = buffer ? *buf_len : 0;
+    ioc.flags   = ATA_CMD_ATAPI;
+    ioc.timeout = AARUREMOTE_ATA_IOCTL_TIMEOUT(timeout);
+
+    // ata(4) only moves data in one direction, so commands that may do both are taken as reading
+    if(ioc.count > 0) ioc.flags |= direction == AARUREMOTE_SCSI_DIRECTION_OUT ? ATA_CMD_WRITE : ATA_CMD_READ;
+
+    clock_error = clock_gettime(CLOCK_REALTIME_PRECISE, &start_tp);
+
+    error = ioctl(ctx->ata_fd, IOCATAREQUEST, &ioc) < 0 ? errno : 0;
+
+    if(!clock_error) clock_error = clock_gettime(CLOCK_REALTIME_PRECISE, &end_tp);
+
+    if(!clock_error)
+    {
+        start = (double)start_tp.tv_sec * 1000.0;
+        start += (double)start_tp.tv_nsec / 1000000.0;
+        end = (double)end_tp.tv_sec * 1000.0;
+        end += (double)end_tp.tv_nsec / 1000000.0;
+
+        *duration = (uint32_t)(end - start);
+    }
+
+    if(error) return error;
+
+    if(ioc.error)
+    {
+        *sense = true;
+
+        // ata(4) copies out its whole data buffer even when the command failed, without it having been filled
+        if(ioc.flags & ATA_CMD_READ) memset(buffer, 0, ioc.count);
+
+        // ata(4) requests the sense data itself when an ATAPI command fails
+        *sense_buffer = malloc(sizeof(struct atapi_sense));
+
+        if(*sense_buffer)
+        {
+            memcpy(*sense_buffer, &ioc.u.atapi.sense, sizeof(struct atapi_sense));
+            *sense_len = sizeof(struct atapi_sense);
+        }
+    }
+
+    return ioc.error;
+}
+#endif
 
 int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_buffer, uint32_t timeout,
                         int32_t direction, uint32_t *duration, uint32_t *sense, uint32_t cdb_len, uint32_t *buf_len,
@@ -61,6 +127,13 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
     }
 
     if(!ctx) return -1;
+
+#ifdef HAS_ATA_DEVICE_IOCTL
+    if(ctx->ata_atapi)
+        return AtaIoctlSendScsiCommand(ctx, cdb, buffer, sense_buffer, timeout, direction, duration, sense, cdb_len,
+                                       buf_len, sense_len);
+#endif
+
     if(!ctx->device) return -1;
 
     *sense_buffer = malloc(32);
