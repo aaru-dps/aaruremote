@@ -23,9 +23,9 @@ BASELINE_ISA?=	yes
 HEADERS=	${SRCDIR}/aaruremote.h ${SRCDIR}/endian.h ${SRCDIR}/freebsd/freebsd.h ${SRCDIR}/unix/unix.h
 
 # Version, matching the CMake build: <base>-<short git commit>, or <base>-unknown when git or its metadata is
-# unavailable. git -C is avoided as older git versions do not support it.
+# unavailable. git -C and command -v are avoided as old versions of git and sh do not support them.
 VERSION_BASE=	1.0
-GIT_COMMIT!=	(command -v git >/dev/null 2>&1 && cd ${SRCDIR} && git rev-parse --short HEAD 2>/dev/null) || true
+GIT_COMMIT!=	(cd ${SRCDIR} && git rev-parse --short HEAD) 2>/dev/null || true
 
 .if empty(GIT_COMMIT)
 VERSION=	${VERSION_BASE}-unknown

@@ -33,9 +33,9 @@ OBJECTS := $(addprefix $(BUILDDIR)/core/,$(CORE_SOURCES:.c=.o)) \
 HEADERS := $(wildcard $(SRCDIR)/*.h $(SRCDIR)/macos/*.h $(SRCDIR)/unix/*.h)
 
 # Version, matching the CMake build: <base>-<short git commit>, or <base>-unknown when git or its metadata is
-# unavailable. git -C is avoided as older git versions do not support it.
+# unavailable. git -C and command -v are avoided as old versions of git and sh do not support them.
 VERSION_BASE := 1.0
-GIT_COMMIT   := $(shell command -v git >/dev/null 2>&1 && cd $(SRCDIR) && git rev-parse --short HEAD 2>/dev/null)
+GIT_COMMIT   := $(shell (cd $(SRCDIR) && git rev-parse --short HEAD) 2>/dev/null)
 ifeq ($(GIT_COMMIT),)
 VERSION := $(VERSION_BASE)-unknown
 else
