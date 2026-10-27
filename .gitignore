@@ -566,6 +566,9 @@ fabric.properties
 
 # CMake ignore
 Makefile
+!projects/makefile/
+!projects/makefile/*/
+!projects/makefile/*/Makefile
 cmake-build-*/
 cmake_install.cmake
 CMakeFiles/
