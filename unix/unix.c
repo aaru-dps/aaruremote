@@ -15,6 +15,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <signal.h>
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
@@ -32,6 +33,9 @@ static void RestoreTerminalMode()
 void Initialize()
 {
     struct termios current_termios;
+
+    // A client disconnecting while we write to it must not kill the server
+    signal(SIGPIPE, SIG_IGN);
 
     if(!isatty(STDIN_FILENO)) return;
     if(tcgetattr(STDIN_FILENO, &original_termios)) return;
