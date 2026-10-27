@@ -1211,8 +1211,8 @@ void *WorkingLoop(void *arguments)
 
                     for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++)
                     {
-                        memcpy(out_buf + off, multi_sdhci_commands[n].buffer, multi_sdhci_commands->buf_len);
-                        off += multi_sdhci_commands->buf_len;
+                        memcpy(out_buf + off, multi_sdhci_commands[n].buffer, multi_sdhci_commands[n].buf_len);
+                        off += multi_sdhci_commands[n].buf_len;
                     }
 
                     NetWrite(cli_ctx, pkt_res_multi_sdhci, le32toh(pkt_res_multi_sdhci->hdr.len));
