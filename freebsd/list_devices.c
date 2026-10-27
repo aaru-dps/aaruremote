@@ -49,6 +49,9 @@ DeviceInfoList *ListDevices()
         }
 
         list_next = malloc(sizeof(DeviceInfoList));
+
+        if(!list_next) break;
+
         memset(list_next, 0, sizeof(DeviceInfoList));
 
         if(!list_start) list_start = list_next;
