@@ -153,7 +153,13 @@
 #define AARUREMOTE_MMC_RESPONSE_SPI_R5  (AARUREMOTE_MMC_RESPONSE_SPI_S1 | AARUREMOTE_MMC_RESPONSE_SPI_S2)
 #define AARUREMOTE_MMC_RESPONSE_SPI_R7  (AARUREMOTE_MMC_RESPONSE_SPI_S1 | AARUREMOTE_MMC_RESPONSE_SPI_B4)
 
+// GCC before 4.0 does not support pack(push) on every target, so GCC-compatible compilers use the packed attribute
+#if defined(__GNUC__)
+#define AARUREMOTE_PACKED __attribute__((packed))
+#else
+#define AARUREMOTE_PACKED
 #pragma pack(push, 1)
+#endif
 
 typedef struct
 {
@@ -163,7 +169,7 @@ typedef struct
     uint8_t  version;
     int8_t   packet_type;
     char     spare[2];
-} AaruPacketHeader;
+} AARUREMOTE_PACKED AaruPacketHeader;
 
 typedef struct
 {
@@ -175,18 +181,18 @@ typedef struct
     char             sysname[256];
     char             release[256];
     char             machine[256];
-} AaruPacketHello;
+} AARUREMOTE_PACKED AaruPacketHello;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdListDevs;
+} AARUREMOTE_PACKED AaruPacketCmdListDevs;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     uint16_t         devices;
-} AaruPacketResListDevs;
+} AARUREMOTE_PACKED AaruPacketResListDevs;
 
 typedef struct
 {
@@ -197,13 +203,13 @@ typedef struct
     char    bus[256];
     uint8_t supported;
     char    padding[3];
-} DeviceInfo;
+} AARUREMOTE_PACKED DeviceInfo;
 
 typedef struct DeviceInfoList
 {
     struct DeviceInfoList* next;
     DeviceInfo this;
-} DeviceInfoList;
+} AARUREMOTE_PACKED DeviceInfoList;
 
 typedef struct
 {
@@ -212,13 +218,13 @@ typedef struct
     char             spare[3];
     char             reason[256];
     int32_t          error_no;
-} AaruPacketNop;
+} AARUREMOTE_PACKED AaruPacketNop;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     char             device_path[1024];
-} AaruPacketCmdOpen;
+} AARUREMOTE_PACKED AaruPacketCmdOpen;
 
 typedef struct
 {
@@ -227,7 +233,7 @@ typedef struct
     uint32_t         buf_len;
     int32_t          direction;
     uint32_t         timeout;
-} AaruPacketCmdScsi;
+} AARUREMOTE_PACKED AaruPacketCmdScsi;
 
 typedef struct
 {
@@ -237,7 +243,7 @@ typedef struct
     uint32_t         duration;
     uint32_t         sense;
     uint32_t         error_no;
-} AaruPacketResScsi;
+} AARUREMOTE_PACKED AaruPacketResScsi;
 
 typedef struct
 {
@@ -248,7 +254,7 @@ typedef struct
     uint8_t cylinder_high;
     uint8_t device_head;
     uint8_t command;
-} AtaRegistersChs;
+} AARUREMOTE_PACKED AtaRegistersChs;
 
 typedef struct
 {
@@ -259,7 +265,7 @@ typedef struct
     uint8_t cylinder_low;
     uint8_t cylinder_high;
     uint8_t device_head;
-} AtaErrorRegistersChs;
+} AARUREMOTE_PACKED AtaErrorRegistersChs;
 
 typedef struct
 {
@@ -271,7 +277,7 @@ typedef struct
     uint8_t          transfer_blocks;
     uint8_t          spare;
     uint32_t         timeout;
-} AaruPacketCmdAtaChs;
+} AARUREMOTE_PACKED AaruPacketCmdAtaChs;
 
 typedef struct
 {
@@ -281,7 +287,7 @@ typedef struct
     uint32_t             duration;
     uint32_t             sense;
     uint32_t             error_no;
-} AaruPacketResAtaChs;
+} AARUREMOTE_PACKED AaruPacketResAtaChs;
 
 typedef struct
 {
@@ -292,7 +298,7 @@ typedef struct
     uint8_t lba_high;
     uint8_t device_head;
     uint8_t command;
-} AtaRegistersLba28;
+} AARUREMOTE_PACKED AtaRegistersLba28;
 
 typedef struct
 {
@@ -303,7 +309,7 @@ typedef struct
     uint8_t lba_mid;
     uint8_t lba_high;
     uint8_t device_head;
-} AtaErrorRegistersLba28;
+} AARUREMOTE_PACKED AtaErrorRegistersLba28;
 
 typedef struct
 {
@@ -315,7 +321,7 @@ typedef struct
     uint8_t           transfer_blocks;
     uint8_t           spare;
     uint32_t          timeout;
-} AaruPacketCmdAtaLba28;
+} AARUREMOTE_PACKED AaruPacketCmdAtaLba28;
 
 typedef struct
 {
@@ -325,7 +331,7 @@ typedef struct
     uint32_t               duration;
     uint32_t               sense;
     uint32_t               error_no;
-} AaruPacketResAtaLba28;
+} AARUREMOTE_PACKED AaruPacketResAtaLba28;
 
 typedef struct
 {
@@ -339,7 +345,7 @@ typedef struct
     uint8_t  lba_high_cur;
     uint8_t  device_head;
     uint8_t  command;
-} AtaRegistersLba48;
+} AARUREMOTE_PACKED AtaRegistersLba48;
 
 typedef struct
 {
@@ -353,7 +359,7 @@ typedef struct
     uint8_t  lba_high_prev;
     uint8_t  lba_high_cur;
     uint8_t  device_head;
-} AtaErrorRegistersLba48;
+} AARUREMOTE_PACKED AtaErrorRegistersLba48;
 
 typedef struct
 {
@@ -365,7 +371,7 @@ typedef struct
     uint8_t           transfer_blocks;
     uint8_t           spare;
     uint32_t          timeout;
-} AaruPacketCmdAtaLba48;
+} AARUREMOTE_PACKED AaruPacketCmdAtaLba48;
 
 typedef struct
 {
@@ -375,7 +381,7 @@ typedef struct
     uint32_t               duration;
     uint32_t               sense;
     uint32_t               error_no;
-} AaruPacketResAtaLba48;
+} AARUREMOTE_PACKED AaruPacketResAtaLba48;
 
 typedef struct
 {
@@ -388,13 +394,13 @@ typedef struct
     uint32_t blocks;
     uint32_t buf_len;
     uint32_t timeout;
-} AaruCmdSdhci;
+} AARUREMOTE_PACKED AaruCmdSdhci;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     AaruCmdSdhci     command;
-} AaruPacketCmdSdhci;
+} AARUREMOTE_PACKED AaruPacketCmdSdhci;
 
 typedef struct
 {
@@ -403,29 +409,29 @@ typedef struct
     uint32_t duration;
     uint32_t sense;
     uint32_t error_no;
-} AaruResSdhci;
+} AARUREMOTE_PACKED AaruResSdhci;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     AaruResSdhci     res;
-} AaruPacketResSdhci;
+} AARUREMOTE_PACKED AaruPacketResSdhci;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdGetDeviceType;
+} AARUREMOTE_PACKED AaruPacketCmdGetDeviceType;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     int32_t          device_type;
-} AaruPacketResGetDeviceType;
+} AARUREMOTE_PACKED AaruPacketResGetDeviceType;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdGetSdhciRegisters;
+} AARUREMOTE_PACKED AaruPacketCmdGetSdhciRegisters;
 
 typedef struct
 {
@@ -439,12 +445,12 @@ typedef struct
     uint32_t         cid_len;
     uint32_t         ocr_len;
     uint32_t         scr_len;
-} AaruPacketResGetSdhciRegisters;
+} AARUREMOTE_PACKED AaruPacketResGetSdhciRegisters;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdGetUsbData;
+} AARUREMOTE_PACKED AaruPacketCmdGetUsbData;
 
 typedef struct
 {
@@ -457,12 +463,12 @@ typedef struct
     char             manufacturer[256];
     char             product[256];
     char             serial[256];
-} AaruPacketResGetUsbData;
+} AARUREMOTE_PACKED AaruPacketResGetUsbData;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdGetFireWireData;
+} AARUREMOTE_PACKED AaruPacketCmdGetFireWireData;
 
 typedef struct
 {
@@ -473,12 +479,12 @@ typedef struct
     uint64_t         guid;
     char             vendor[256];
     char             model[256];
-} AaruPacketResGetFireWireData;
+} AARUREMOTE_PACKED AaruPacketResGetFireWireData;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdGetPcmciaData;
+} AARUREMOTE_PACKED AaruPacketCmdGetPcmciaData;
 
 typedef struct
 {
@@ -486,58 +492,60 @@ typedef struct
     uint8_t          is_pcmcia;
     uint16_t         cis_len;
     char             cis[65536];
-} AaruPacketResGetPcmciaData;
+} AARUREMOTE_PACKED AaruPacketResGetPcmciaData;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdClose;
+} AARUREMOTE_PACKED AaruPacketCmdClose;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdAmIRoot;
+} AARUREMOTE_PACKED AaruPacketCmdAmIRoot;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     uint32_t         am_i_root;
-} AaruPacketResAmIRoot;
+} AARUREMOTE_PACKED AaruPacketResAmIRoot;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     uint64_t         cmd_count;
     AaruCmdSdhci     commands[0];
-} AaruPacketMultiCmdSdhci;
+} AARUREMOTE_PACKED AaruPacketMultiCmdSdhci;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     uint64_t         cmd_count;
     AaruResSdhci     responses[0];
-} AaruPacketMultiResSdhci;
+} AARUREMOTE_PACKED AaruPacketMultiResSdhci;
 
 typedef struct
 {
     AaruPacketHeader hdr;
-} AaruPacketCmdReOpen;
+} AARUREMOTE_PACKED AaruPacketCmdReOpen;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     uint64_t         offset;
     uint32_t         length;
-} AaruPacketCmdOsRead;
+} AARUREMOTE_PACKED AaruPacketCmdOsRead;
 
 typedef struct
 {
     AaruPacketHeader hdr;
     int32_t          error_no;
     uint32_t         duration;
-} AaruPacketResOsRead;
+} AARUREMOTE_PACKED AaruPacketResOsRead;
 
+#if !defined(__GNUC__)
 #pragma pack(pop)
+#endif
 
 typedef struct
 {
