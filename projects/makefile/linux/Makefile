@@ -62,10 +62,13 @@ AARU_CPPFLAGS += -DHAS_UDEV
 AARU_LIBS     += -ludev
 endif
 
-# SD/MMC commands need the kernel's MMC ioctl header
-HAVE_MMC_IOCTL_H := $(shell echo | $(CC) -E -include linux/mmc/ioctl.h -x c - >/dev/null 2>&1 && echo yes)
+# Use the kernel's MMC ioctl header only if it has MMC_IOC_MULTI_CMD, which headers before 4.4 lack, and the bundled
+# copy otherwise
+HAVE_MMC_IOC_MULTI_CMD := $(shell echo 'unsigned long x = MMC_IOC_MULTI_CMD;' | \
+                            $(CC) -include sys/ioctl.h -include linux/mmc/ioctl.h -x c -c - -o /dev/null \
+                            >/dev/null 2>&1 && echo yes)
 
-ifeq ($(HAVE_MMC_IOCTL_H),yes)
+ifeq ($(HAVE_MMC_IOC_MULTI_CMD),yes)
 AARU_CPPFLAGS += -DHAS_UAPI_MMC
 endif
 
