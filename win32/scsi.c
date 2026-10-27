@@ -47,8 +47,9 @@ int32_t SendScsiCommand(void*     device_ctx,
     DOUBLE                    interval;
 
     *duration          = 0;
-    *sense_len         = 32;
-    sptd_and_sense_len = *sense_len + sizeof(SCSI_PASS_THROUGH_DIRECT);
+    *sense_len         = 0;
+    *sense_buffer      = NULL;
+    sptd_and_sense_len = 32 + sizeof(SCSI_PASS_THROUGH_DIRECT);
 
     if(!ctx) return -1;
 
@@ -58,13 +59,15 @@ int32_t SendScsiCommand(void*     device_ctx,
 
     memset(sptd_and_sense, 0, sptd_and_sense_len);
 
-    *sense_buffer = malloc(*sense_len);
+    *sense_buffer = malloc(32);
 
     if(!*sense_buffer)
     {
         free(sptd_and_sense);
         return -1;
     }
+
+    *sense_len = 32;
 
     switch(direction)
     {
