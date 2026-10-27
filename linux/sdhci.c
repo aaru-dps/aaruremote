@@ -51,7 +51,8 @@ int32_t SendSdhciCommand(void *device_ctx, uint8_t command, uint8_t write, uint8
     mmc_ioc_cmd.blocks     = blocks;
     if(timeout > 0)
     {
-        mmc_ioc_cmd.data_timeout_ns = timeout * 1000000000;
+        // data_timeout_ns is 32-bit, so anything over 4 seconds is clamped to its maximum
+        mmc_ioc_cmd.data_timeout_ns = timeout > 4 ? 0xFFFFFFFFU : timeout * 1000000000U;
         mmc_ioc_cmd.cmd_timeout_ms  = timeout * 1000;
     }
     mmc_ioc_cmd.data_ptr = (uint64_t)buffer;
