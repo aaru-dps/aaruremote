@@ -26,6 +26,11 @@
 #include <camlib.h>
 #include <time.h>
 
+// CAM can send ATA commands since FreeBSD 8.0
+#ifdef CAM_ATAIO_NEEDRESULT
+#define HAS_CAM_ATA
+#endif
+
 // Old releases, such as FreeBSD 5.5, have no precise clocks, so use the plain realtime clock there
 #ifndef CLOCK_REALTIME_PRECISE
 #define CLOCK_REALTIME_PRECISE CLOCK_REALTIME

@@ -23,6 +23,7 @@
 #include "../aaruremote.h"
 #include "freebsd.h"
 
+#ifdef HAS_CAM_ATA
 static u_int32_t AtaProtocolToCamFlags(uint8_t protocol)
 {
     switch(protocol)
@@ -45,9 +46,9 @@ static u_int32_t AtaProtocolToCamFlags(uint8_t protocol)
     }
 }
 
-int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorRegistersChs *error_registers,
-                          uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
-                          uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
+static int32_t CamSendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorRegistersChs *error_registers,
+                                    uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
+                                    uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
 {
     DeviceContext *ctx = device_ctx;
     *duration          = 0;
@@ -142,9 +143,10 @@ int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorR
     return error;
 }
 
-int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaErrorRegistersLba28 *error_registers,
-                            uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
-                            uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
+static int32_t CamSendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers,
+                                      AtaErrorRegistersLba28 *error_registers, uint8_t protocol,
+                                      uint8_t transfer_register, char *buffer, uint32_t timeout,
+                                      uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
 {
     DeviceContext *ctx = device_ctx;
     *duration          = 0;
@@ -239,9 +241,10 @@ int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaEr
     return error;
 }
 
-int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaErrorRegistersLba48 *error_registers,
-                            uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
-                            uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
+static int32_t CamSendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers,
+                                      AtaErrorRegistersLba48 *error_registers, uint8_t protocol,
+                                      uint8_t transfer_register, char *buffer, uint32_t timeout,
+                                      uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
 {
     DeviceContext *ctx = device_ctx;
     *duration          = 0;
@@ -344,4 +347,65 @@ int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaEr
     *sense |= error_registers->error || (error_registers->status & 0xA5) || error;
 
     return error;
+}
+#endif
+
+int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorRegistersChs *error_registers,
+                          uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
+                          uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
+{
+    DeviceContext *ctx = device_ctx;
+
+    *duration = 0;
+    *sense    = 0;
+
+    if(!ctx) return -1;
+
+#ifdef HAS_CAM_ATA
+    if(ctx->device)
+        return CamSendAtaChsCommand(device_ctx, registers, error_registers, protocol, transfer_register, buffer,
+                                    timeout, transfer_blocks, duration, sense, buf_len);
+#endif
+
+    return ENOTSUP;
+}
+
+int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaErrorRegistersLba28 *error_registers,
+                            uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
+                            uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
+{
+    DeviceContext *ctx = device_ctx;
+
+    *duration = 0;
+    *sense    = 0;
+
+    if(!ctx) return -1;
+
+#ifdef HAS_CAM_ATA
+    if(ctx->device)
+        return CamSendAtaLba28Command(device_ctx, registers, error_registers, protocol, transfer_register, buffer,
+                                      timeout, transfer_blocks, duration, sense, buf_len);
+#endif
+
+    return ENOTSUP;
+}
+
+int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaErrorRegistersLba48 *error_registers,
+                            uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
+                            uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
+{
+    DeviceContext *ctx = device_ctx;
+
+    *duration = 0;
+    *sense    = 0;
+
+    if(!ctx) return -1;
+
+#ifdef HAS_CAM_ATA
+    if(ctx->device)
+        return CamSendAtaLba48Command(device_ctx, registers, error_registers, protocol, transfer_register, buffer,
+                                      timeout, transfer_blocks, duration, sense, buf_len);
+#endif
+
+    return ENOTSUP;
 }
