@@ -56,7 +56,7 @@ DeviceInfoList *ListDevices()
         deviceId = 0;
         IOS_Ioctl(sd_fd, AARUREMOTE_WII_IOCTL_SD_GET_DEVICE_STATUS, 0, 0, &deviceId, sizeof(deviceId));
 
-        if(deviceId == AARUREMOTE_WII_SD_INSERTED)
+        if(deviceId & AARUREMOTE_WII_SD_INSERTED)
         {
             list_next = malloc(sizeof(DeviceInfoList));
 
