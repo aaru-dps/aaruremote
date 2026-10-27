@@ -129,6 +129,8 @@ DeviceInfoList *ListDevices()
                 {
                     strncpy(list_next->this.bus, tmp_string, 256);
                 }
+
+                udev_device_unref(udev_device);
             }
         }
 #else  // Use sysfs

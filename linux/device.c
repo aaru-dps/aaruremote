@@ -98,10 +98,13 @@ int32_t GetDeviceType(void *device_ctx)
     if(!udev) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     chrptr = strrchr(ctx->device_path, '/');
-    if(chrptr == 0) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+    if(chrptr == 0)
+    {
+        udev_unref(udev);
+        return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+    }
 
     chrptr++;
-    if(chrptr == 0) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
 
     udev_device = udev_device_new_from_subsystem_sysname(udev, "block", chrptr);
     if(udev_device)
@@ -149,6 +152,8 @@ int32_t GetDeviceType(void *device_ctx)
             else if(strncmp(tmp_string, "nvme", 4) == 0)
                 device_type = AARUREMOTE_DEVICE_TYPE_NVME;
         }
+
+        udev_device_unref(udev_device);
     }
 
     udev_unref(udev);
