@@ -68,6 +68,37 @@ int32_t SendSdhciCommand(void *device_ctx, uint8_t command, uint8_t write, uint8
     return error;
 }
 
+// Reads a register exported by the kernel as a hexadecimal string, with an optional 0x prefix and a trailing newline
+static uint32_t ReadSysfsRegister(const char *path, char *line, int line_len, char **out)
+{
+    FILE  *file;
+    size_t len;
+    char  *hex;
+
+    *out = NULL;
+    file = fopen(path, "r");
+
+    if(file == NULL) return 0;
+
+    if(fgets(line, line_len, file) == NULL)
+    {
+        fclose(file);
+        return 0;
+    }
+
+    fclose(file);
+
+    len = strlen(line);
+
+    while(len > 0 && (line[len - 1] == '\n' || line[len - 1] == '\r' || line[len - 1] == ' ')) line[--len] = '\0';
+
+    hex = line;
+
+    if(hex[0] == '0' && (hex[1] == 'x' || hex[1] == 'X')) hex += 2;
+
+    return (uint32_t)Hexs2Bin(hex, (unsigned char **)out);
+}
+
 int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, char **scr, uint32_t *csd_len,
                           uint32_t *cid_len, uint32_t *ocr_len, uint32_t *scr_len)
 {
@@ -78,7 +109,6 @@ int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, 
     char          *sysfs_path_scr;
     char          *sysfs_path_ocr;
     size_t         len;
-    FILE          *file;
     *csd     = NULL;
     *cid     = NULL;
     *ocr     = NULL;
@@ -87,7 +117,6 @@ int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, 
     *cid_len = 0;
     *ocr_len = 0;
     *scr_len = 0;
-    size_t n = 1024;
 
     if(!ctx) return -1;
 
@@ -122,93 +151,10 @@ int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, 
     snprintf(sysfs_path_scr, len, "/sys/block/%s/device/scr", tmp_string);
     snprintf(sysfs_path_ocr, len, "/sys/block/%s/device/ocr", tmp_string);
 
-    if(access(sysfs_path_csd, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_csd, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *csd_len = Hexs2Bin(tmp_string, (unsigned char **)csd);
-
-                if(*csd_len <= 0)
-                {
-                    *csd_len = 0;
-                    *csd     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    if(access(sysfs_path_cid, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_cid, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *cid_len = Hexs2Bin(tmp_string, (unsigned char **)cid);
-
-                if(*cid_len <= 0)
-                {
-                    *cid_len = 0;
-                    *cid     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    if(access(sysfs_path_scr, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_scr, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *scr_len = Hexs2Bin(tmp_string, (unsigned char **)scr);
-
-                if(*scr_len <= 0)
-                {
-                    *scr_len = 0;
-                    *scr     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
-
-    if(access(sysfs_path_ocr, R_OK) == 0)
-    {
-        file = fopen(sysfs_path_ocr, "r");
-
-        if(file != NULL)
-        {
-            len = getline(&tmp_string, &n, file);
-            if(len > 0)
-            {
-                *ocr_len = Hexs2Bin(tmp_string, (unsigned char **)ocr);
-
-                if(*ocr_len <= 0)
-                {
-                    *ocr_len = 0;
-                    *ocr     = NULL;
-                }
-            }
-
-            fclose(file);
-        }
-    }
+    *csd_len = ReadSysfsRegister(sysfs_path_csd, tmp_string, 1024, csd);
+    *cid_len = ReadSysfsRegister(sysfs_path_cid, tmp_string, 1024, cid);
+    *scr_len = ReadSysfsRegister(sysfs_path_scr, tmp_string, 1024, scr);
+    *ocr_len = ReadSysfsRegister(sysfs_path_ocr, tmp_string, 1024, ocr);
 
     free(sysfs_path_csd);
     free(sysfs_path_cid);
