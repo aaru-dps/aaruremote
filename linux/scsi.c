@@ -31,14 +31,17 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
     DeviceContext *ctx = device_ctx;
     sg_io_hdr_t    hdr;
     int            dir, ret;
-    *sense_len = 32;
+    *sense_len    = 0;
+    *sense_buffer = NULL;
 
     if(!ctx) return -1;
 
     memset(&hdr, 0, sizeof(sg_io_hdr_t));
-    *sense_buffer = malloc(*sense_len);
+    *sense_buffer = malloc(32);
 
     if(!*sense_buffer) return -1;
+
+    *sense_len = 32;
 
     switch(direction)
     {
