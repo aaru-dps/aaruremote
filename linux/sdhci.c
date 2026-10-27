@@ -59,9 +59,9 @@ int32_t SendSdhciCommand(void *device_ctx, uint8_t command, uint8_t write, uint8
     // TODO: Timing
     error = ioctl(ctx->fd, MMC_IOC_CMD, &mmc_ioc_cmd);
 
-    if(error < 0) error = errno;
-
     *sense = error < 0;
+
+    if(error < 0) error = errno;
 
     memcpy((char *)response, (char *)&mmc_ioc_cmd.response, sizeof(uint32_t) * 4);
 
@@ -209,9 +209,9 @@ int32_t SendMultiSdhciCommand(void *device_ctx, uint64_t count, MmcSingleCommand
 
     error = ioctl(ctx->fd, MMC_IOC_MULTI_CMD, mmc_ioc_multi_cmd);
 
-    if(error < 0) error = errno;
-
     *sense = error < 0;
+
+    if(error < 0) error = errno;
 
     for(i = 0; i < count; i++)
         memcpy((char *)commands[i].response, (char *)mmc_ioc_multi_cmd->cmds[i].response, sizeof(uint32_t) * 4);
