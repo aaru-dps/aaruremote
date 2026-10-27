@@ -49,6 +49,9 @@ int32_t SendSdhciCommand(void*     device_ctx,
     LARGE_INTEGER                end;
     DOUBLE                       interval;
 
+    *duration = 0;
+    *sense    = 0;
+
     if(!ctx) return -1;
 
     cmdbuf_len = sizeof(SFFDISK_DEVICE_COMMAND_DATA) + sizeof(SDCMD_DESCRIPTOR) + buf_len;
@@ -272,11 +275,12 @@ int32_t SendMultiSdhciCommand(void*            device_ctx,
                               uint32_t*        sense)
 {
     DeviceContext* ctx = device_ctx;
-    *duration          = 0;
-    *sense             = 0;
-    uint64_t i;
-    int32_t  error = 0, single_error;
-    uint32_t single_sense, single_duration;
+    uint64_t       i;
+    int32_t        error = 0, single_error;
+    uint32_t       single_sense, single_duration;
+
+    *duration = 0;
+    *sense    = 0;
 
     if(!ctx) return -1;
 
