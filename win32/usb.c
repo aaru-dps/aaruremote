@@ -272,7 +272,7 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
     PUSB_STRING_DESCRIPTOR  descriptor;
     DWORD                   k;
 
-    if(port == NULL || port->PortIsDeviceConnected) return NULL;
+    if(port == NULL || !port->PortIsDeviceConnected) return NULL;
 
     device  = malloc(sizeof(UsbDevice_t));
     request = malloc(nBytes);
