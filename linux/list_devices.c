@@ -40,7 +40,8 @@ DeviceInfoList *ListDevices()
     const char     *tmp_string;
     FILE           *file;
     char           *line_str;
-    size_t          n, ret;
+    size_t          n;
+    ssize_t         ret;
     char           *chrptr;
     int             has_udev = 0;
 #ifdef HAS_UDEV
@@ -162,12 +163,13 @@ DeviceInfoList *ListDevices()
                     line_str = malloc(1024);
                     memset(line_str, 0, 1024);
 
-                    ret = readlink(tmp_string, line_str, 1024);
+                    ret    = readlink(tmp_string, line_str, 1023);
+                    chrptr = ret > 0 ? strchr(line_str, ':') : NULL;
 
-                    if(ret > 0)
+                    if(chrptr && chrptr != line_str)
                     {
-                        ret    = 0;
-                        chrptr = strchr(line_str, ':') - 1;
+                        ret = 0;
+                        chrptr--;
 
                         while(chrptr != line_str)
                         {
