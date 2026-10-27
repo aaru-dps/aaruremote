@@ -44,6 +44,10 @@
 #define HAS_ATA_DEVICE_IOCTL
 #endif
 
+// Clients send timeouts in milliseconds, but ata(4) takes seconds, and times a request out immediately when given 0,
+// so then use the timeout it uses for its own requests
+#define AARUREMOTE_ATA_IOCTL_TIMEOUT(ms) ((ms) ? ((ms) + 999) / 1000 : 5)
+
 // Old releases, such as FreeBSD 5.5, have no precise clocks, so use the plain realtime clock there
 #ifndef CLOCK_REALTIME_PRECISE
 #define CLOCK_REALTIME_PRECISE CLOCK_REALTIME

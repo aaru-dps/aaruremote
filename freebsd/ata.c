@@ -360,9 +360,6 @@ typedef struct ata_ioc_request AtaIoctlCommand;
 #define ATA_IOCTL_REQUEST(iocmd) (iocmd)
 #endif
 
-// ata(4) times a command out immediately when given a timeout of 0, so use the one it uses for its own commands
-#define AARUREMOTE_ATA_IOCTL_DEFAULT_TIMEOUT 5
-
 // Sends an LBA28 ATA command through ata(4). ata(4) does not return the status and error
 // registers, only whether the command failed, and only returns the count and LBA registers for commands without
 // data.
@@ -393,7 +390,7 @@ static int32_t AtaIoctlSendLba28Command(DeviceContext *ctx, AtaRegistersLba28 re
                                          registers.lba_low;
     ATA_IOCTL_REQUEST(iocmd).data      = buffer;
     ATA_IOCTL_REQUEST(iocmd).count     = buffer ? *buf_len : 0;
-    ATA_IOCTL_REQUEST(iocmd).timeout   = timeout ? timeout : AARUREMOTE_ATA_IOCTL_DEFAULT_TIMEOUT;
+    ATA_IOCTL_REQUEST(iocmd).timeout   = AARUREMOTE_ATA_IOCTL_TIMEOUT(timeout);
 
     switch(protocol)
     {
