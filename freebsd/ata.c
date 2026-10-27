@@ -430,6 +430,9 @@ static int32_t AtaIoctlSendLba28Command(DeviceContext *ctx, AtaRegistersLba28 re
     // Without the real registers, report a failed command with the status error bit
     if(error)
     {
+        // ata(4) copies out its whole data buffer even when the command failed, without it having been filled
+        if(ATA_IOCTL_REQUEST(iocmd).flags & ATA_CMD_READ) memset(buffer, 0, ATA_IOCTL_REQUEST(iocmd).count);
+
         error_registers->status = 0x01;
         *sense                  = true;
         return error;
