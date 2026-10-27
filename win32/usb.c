@@ -362,10 +362,10 @@ UsbDevice_t* GetPortDevice(UsbPort_t* port)
 
     request->ConnectionIndex     = port->PortPortNumber;
     request->SetupPacket.wIndex  = 0;
-    request->SetupPacket.wValue  = ((USB_STRING_DESCRIPTOR_TYPE << 8));
+    request->SetupPacket.wValue  = ((USB_CONFIGURATION_DESCRIPTOR_TYPE << 8));
     request->SetupPacket.wLength = (USHORT)(nBytes - sizeof(USB_DESCRIPTOR_REQUEST));
 
-    // Use an IOCTL call to request the String Descriptor
+    // Use an IOCTL call to request the Configuration Descriptor
     if(DeviceIoControl(
            h, IOCTL_USB_GET_DESCRIPTOR_FROM_NODE_CONNECTION, request, nBytes, request, nBytes, &nBytesReturned, NULL))
     {
