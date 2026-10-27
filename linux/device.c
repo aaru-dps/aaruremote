@@ -79,11 +79,48 @@ void DeviceClose(void *device_ctx)
     free(ctx);
 }
 
+// Old IDE devices, such as hdc, are not SCSI hosts, so take their type from the media the IDE driver reports
+static int32_t GetIdeDeviceType(const char *dev_name)
+{
+    char  path[1024];
+    char  media[16];
+    FILE *file;
+
+    if(strncmp(dev_name, "hd", 2) != 0) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+
+    snprintf(path, sizeof(path), "%s/%s/device/media", PATH_SYS_DEVBLOCK, dev_name);
+
+    file = fopen(path, "r");
+
+    if(!file) return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+
+    memset(media, 0, sizeof(media));
+
+    if(!fgets(media, sizeof(media), file)) media[0] = 0;
+
+    fclose(file);
+
+    if(strncmp(media, "disk", 4) == 0) return AARUREMOTE_DEVICE_TYPE_ATA;
+
+    if(strncmp(media, "cdrom", 5) == 0 || strncmp(media, "tape", 4) == 0 || strncmp(media, "floppy", 6) == 0)
+        return AARUREMOTE_DEVICE_TYPE_ATAPI;
+
+    return AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+}
+
 int32_t GetDeviceType(void *device_ctx)
 {
     DeviceContext *ctx = device_ctx;
+    int32_t        ide_type;
 
     if(!ctx) return -1;
+
+    if(strncmp(ctx->device_path, "/dev/", 5) == 0)
+    {
+        ide_type = GetIdeDeviceType(ctx->device_path + 5);
+
+        if(ide_type != AARUREMOTE_DEVICE_TYPE_UNKNOWN) return ide_type;
+    }
 
 #ifdef HAS_UDEV
     struct udev        *udev;
