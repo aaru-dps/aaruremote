@@ -90,13 +90,14 @@ DeviceInfoList* ListDevices()
         descriptor = (PSTORAGE_DEVICE_DESCRIPTOR)buf;
 
         list_next = malloc(sizeof(DeviceInfoList));
-        memset(list_next, 0, sizeof(DeviceInfoList));
 
         if(!list_next)
         {
             CloseHandle(handle);
             continue;
         }
+
+        memset(list_next, 0, sizeof(DeviceInfoList));
 
         if(!list_start) list_start = list_next;
 
