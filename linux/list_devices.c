@@ -382,8 +382,8 @@ DeviceInfoList *ListDevices()
 
         if(strncmp(list_next->this.bus, "ATA", 3) == 0 || strncmp(list_next->this.bus, "ATAPI", 5) == 0 ||
            strncmp(list_next->this.bus, "SCSI", 4) == 0 || strncmp(list_next->this.bus, "USB", 3) == 0 ||
-           strncmp(list_next->this.bus, "PCMCIA", 6) == 0 || strncmp(list_next->this.bus, "FireWire", 8) == 0 ||
-           strncmp(list_next->this.bus, "MMC/SD", 6) == 0)
+           strncmp(list_next->this.bus, "PCMCIA", 6) == 0 || strncmp(list_next->this.bus, "FIREWIRE", 8) == 0 ||
+           strncmp(list_next->this.bus, "IEEE1394", 8) == 0 || strncmp(list_next->this.bus, "MMC", 3) == 0)
             list_next->this.supported = true;
         else
             list_next->this.supported = false;
