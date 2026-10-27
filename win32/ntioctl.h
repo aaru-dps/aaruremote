@@ -22,11 +22,11 @@
 #include <ntddscsi.h>
 #endif
 
-#ifdef HAVE_SFFDISK_H
+#ifdef HAS_SFFDISK_H
 #include <sffdisk.h>
 #endif
 
-#ifdef HAVE_SDDEF_H
+#ifdef HAS_SDDEF_H
 #include <sddef.h>
 #endif
 
@@ -161,7 +161,7 @@ typedef struct _SFFDISK_QUERY_DEVICE_PROTOCOL_DATA
 } SFFDISK_QUERY_DEVICE_PROTOCOL_DATA, *PSFFDISK_QUERY_DEVICE_PROTOCOL_DATA;
 #endif
 
-#ifndef SDCMDD
+#ifndef HAS_SDCMDD
 typedef UCHAR SD_COMMAND_CODE;
 
 typedef enum

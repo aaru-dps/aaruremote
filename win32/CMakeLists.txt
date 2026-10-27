@@ -4,14 +4,35 @@ if (NOT "${CMAKE_SYSTEM}" MATCHES "Windows")
     return()
 endif ()
 
-CHECK_INCLUDE_FILES("ntddscsi.h" HAVE_NTDDSCSI_H)
-CHECK_INCLUDE_FILES("sffdisk.h" HAVE_SFFDISK_H)
-CHECK_INCLUDE_FILES("sddef.h" HAVE_SDDEF_H)
+include(CheckTypeSize)
+
+CHECK_INCLUDE_FILES("windows.h;ntddscsi.h" HAVE_NTDDSCSI_H)
+CHECK_INCLUDE_FILES("windows.h;sffdisk.h" HAVE_SFFDISK_H)
+CHECK_INCLUDE_FILES("windows.h;sddef.h" HAVE_SDDEF_H)
+
+# The types are only visible through the headers that declare them
+set(CMAKE_EXTRA_INCLUDE_FILES windows.h)
+
+if (HAVE_NTDDSCSI_H)
+    list(APPEND CMAKE_EXTRA_INCLUDE_FILES ntddscsi.h)
+endif ()
 
 CHECK_TYPE_SIZE(ATA_PASS_THROUGH_EX APTE)
 CHECK_TYPE_SIZE(SCSI_PASS_THROUGH_DIRECT SPTD)
+
+if (HAVE_SFFDISK_H)
+    list(APPEND CMAKE_EXTRA_INCLUDE_FILES sffdisk.h)
+endif ()
+
 CHECK_TYPE_SIZE(SFFDISK_DEVICE_COMMAND_DATA SDCD)
+
+if (HAVE_SDDEF_H)
+    list(APPEND CMAKE_EXTRA_INCLUDE_FILES sddef.h)
+endif ()
+
 CHECK_TYPE_SIZE(SDCMD_DESCRIPTOR SDCMDD)
+
+unset(CMAKE_EXTRA_INCLUDE_FILES)
 
 if (HAVE_NTDDSCSI_H)
     add_definitions(-DHAS_NTDDSCSI_H)
