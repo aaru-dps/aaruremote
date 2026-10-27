@@ -520,12 +520,17 @@ void *WorkingLoop(void *arguments)
                     // Swap buf_len
                     pkt_cmd_scsi->buf_len = le32toh(pkt_cmd_scsi->buf_len);
 
+                    sense_buf = NULL;
+                    sense_len = 0;
+
                     ret = SendScsiCommand(device_ctx, cdb_buf, buffer, &sense_buf, le32toh(pkt_cmd_scsi->timeout),
                                           le32toh(pkt_cmd_scsi->direction), &duration, &sense,
                                           le32toh(pkt_cmd_scsi->cdb_len), &pkt_cmd_scsi->buf_len, &sense_len);
 
                     // Swap buf_len back
                     pkt_cmd_scsi->buf_len = htole32(pkt_cmd_scsi->buf_len);
+
+                    if(!sense_buf) sense_len = 0;
 
                     out_buf = malloc(sizeof(AaruPacketResScsi) + sense_len + le32toh(pkt_cmd_scsi->buf_len));
 
@@ -593,6 +598,12 @@ void *WorkingLoop(void *arguments)
                     pkt_res_sdhci_registers->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_sdhci_registers->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_SDHCI_REGISTERS;
                     pkt_res_sdhci_registers->hdr.len         = htole32(sizeof(AaruPacketResGetSdhciRegisters));
+
+                    csd = NULL;
+                    cid = NULL;
+                    ocr = NULL;
+                    scr = NULL;
+
                     pkt_res_sdhci_registers->is_sdhci =
                         GetSdhciRegisters(device_ctx, &csd, &cid, &ocr, &scr, &pkt_res_sdhci_registers->csd_len,
                                           &pkt_res_sdhci_registers->cid_len, &pkt_res_sdhci_registers->ocr_len,
