@@ -509,6 +509,19 @@ void *WorkingLoop(void *arguments)
                         continue;
                     }
 
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketCmdOpen))
+                    {
+                        printf("Received open device packet is too small, closing connection...\n");
+                        free(pkt_dev_open);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
+
+                    // The path is not required to be terminated
+                    pkt_dev_open->device_path[sizeof(pkt_dev_open->device_path) - 1] = '\0';
+
                     // Close any device still open from a previous request
                     DeviceClose(device_ctx);
                     device_ctx = DeviceOpen(pkt_dev_open->device_path);
