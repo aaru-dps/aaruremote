@@ -109,6 +109,11 @@ void *WorkingLoop(void *arguments)
     long                            off;
     MmcSingleCommand               *multi_sdhci_commands;
     uint64_t                        buf_total;
+    uint32_t                        buf_len;
+    uint32_t                        csd_len, cid_len, ocr_len, scr_len;
+    uint16_t                        desc_len, cis_len, usb_vendor, usb_product;
+    uint32_t                        fw_model, fw_vendor;
+    uint64_t                        fw_guid;
 
     if(!arguments)
     {
@@ -652,8 +657,8 @@ void *WorkingLoop(void *arguments)
                     else
                         buffer = NULL;
 
-                    // Swap buf_len
-                    pkt_cmd_scsi->buf_len = le32toh(pkt_cmd_scsi->buf_len);
+                    // Platform functions need an aligned buffer length
+                    buf_len = le32toh(pkt_cmd_scsi->buf_len);
 
                     sense_buf = NULL;
                     sense_len = 0;
@@ -662,10 +667,9 @@ void *WorkingLoop(void *arguments)
 
                     ret = SendScsiCommand(device_ctx, cdb_buf, buffer, &sense_buf, le32toh(pkt_cmd_scsi->timeout),
                                           le32toh(pkt_cmd_scsi->direction), &duration, &sense,
-                                          le32toh(pkt_cmd_scsi->cdb_len), &pkt_cmd_scsi->buf_len, &sense_len);
+                                          le32toh(pkt_cmd_scsi->cdb_len), &buf_len, &sense_len);
 
-                    // Swap buf_len back
-                    pkt_cmd_scsi->buf_len = htole32(pkt_cmd_scsi->buf_len);
+                    pkt_cmd_scsi->buf_len = htole32(buf_len);
 
                     if(!sense_buf) sense_len = 0;
 
@@ -753,40 +757,38 @@ void *WorkingLoop(void *arguments)
                     scr = NULL;
 
                     pkt_res_sdhci_registers->is_sdhci =
-                        GetSdhciRegisters(device_ctx, &csd, &cid, &ocr, &scr, &pkt_res_sdhci_registers->csd_len,
-                                          &pkt_res_sdhci_registers->cid_len, &pkt_res_sdhci_registers->ocr_len,
-                                          &pkt_res_sdhci_registers->scr_len);
+                        GetSdhciRegisters(device_ctx, &csd, &cid, &ocr, &scr, &csd_len, &cid_len, &ocr_len, &scr_len);
 
-                    if(pkt_res_sdhci_registers->csd_len > 0 && csd != NULL)
+                    if(csd_len > 0 && csd != NULL)
                     {
-                        if(pkt_res_sdhci_registers->csd_len > 16) pkt_res_sdhci_registers->csd_len = 16;
+                        if(csd_len > 16) csd_len = 16;
 
-                        memcpy(pkt_res_sdhci_registers->csd, csd, pkt_res_sdhci_registers->csd_len);
+                        memcpy(pkt_res_sdhci_registers->csd, csd, csd_len);
                     }
-                    if(pkt_res_sdhci_registers->cid_len > 0 && cid != NULL)
+                    if(cid_len > 0 && cid != NULL)
                     {
-                        if(pkt_res_sdhci_registers->cid_len > 16) pkt_res_sdhci_registers->cid_len = 16;
+                        if(cid_len > 16) cid_len = 16;
 
-                        memcpy(pkt_res_sdhci_registers->cid, cid, pkt_res_sdhci_registers->cid_len);
+                        memcpy(pkt_res_sdhci_registers->cid, cid, cid_len);
                     }
-                    if(pkt_res_sdhci_registers->ocr_len > 0 && ocr != NULL)
+                    if(ocr_len > 0 && ocr != NULL)
                     {
-                        if(pkt_res_sdhci_registers->ocr_len > 4) pkt_res_sdhci_registers->ocr_len = 4;
+                        if(ocr_len > 4) ocr_len = 4;
 
-                        memcpy(pkt_res_sdhci_registers->ocr, ocr, pkt_res_sdhci_registers->ocr_len);
+                        memcpy(pkt_res_sdhci_registers->ocr, ocr, ocr_len);
                     }
-                    if(pkt_res_sdhci_registers->scr_len > 0 && scr != NULL)
+                    if(scr_len > 0 && scr != NULL)
                     {
-                        if(pkt_res_sdhci_registers->scr_len > 8) pkt_res_sdhci_registers->scr_len = 8;
+                        if(scr_len > 8) scr_len = 8;
 
-                        memcpy(pkt_res_sdhci_registers->scr, scr, pkt_res_sdhci_registers->scr_len);
+                        memcpy(pkt_res_sdhci_registers->scr, scr, scr_len);
                     }
 
                     // Swap lengths
-                    pkt_res_sdhci_registers->csd_len = htole32(pkt_res_sdhci_registers->csd_len);
-                    pkt_res_sdhci_registers->cid_len = htole32(pkt_res_sdhci_registers->cid_len);
-                    pkt_res_sdhci_registers->ocr_len = htole32(pkt_res_sdhci_registers->ocr_len);
-                    pkt_res_sdhci_registers->scr_len = htole32(pkt_res_sdhci_registers->scr_len);
+                    pkt_res_sdhci_registers->csd_len = htole32(csd_len);
+                    pkt_res_sdhci_registers->cid_len = htole32(cid_len);
+                    pkt_res_sdhci_registers->ocr_len = htole32(ocr_len);
+                    pkt_res_sdhci_registers->scr_len = htole32(scr_len);
 
                     free(csd);
                     free(cid);
@@ -836,14 +838,14 @@ void *WorkingLoop(void *arguments)
                     pkt_res_usb->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_usb->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_USB_DATA;
                     pkt_res_usb->hdr.len         = htole32(sizeof(AaruPacketResGetUsbData));
-                    pkt_res_usb->is_usb          = GetUsbData(
-                        device_ctx, &pkt_res_usb->desc_len, pkt_res_usb->descriptors, &pkt_res_usb->id_vendor,
-                        &pkt_res_usb->id_product, pkt_res_usb->manufacturer, pkt_res_usb->product, pkt_res_usb->serial);
+                    pkt_res_usb->is_usb =
+                        GetUsbData(device_ctx, &desc_len, pkt_res_usb->descriptors, &usb_vendor, &usb_product,
+                                   pkt_res_usb->manufacturer, pkt_res_usb->product, pkt_res_usb->serial);
 
                     // Swap parameters
-                    pkt_res_usb->desc_len = htole16(pkt_res_usb->desc_len);
-                    pkt_res_usb->id_vendor  = htole16(pkt_res_usb->id_vendor);
-                    pkt_res_usb->id_product = htole16(pkt_res_usb->id_product);
+                    pkt_res_usb->desc_len   = htole16(desc_len);
+                    pkt_res_usb->id_vendor  = htole16(usb_vendor);
+                    pkt_res_usb->id_product = htole16(usb_product);
 
                     NetWrite(cli_ctx, pkt_res_usb, le32toh(pkt_res_usb->hdr.len));
                     free(pkt_res_usb);
@@ -888,13 +890,12 @@ void *WorkingLoop(void *arguments)
                     pkt_res_firewire->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_firewire->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_FIREWIRE_DATA;
                     pkt_res_firewire->hdr.len         = htole32(sizeof(AaruPacketResGetFireWireData));
-                    pkt_res_firewire->is_firewire =
-                        GetFireWireData(device_ctx, &pkt_res_firewire->id_model, &pkt_res_firewire->id_vendor,
-                                        &pkt_res_firewire->guid, pkt_res_firewire->vendor, pkt_res_firewire->model);
+                    pkt_res_firewire->is_firewire = GetFireWireData(device_ctx, &fw_model, &fw_vendor, &fw_guid,
+                                                                    pkt_res_firewire->vendor, pkt_res_firewire->model);
 
-                    pkt_res_firewire->id_model  = htole32(pkt_res_firewire->id_model);
-                    pkt_res_firewire->id_vendor = htole32(pkt_res_firewire->id_vendor);
-                    pkt_res_firewire->guid      = htole64(pkt_res_firewire->guid);
+                    pkt_res_firewire->id_model  = htole32(fw_model);
+                    pkt_res_firewire->id_vendor = htole32(fw_vendor);
+                    pkt_res_firewire->guid      = htole64(fw_guid);
 
                     NetWrite(cli_ctx, pkt_res_firewire, le32toh(pkt_res_firewire->hdr.len));
                     free(pkt_res_firewire);
@@ -939,10 +940,9 @@ void *WorkingLoop(void *arguments)
                     pkt_res_pcmcia->hdr.version     = AARUREMOTE_PACKET_VERSION;
                     pkt_res_pcmcia->hdr.packet_type = AARUREMOTE_PACKET_TYPE_RESPONSE_GET_PCMCIA_DATA;
                     pkt_res_pcmcia->hdr.len         = htole32(sizeof(AaruPacketResGetPcmciaData));
-                    pkt_res_pcmcia->is_pcmcia =
-                        GetPcmciaData(device_ctx, &pkt_res_pcmcia->cis_len, pkt_res_pcmcia->cis);
+                    pkt_res_pcmcia->is_pcmcia       = GetPcmciaData(device_ctx, &cis_len, pkt_res_pcmcia->cis);
 
-                    pkt_res_pcmcia->cis_len = htole16(pkt_res_pcmcia->cis_len);
+                    pkt_res_pcmcia->cis_len = htole16(cis_len);
 
                     NetWrite(cli_ctx, pkt_res_pcmcia, le32toh(pkt_res_pcmcia->hdr.len));
                     free(pkt_res_pcmcia);
@@ -991,18 +991,18 @@ void *WorkingLoop(void *arguments)
 
                     memset(&ata_chs_error_regs, 0, sizeof(AtaErrorRegistersChs));
 
-                    pkt_cmd_ata_chs->buf_len = le32toh(pkt_cmd_ata_chs->buf_len);
+                    buf_len = le32toh(pkt_cmd_ata_chs->buf_len);
 
                     duration = 0;
                     sense    = 1;
                     ret      = SendAtaChsCommand(device_ctx, pkt_cmd_ata_chs->registers, &ata_chs_error_regs,
                                                  pkt_cmd_ata_chs->protocol, pkt_cmd_ata_chs->transfer_register, buffer,
                                                  le32toh(pkt_cmd_ata_chs->timeout), pkt_cmd_ata_chs->transfer_blocks,
-                                                 &duration, &sense, &pkt_cmd_ata_chs->buf_len);
+                                                 &duration, &sense, &buf_len);
 
-                    out_buf = malloc(sizeof(AaruPacketResAtaChs) + pkt_cmd_ata_chs->buf_len);
+                    out_buf = malloc(sizeof(AaruPacketResAtaChs) + buf_len);
 
-                    pkt_cmd_ata_chs->buf_len = htole32(pkt_cmd_ata_chs->buf_len);
+                    pkt_cmd_ata_chs->buf_len = htole32(buf_len);
 
                     if(!out_buf)
                     {
@@ -1077,17 +1077,17 @@ void *WorkingLoop(void *arguments)
 
                     memset(&ata_lba28_error_regs, 0, sizeof(AtaErrorRegistersLba28));
 
-                    pkt_cmd_ata_lba28->buf_len = le32toh(pkt_cmd_ata_lba28->buf_len);
+                    buf_len = le32toh(pkt_cmd_ata_lba28->buf_len);
 
                     duration = 0;
                     sense    = 1;
                     ret      = SendAtaLba28Command(device_ctx, pkt_cmd_ata_lba28->registers, &ata_lba28_error_regs,
                                                    pkt_cmd_ata_lba28->protocol, pkt_cmd_ata_lba28->transfer_register, buffer,
                                                    le32toh(pkt_cmd_ata_lba28->timeout), pkt_cmd_ata_lba28->transfer_blocks,
-                                                   &duration, &sense, &pkt_cmd_ata_lba28->buf_len);
+                                                   &duration, &sense, &buf_len);
 
-                    out_buf                    = malloc(sizeof(AaruPacketResAtaLba28) + pkt_cmd_ata_lba28->buf_len);
-                    pkt_cmd_ata_lba28->buf_len = htole32(pkt_cmd_ata_lba28->buf_len);
+                    out_buf                    = malloc(sizeof(AaruPacketResAtaLba28) + buf_len);
+                    pkt_cmd_ata_lba28->buf_len = htole32(buf_len);
 
                     if(!out_buf)
                     {
@@ -1163,7 +1163,7 @@ void *WorkingLoop(void *arguments)
                         buffer = NULL;
 
                     memset(&ata_lba48_error_regs, 0, sizeof(AtaErrorRegistersLba48));
-                    pkt_cmd_ata_lba48->buf_len = le32toh(pkt_cmd_ata_lba48->buf_len);
+                    buf_len = le32toh(pkt_cmd_ata_lba48->buf_len);
 
                     // Swapping
                     pkt_cmd_ata_lba48->registers.feature      = le16toh(pkt_cmd_ata_lba48->registers.feature);
@@ -1174,10 +1174,10 @@ void *WorkingLoop(void *arguments)
                     ret      = SendAtaLba48Command(device_ctx, pkt_cmd_ata_lba48->registers, &ata_lba48_error_regs,
                                                    pkt_cmd_ata_lba48->protocol, pkt_cmd_ata_lba48->transfer_register, buffer,
                                                    le32toh(pkt_cmd_ata_lba48->timeout), pkt_cmd_ata_lba48->transfer_blocks,
-                                                   &duration, &sense, &pkt_cmd_ata_lba48->buf_len);
+                                                   &duration, &sense, &buf_len);
 
-                    out_buf                    = malloc(sizeof(AaruPacketResAtaLba48) + pkt_cmd_ata_lba48->buf_len);
-                    pkt_cmd_ata_lba48->buf_len = htole32(pkt_cmd_ata_lba48->buf_len);
+                    out_buf                    = malloc(sizeof(AaruPacketResAtaLba48) + buf_len);
+                    pkt_cmd_ata_lba48->buf_len = htole32(buf_len);
 
                     if(!out_buf)
                     {
