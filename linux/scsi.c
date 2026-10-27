@@ -74,6 +74,10 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
 
     ret = ioctl(ctx->fd, SG_IO, &hdr);
 
+    // The kernel may copy back the untransferred part of its own buffer, so clear it
+    if(buffer && hdr.resid > 0 && (unsigned int)hdr.resid <= hdr.dxfer_len)
+        memset(buffer + hdr.dxfer_len - hdr.resid, 0, hdr.resid);
+
     *sense     = (hdr.info & SG_INFO_OK_MASK) != SG_INFO_OK;
     // TODO: Manual timing if duration is 0
     *duration  = hdr.duration;
