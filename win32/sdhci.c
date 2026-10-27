@@ -177,6 +177,7 @@ int32_t GetSdhciRegisters(void*     device_ctx,
         {
             *csd_len = 0;
             free(*csd);
+            *csd = NULL;
         }
     }
 
@@ -203,6 +204,7 @@ int32_t GetSdhciRegisters(void*     device_ctx,
         {
             *cid_len = 0;
             free(*cid);
+            *cid = NULL;
         }
     }
 
@@ -229,6 +231,7 @@ int32_t GetSdhciRegisters(void*     device_ctx,
         {
             *scr_len = 0;
             free(*scr);
+            *scr = NULL;
         }
     }
 
@@ -255,6 +258,7 @@ int32_t GetSdhciRegisters(void*     device_ctx,
         {
             *ocr_len = 0;
             free(*ocr);
+            *ocr = NULL;
         }
     }
 
