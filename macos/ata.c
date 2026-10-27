@@ -42,6 +42,41 @@ static int32_t AtaProtocolToScsiDirection(uint8_t protocol)
     }
 }
 
+// Copies the ATA registers returned by an ATA PASS-THROUGH command into the layout of descriptor format sense data
+// holding an ATA Return descriptor at byte 8. Mac OS X only returns fixed format sense, where SAT-3 places the error,
+// status, device, count and the low 24 bits of the LBA instead.
+static int AtaReturnDescriptor(const char *sense_buf, uint32_t sense_len, unsigned char *desc)
+{
+    const unsigned char *sense = (const unsigned char *)sense_buf;
+
+    memset(desc, 0, 22);
+
+    if(!sense) return 0;
+
+    if(sense_len >= 22 && ((sense[0] & 0x7F) == 0x72 || (sense[0] & 0x7F) == 0x73) && sense[8] == 0x09 &&
+       sense[9] == 0x0C)
+    {
+        memcpy(desc, sense, 22);
+        return 1;
+    }
+
+    // ATA PASS THROUGH INFORMATION AVAILABLE
+    if(sense_len >= 14 && ((sense[0] & 0x7F) == 0x70 || (sense[0] & 0x7F) == 0x71) && sense[12] == 0x00 &&
+       sense[13] == 0x1D)
+    {
+        desc[11] = sense[3];
+        desc[21] = sense[4];
+        desc[20] = sense[5];
+        desc[13] = sense[6];
+        desc[15] = sense[9];
+        desc[17] = sense[10];
+        desc[19] = sense[11];
+        return 1;
+    }
+
+    return 0;
+}
+
 int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorRegistersChs *error_registers,
                           uint8_t protocol, uint8_t transfer_register, char *buffer, uint32_t timeout,
                           uint8_t transfer_blocks, uint32_t *duration, uint32_t *sense, uint32_t *buf_len)
@@ -49,6 +84,7 @@ int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorR
     unsigned char cdb[16];
     char         *sense_buf;
     uint32_t      sense_len;
+    unsigned char desc[22];
     int           error;
 
     *duration = 0;
@@ -89,19 +125,19 @@ int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorR
     error = SendScsiCommand(device_ctx, (char *)cdb, buffer, &sense_buf, timeout, AtaProtocolToScsiDirection(protocol),
                             duration, sense, 16, buf_len, &sense_len);
 
-    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 || sense_buf[9] != 0x0C))
+    if(!AtaReturnDescriptor(sense_buf, sense_len, desc))
     {
         free(sense_buf);
         return error;
     }
 
-    error_registers->error         = sense_buf[11];
-    error_registers->sector_count  = sense_buf[13];
-    error_registers->sector        = sense_buf[15];
-    error_registers->cylinder_low  = sense_buf[17];
-    error_registers->cylinder_high = sense_buf[19];
-    error_registers->device_head   = sense_buf[20];
-    error_registers->status        = sense_buf[21];
+    error_registers->error         = desc[11];
+    error_registers->sector_count  = desc[13];
+    error_registers->sector        = desc[15];
+    error_registers->cylinder_low  = desc[17];
+    error_registers->cylinder_high = desc[19];
+    error_registers->device_head   = desc[20];
+    error_registers->status        = desc[21];
 
     *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
 
@@ -116,6 +152,7 @@ int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaEr
     unsigned char cdb[16];
     char         *sense_buf;
     uint32_t      sense_len;
+    unsigned char desc[22];
     int           error;
 
     *duration = 0;
@@ -158,19 +195,19 @@ int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaEr
     error = SendScsiCommand(device_ctx, (char *)cdb, buffer, &sense_buf, timeout, AtaProtocolToScsiDirection(protocol),
                             duration, sense, 16, buf_len, &sense_len);
 
-    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 || sense_buf[9] != 0x0C))
+    if(!AtaReturnDescriptor(sense_buf, sense_len, desc))
     {
         free(sense_buf);
         return error;
     }
 
-    error_registers->error        = sense_buf[11];
-    error_registers->sector_count = sense_buf[13];
-    error_registers->lba_low      = sense_buf[15];
-    error_registers->lba_mid      = sense_buf[17];
-    error_registers->lba_high     = sense_buf[19];
-    error_registers->device_head  = sense_buf[20];
-    error_registers->status       = sense_buf[21];
+    error_registers->error        = desc[11];
+    error_registers->sector_count = desc[13];
+    error_registers->lba_low      = desc[15];
+    error_registers->lba_mid      = desc[17];
+    error_registers->lba_high     = desc[19];
+    error_registers->device_head  = desc[20];
+    error_registers->status       = desc[21];
 
     *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
 
@@ -185,6 +222,7 @@ int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaEr
     unsigned char cdb[16];
     char         *sense_buf;
     uint32_t      sense_len;
+    unsigned char desc[22];
     int           error;
 
     *duration = 0;
@@ -233,22 +271,22 @@ int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaEr
     error = SendScsiCommand(device_ctx, (char *)cdb, buffer, &sense_buf, timeout, AtaProtocolToScsiDirection(protocol),
                             duration, sense, 16, buf_len, &sense_len);
 
-    if(!sense_buf || sense_len < 22 || (sense_buf[8] != 0x09 || sense_buf[9] != 0x0C))
+    if(!AtaReturnDescriptor(sense_buf, sense_len, desc))
     {
         free(sense_buf);
         return error;
     }
 
-    error_registers->error         = sense_buf[11];
-    error_registers->sector_count  = (uint16_t)(((uint8_t)sense_buf[12] << 8) + (uint8_t)sense_buf[13]);
-    error_registers->lba_low_prev  = sense_buf[14];
-    error_registers->lba_low_cur   = sense_buf[15];
-    error_registers->lba_mid_prev  = sense_buf[16];
-    error_registers->lba_mid_cur   = sense_buf[17];
-    error_registers->lba_high_prev = sense_buf[18];
-    error_registers->lba_high_cur  = sense_buf[19];
-    error_registers->device_head   = sense_buf[20];
-    error_registers->status        = sense_buf[21];
+    error_registers->error         = desc[11];
+    error_registers->sector_count  = (uint16_t)((desc[12] << 8) + desc[13]);
+    error_registers->lba_low_prev  = desc[14];
+    error_registers->lba_low_cur   = desc[15];
+    error_registers->lba_mid_prev  = desc[16];
+    error_registers->lba_mid_cur   = desc[17];
+    error_registers->lba_high_prev = desc[18];
+    error_registers->lba_high_cur  = desc[19];
+    error_registers->device_head   = desc[20];
+    error_registers->status        = desc[21];
 
     *sense = error_registers->error != 0 || (error_registers->status & 0xA5) != 0;
 
