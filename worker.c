@@ -955,7 +955,17 @@ void *WorkingLoop(void *arguments)
 
                     pkt_cmd_ata_chs = (AaruPacketCmdAtaChs *)in_buf;
 
-                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+                    // The data buffer is used in place, so it must fit in the packet
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketCmdAtaChs) ||
+                       le32toh(pkt_cmd_ata_chs->buf_len) > le32toh(pkt_hdr->len) - sizeof(AaruPacketCmdAtaChs))
+                    {
+                        printf("Received ATA CHS packet does not fit its length, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     if(le32toh(pkt_cmd_ata_chs->buf_len) > 0)
                         buffer = in_buf + sizeof(AaruPacketCmdAtaChs);
@@ -1031,7 +1041,17 @@ void *WorkingLoop(void *arguments)
 
                     pkt_cmd_ata_lba28 = (AaruPacketCmdAtaLba28 *)in_buf;
 
-                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+                    // The data buffer is used in place, so it must fit in the packet
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketCmdAtaLba28) ||
+                       le32toh(pkt_cmd_ata_lba28->buf_len) > le32toh(pkt_hdr->len) - sizeof(AaruPacketCmdAtaLba28))
+                    {
+                        printf("Received ATA LBA28 packet does not fit its length, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     if(le32toh(pkt_cmd_ata_lba28->buf_len) > 0)
                         buffer = in_buf + sizeof(AaruPacketCmdAtaLba28);
@@ -1108,7 +1128,17 @@ void *WorkingLoop(void *arguments)
 
                     pkt_cmd_ata_lba48 = (AaruPacketCmdAtaLba48 *)in_buf;
 
-                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+                    // The data buffer is used in place, so it must fit in the packet
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketCmdAtaLba48) ||
+                       le32toh(pkt_cmd_ata_lba48->buf_len) > le32toh(pkt_hdr->len) - sizeof(AaruPacketCmdAtaLba48))
+                    {
+                        printf("Received ATA LBA48 packet does not fit its length, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     if(le32toh(pkt_cmd_ata_lba48->buf_len) > 0)
                         buffer = in_buf + sizeof(AaruPacketCmdAtaLba48);
