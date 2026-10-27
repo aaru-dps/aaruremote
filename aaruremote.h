@@ -24,6 +24,8 @@
 #define MSG_PEEK 0x02 // TODO: Untested, may not work
 #endif
 #elif !defined(_WIN32)
+#include <sys/types.h>
+
 #include <netinet/in.h>
 #include <sys/socket.h>
 #endif
