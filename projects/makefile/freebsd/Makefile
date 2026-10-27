@@ -20,10 +20,6 @@ CFLAGS?=	-O2 -g
 
 BASELINE_ISA?=	yes
 
-CORE_SOURCES=	hex2bin.c list_devices.c main.c worker.c
-FREEBSD_SOURCES=ata.c device.c ieee1394.c list_devices.c pcmcia.c scsi.c sdhci.c usb.c
-UNIX_SOURCES=	hello.c network.c unix.c
-
 HEADERS=	${SRCDIR}/aaruremote.h ${SRCDIR}/endian.h ${SRCDIR}/freebsd/freebsd.h ${SRCDIR}/unix/unix.h
 
 # Version, matching the CMake build: <base>-<short git commit>, or <base>-unknown when git or its metadata is
@@ -82,42 +78,91 @@ AARU_CFLAGS+=	${ISA_FLAG}
 .endif
 .endif
 
-# Objects are kept per source directory, as list_devices.c exists in more than one
-OBJECTS=
-.for src in ${CORE_SOURCES}
-OBJECTS+=	${BUILDDIR}/core/${src:R}.o
-.endfor
-.for src in ${FREEBSD_SOURCES}
-OBJECTS+=	${BUILDDIR}/freebsd/${src:R}.o
-.endfor
-.for src in ${UNIX_SOURCES}
-OBJECTS+=	${BUILDDIR}/unix/${src:R}.o
-.endfor
+# Objects are kept per source directory, as list_devices.c exists in more than one. Rules are written out
+# explicitly, as old versions of make expand all the variables in loops when parsing them.
+OBJECTS=	\
+	${BUILDDIR}/core/hex2bin.o \
+	${BUILDDIR}/core/list_devices.o \
+	${BUILDDIR}/core/main.o \
+	${BUILDDIR}/core/worker.o \
+	${BUILDDIR}/freebsd/ata.o \
+	${BUILDDIR}/freebsd/device.o \
+	${BUILDDIR}/freebsd/ieee1394.o \
+	${BUILDDIR}/freebsd/list_devices.o \
+	${BUILDDIR}/freebsd/pcmcia.o \
+	${BUILDDIR}/freebsd/scsi.o \
+	${BUILDDIR}/freebsd/sdhci.o \
+	${BUILDDIR}/freebsd/usb.o \
+	${BUILDDIR}/unix/hello.o \
+	${BUILDDIR}/unix/network.o \
+	${BUILDDIR}/unix/unix.o
 
 .PHONY: all clean install
 
 all: ${TARGET}
 
 ${TARGET}: ${OBJECTS}
-	${CC} ${AARU_CFLAGS} ${CFLAGS} ${LDFLAGS} -o ${.TARGET} ${OBJECTS} ${AARU_LIBS} ${LDADD}
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${LDFLAGS} -o ${TARGET} ${OBJECTS} ${AARU_LIBS} ${LDADD}
 
-.for src in ${CORE_SOURCES}
-${BUILDDIR}/core/${src:R}.o: ${SRCDIR}/${src} ${HEADERS}
+${BUILDDIR}/core/hex2bin.o: ${SRCDIR}/hex2bin.c ${HEADERS}
 	@mkdir -p ${BUILDDIR}/core
-	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${.TARGET} ${SRCDIR}/${src}
-.endfor
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/core/hex2bin.o ${SRCDIR}/hex2bin.c
 
-.for src in ${FREEBSD_SOURCES}
-${BUILDDIR}/freebsd/${src:R}.o: ${SRCDIR}/freebsd/${src} ${HEADERS}
+${BUILDDIR}/core/list_devices.o: ${SRCDIR}/list_devices.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/core
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/core/list_devices.o ${SRCDIR}/list_devices.c
+
+${BUILDDIR}/core/main.o: ${SRCDIR}/main.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/core
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/core/main.o ${SRCDIR}/main.c
+
+${BUILDDIR}/core/worker.o: ${SRCDIR}/worker.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/core
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/core/worker.o ${SRCDIR}/worker.c
+
+${BUILDDIR}/freebsd/ata.o: ${SRCDIR}/freebsd/ata.c ${HEADERS}
 	@mkdir -p ${BUILDDIR}/freebsd
-	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${.TARGET} ${SRCDIR}/freebsd/${src}
-.endfor
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/ata.o ${SRCDIR}/freebsd/ata.c
 
-.for src in ${UNIX_SOURCES}
-${BUILDDIR}/unix/${src:R}.o: ${SRCDIR}/unix/${src} ${HEADERS}
+${BUILDDIR}/freebsd/device.o: ${SRCDIR}/freebsd/device.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/freebsd
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/device.o ${SRCDIR}/freebsd/device.c
+
+${BUILDDIR}/freebsd/ieee1394.o: ${SRCDIR}/freebsd/ieee1394.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/freebsd
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/ieee1394.o ${SRCDIR}/freebsd/ieee1394.c
+
+${BUILDDIR}/freebsd/list_devices.o: ${SRCDIR}/freebsd/list_devices.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/freebsd
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/list_devices.o ${SRCDIR}/freebsd/list_devices.c
+
+${BUILDDIR}/freebsd/pcmcia.o: ${SRCDIR}/freebsd/pcmcia.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/freebsd
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/pcmcia.o ${SRCDIR}/freebsd/pcmcia.c
+
+${BUILDDIR}/freebsd/scsi.o: ${SRCDIR}/freebsd/scsi.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/freebsd
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/scsi.o ${SRCDIR}/freebsd/scsi.c
+
+${BUILDDIR}/freebsd/sdhci.o: ${SRCDIR}/freebsd/sdhci.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/freebsd
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/sdhci.o ${SRCDIR}/freebsd/sdhci.c
+
+${BUILDDIR}/freebsd/usb.o: ${SRCDIR}/freebsd/usb.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/freebsd
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/freebsd/usb.o ${SRCDIR}/freebsd/usb.c
+
+${BUILDDIR}/unix/hello.o: ${SRCDIR}/unix/hello.c ${HEADERS}
 	@mkdir -p ${BUILDDIR}/unix
-	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${.TARGET} ${SRCDIR}/unix/${src}
-.endfor
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/unix/hello.o ${SRCDIR}/unix/hello.c
+
+${BUILDDIR}/unix/network.o: ${SRCDIR}/unix/network.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/unix
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/unix/network.o ${SRCDIR}/unix/network.c
+
+${BUILDDIR}/unix/unix.o: ${SRCDIR}/unix/unix.c ${HEADERS}
+	@mkdir -p ${BUILDDIR}/unix
+	${CC} ${AARU_CFLAGS} ${CFLAGS} ${AARU_CPPFLAGS} ${CPPFLAGS} -c -o ${BUILDDIR}/unix/unix.o ${SRCDIR}/unix/unix.c
 
 install: ${TARGET}
 	mkdir -p ${DESTDIR}${BINDIR}
