@@ -24,6 +24,7 @@
 #endif
 
 #include <sys/param.h>
+#include <sys/ata.h>
 
 #include <camlib.h>
 #include <time.h>
@@ -31,6 +32,11 @@
 // CAM can send ATA commands since FreeBSD 8.0
 #ifdef CAM_ATAIO_NEEDRESULT
 #define HAS_CAM_ATA
+#endif
+
+// Before FreeBSD 6 the ata(4) control device, /dev/ata, takes raw ATA commands for the disks it attaches
+#if defined(IOCATA) && defined(ATAREQUEST)
+#define HAS_ATA_IOCTL
 #endif
 
 // Old releases, such as FreeBSD 5.5, have no precise clocks, so use the plain realtime clock there
@@ -46,6 +52,10 @@ typedef struct
 {
     char               device_path[4096];
     struct cam_device *device;
+    int                ata_fd;      // ata(4) control device, for ATA disks not attached to CAM
+    int                ata_channel; // ata(4) channel of the disk
+    int                ata_unit;    // ata(4) unit of the disk, 0 for master and 1 for slave
+    int                fd;          // The disk itself, for operating system reads of ata(4) disks
 } DeviceContext;
 
 #endif  // AARUREMOTE_FREEBSD_FREEBSD_H_
