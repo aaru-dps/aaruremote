@@ -56,7 +56,12 @@ DeviceInfoList* ListDevices()
         return NULL;
     }
 
-    QueryDosDevice(NULL, physical, 65535);
+    if(!QueryDosDevice(NULL, physical, 65535))
+    {
+        free(physical);
+        free(buf);
+        return NULL;
+    }
 
     for(pos = physical; *pos; pos += strlen(pos) + 1)
     {
