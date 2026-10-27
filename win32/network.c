@@ -160,6 +160,8 @@ int32_t NetRecv(void *net_ctx, void *buf, int32_t len, uint32_t flags)
     {
         got_once = recv(ctx->socket, charbuf, len, flags);
 
+        if(got_once < 0 && got_total == 0) return -1;
+
         if(got_once <= 0) break;
 
         charbuf += got_once;

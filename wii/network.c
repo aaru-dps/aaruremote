@@ -113,6 +113,8 @@ int32_t NetRecv(void *net_ctx, void *buf, int32_t len, uint32_t flags)
     {
         got_once = net_recv(ctx->fd, buf, len, flags);
 
+        if(got_once < 0 && got_total == 0) return -1;
+
         if(got_once <= 0) break;
 
         buf += got_once;
