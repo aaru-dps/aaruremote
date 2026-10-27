@@ -84,7 +84,7 @@ uint8_t GetPcmciaData(void *device_ctx, uint16_t *cis_len, char *cis)
 
             if(!dent) break;
 
-        } while(dent && dent->d_type != DT_DIR);
+        } while(dent && (dent->d_type != DT_DIR || strcmp(dent->d_name, ".") == 0 || strcmp(dent->d_name, "..") == 0));
 
         if(!dent)
         {
