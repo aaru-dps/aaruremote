@@ -78,19 +78,20 @@ int32_t SendSdhciCommand(void*     device_ctx,
     cmd_descriptor->TransferType =
         (flags & AARUREMOTE_MMC_COMMAND_ADTC) ? (command == 18) ? SDTT_MULTI_BLOCK : SDTT_SINGLE_BLOCK : SDTT_CMD_ONLY;
 
-    if((flags & AARUREMOTE_MMC_RESPONSE_R1) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R1))
-        cmd_descriptor->ResponseType = SDRT_1;
-    if((flags & AARUREMOTE_MMC_RESPONSE_R1B) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R1B))
-        cmd_descriptor->ResponseType = SDRT_1B;
-    if((flags & AARUREMOTE_MMC_RESPONSE_R2) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R2))
-        cmd_descriptor->ResponseType = SDRT_2;
-    if((flags & AARUREMOTE_MMC_RESPONSE_R3) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R3))
-        cmd_descriptor->ResponseType = SDRT_3;
-    if((flags & AARUREMOTE_MMC_RESPONSE_R4) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R4))
-        cmd_descriptor->ResponseType = SDRT_4;
-    if((flags & AARUREMOTE_MMC_RESPONSE_R5) || (flags & AARUREMOTE_MMC_RESPONSE_SPI_R5))
-        cmd_descriptor->ResponseType = SDRT_5;
-    if((flags & AARUREMOTE_MMC_RESPONSE_R6)) cmd_descriptor->ResponseType = SDRT_6;
+    // R1, R5, R6 and R7 share the same flags, so only an exact match on the native response bits is meaningful
+    switch(flags & (AARUREMOTE_MMC_RESPONSE_PRESENT | AARUREMOTE_MMC_RESPONSE_136 | AARUREMOTE_MMC_RESPONSE_CRC |
+                    AARUREMOTE_MMC_RESPONSE_BUSY | AARUREMOTE_MMC_RESPONSE_OPCODE))
+    {
+        case AARUREMOTE_MMC_RESPONSE_NONE: cmd_descriptor->ResponseType = SDRT_NONE; break;
+        case AARUREMOTE_MMC_RESPONSE_R1B: cmd_descriptor->ResponseType = SDRT_1B; break;
+        case AARUREMOTE_MMC_RESPONSE_R2: cmd_descriptor->ResponseType = SDRT_2; break;
+        case AARUREMOTE_MMC_RESPONSE_R3: cmd_descriptor->ResponseType = SDRT_3; break;
+        case AARUREMOTE_MMC_RESPONSE_R1:
+            // SEND_RELATIVE_ADDR is the only command answering with R6
+            cmd_descriptor->ResponseType = command == 3 && !application ? SDRT_6 : SDRT_1;
+            break;
+        default: cmd_descriptor->ResponseType = SDRT_UNSPECIFIED; break;
+    }
 
     QueryPerformanceFrequency(&frequency);
     QueryPerformanceCounter(&start);
