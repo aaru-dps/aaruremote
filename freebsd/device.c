@@ -134,14 +134,15 @@ int32_t OsRead(void *device_ctx, char *buffer, uint64_t offset, uint32_t length,
     off_t pos;
 
     if(!ctx) return -1;
+    if(!ctx->device) return -1;
 
     // TODO: Timing
-    pos = lseek(ctx->device.fd, (off_t)offset, SEEK_SET);
+    pos = lseek(ctx->device->fd, (off_t)offset, SEEK_SET);
 
     if(pos < 0) return errno;
 
     // TODO: Timing
-    ret = read(ctx->device.fd, (void *)buffer, (size_t)length);
+    ret = read(ctx->device->fd, (void *)buffer, (size_t)length);
 
     return ret < 0 ? errno : 0;
 }
