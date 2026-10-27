@@ -383,7 +383,18 @@ int32_t OsRead(void *device_ctx, char *buffer, uint64_t offset, uint32_t length,
     if(pos < 0) return errno;
 
     // TODO: Timing
-    ret = read(ctx->fd, (void *)buffer, (size_t)length);
+    while(length > 0)
+    {
+        ret = read(ctx->fd, (void *)buffer, (size_t)length);
 
-    return ret < 0 ? errno : 0;
+        if(ret < 0) return errno;
+
+        // End of device before all the requested data was read
+        if(ret == 0) return EIO;
+
+        buffer += ret;
+        length -= (uint32_t)ret;
+    }
+
+    return 0;
 }
