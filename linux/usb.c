@@ -93,7 +93,7 @@ uint8_t GetUsbData(void *device_ctx, uint16_t *desc_len, char *descriptors, uint
 
         if(file == NULL) break;
 
-        *desc_len = (uint16_t)fread(descriptors, 4096, 1, file);
+        *desc_len = (uint16_t)fread(descriptors, 1, 4096, file);
 
         fclose(file);
 
