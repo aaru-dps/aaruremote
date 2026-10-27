@@ -157,6 +157,10 @@ int32_t GetDeviceType(void *device_ctx)
 #endif
 
     if(!ctx) return -1;
+
+    // Only ATA disks are opened through ata(4)
+    if(ctx->ata_fd >= 0) return AARUREMOTE_DEVICE_TYPE_ATA;
+
     if(!ctx->device) return -1;
 
 #ifndef HAS_CAM_ATA
@@ -229,17 +233,25 @@ int32_t OsRead(void *device_ctx, char *buffer, uint64_t offset, uint32_t length,
     ssize_t        ret;
     *duration = 0;
     off_t pos;
+    int   fd;
 
     if(!ctx) return -1;
-    if(!ctx->device) return -1;
+
+    // ata(4) disks are read through the disk itself, CAM devices through their pass device
+    if(ctx->fd >= 0)
+        fd = ctx->fd;
+    else if(ctx->device)
+        fd = ctx->device->fd;
+    else
+        return -1;
 
     // TODO: Timing
-    pos = lseek(ctx->device->fd, (off_t)offset, SEEK_SET);
+    pos = lseek(fd, (off_t)offset, SEEK_SET);
 
     if(pos < 0) return errno;
 
     // TODO: Timing
-    ret = read(ctx->device->fd, (void *)buffer, (size_t)length);
+    ret = read(fd, (void *)buffer, (size_t)length);
 
     return ret < 0 ? errno : 0;
 }
