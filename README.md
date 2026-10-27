@@ -1,36 +1,101 @@
 Aaru Remote
-====================
+===========
 
-The Aaru Remote is a slim miniature application designed to receive device commands from a
-remote [Aaru](https://github.com/aaru-dps/Aaru)
-instance, sends it to a local device, and returns the data to the instance.
+Aaru Remote lets [Aaru](https://github.com/aaru-dps/Aaru) use drives that are connected to another computer.
 
-The main motivation for this is the desire to update Aaru to the latest and greatest features of .NET and C#.
-This creates a problem, as some people have old devices that do not work in modern Linux distributions.
+You run the small Aaru Remote server on the machine that has the drive, and run Aaru anywhere else on your network.
+Aaru sends the commands over the network, Aaru Remote passes them to the drive, and sends the results back. Dumping,
+getting device information and every other Aaru command that works with a device work the same way as with a local
+drive.
 
-This remote is supported on Linux and now also on macOS, with FreeBSD and Windows support maintained in parallel,
-and possibly
-network-enabled game consoles (like PSP, Wii, etc).
+This is useful when:
 
-While some people will suggest porting the whole Aaru to C or C++, that won't happen, and for the only situation that
-would be needed (accessing devices where C# does not run) this slim is more than enough.
+- The drive only works on an old computer or operating system that cannot run a modern Aaru.
+- The drive is attached to a machine where .NET is not available, such as FreeBSD, an old Mac, or a Nintendo Wii.
+- You prefer to keep Aaru on your main computer while the drive sits on a dedicated machine.
 
-The usage is very simple, just run the remote and it will listen for a connection over TCP/IP in port 6666, and print
-you
-the available IPs. Running as non-root user only works with some SCSI devices, so better run as root.
+Aaru Remote is a small C program with no runtime to install, so it runs on systems as old as Linux 2.6, Windows XP and
+Mac OS X 10.0.
 
-On the other side, you can use the Aaru with the *remote* command and one of those IP addresses to test the
-connection. Similarly using the IP address as an argument for the *list-devices* command will list the devices available
-remotely.
+Quick start
+===========
 
-All commands that support devices are supported, with a URI with the following schema:
-`aaru://<IP ADDRESS>/<DEVICE PATH>`.
+1. **Get Aaru Remote on the machine with the drive.** Build it as described in [Building from source](#building-from-source).
+2. **Start it as root or Administrator:**
 
-When configured with CMake from a git checkout, aaruremote derives its application version string as
-`1.0-<gitcommit>` using `git rev-parse --short HEAD`. If git metadata is unavailable, it falls back to `1.0-unknown`.
+   ```
+   sudo ./aaruremote
+   ```
 
-Feature matrix
-==============
+   It prints the IP addresses it is listening on, for example `192.168.1.10 port 6666`.
+3. **Check the connection from the machine running Aaru:**
+
+   ```
+   aaru remote 192.168.1.10
+   ```
+
+4. **List the remote drives:**
+
+   ```
+   aaru device list 192.168.1.10
+   ```
+
+5. **Use a drive** by giving Aaru a device path of the form `aaru://<IP address>/<device path>`:
+
+   ```
+   aaru device info aaru://192.168.1.10/dev/sr0
+   aaru media dump aaru://192.168.1.10/dev/sr0 disc.aaruf
+   ```
+
+Running the server
+==================
+
+Aaru Remote listens for one Aaru connection at a time on TCP port **6666**. When a session ends it waits for the next
+one, so you can leave it running.
+
+**Run it with administrator rights.** Sending raw commands to drives needs root on Linux, FreeBSD and macOS, and
+Administrator on Windows. Without them only some SCSI devices work.
+
+While it is waiting for a connection:
+
+| Platform              | List the local drives | Quit                |
+|-----------------------|-----------------------|---------------------|
+| Linux, FreeBSD, macOS | Press **D**           | Ctrl+C              |
+| Windows               | Press **D**           | Ctrl+C              |
+| Nintendo Wii          | Press **A**           | Press **Home**      |
+
+If Aaru cannot connect, make sure the firewall on the server machine allows incoming TCP connections on port 6666.
+
+Device paths
+============
+
+The part after the IP address in an `aaru://` path is the device path on the server. The easiest way to find it is
+`aaru device list <IP address>`, which prints the complete `aaru://` paths, or pressing **D** on the server.
+
+| Server OS    | Typical device paths                                                                       |
+|--------------|--------------------------------------------------------------------------------------------|
+| Linux        | `/dev/sr0` (optical), `/dev/sda` (disks), `/dev/sg0` (SCSI generic), `/dev/mmcblk0` (SD/MMC) |
+| FreeBSD      | `/dev/pass0`                                                                               |
+| macOS        | `/dev/rdisk2`                                                                              |
+| Windows      | `\\.\PhysicalDrive0`, `\\.\CdRom0`, `\\.\Tape0`                                            |
+| Nintendo Wii | `/dev/flash` (NAND), `/dev/sdio/slot0` (SD card)                                           |
+
+For example `aaru://192.168.1.10/dev/sr0`, or `aaru://192.168.1.20/\\.\CdRom0` for a Windows server. Remember to quote
+Windows paths in your shell.
+
+Security
+========
+
+Aaru Remote has **no authentication and no encryption**. Anyone who can reach port 6666 can send any command to any
+drive on that machine, including commands that write to or erase it, with the administrator rights the server runs
+with.
+
+- Only run it on a network you trust, never on a machine reachable from the internet.
+- Use a firewall to allow port 6666 only from the computer running Aaru.
+- Stop it when you are done.
+
+Supported platforms
+===================
 
 |              | Minimum OS<sup>*1</sup> | SCSI            | CHS ATA                  | 28-bit LBA ATA           | 48-bit LBA ATA           | Secure Digital | MultiMediaCard | USB                  | FireWire             | PCMCIA           | Special<sup>*2</sup> |
 |--------------|-------------------------|-----------------|--------------------------|--------------------------|--------------------------|----------------|----------------|----------------------|----------------------|------------------|----------------------|
@@ -48,14 +113,87 @@ Feature matrix
 6. Only ATA devices, not linear memory devices.
 7. ATA passthrough on macOS is attempted through the IOKit storage stack and SAT-compatible bridges, but modern macOS may restrict raw low-level access depending on the device and OS version.
 
-TODO
-====
+Troubleshooting
+===============
 
-- More buffer overflow guards
+- **Aaru cannot connect:** check the IP address printed by the server, that both machines are on the same network,
+  and that port 6666 is allowed through the server's firewall.
+- **"Error 98 binding socket" when starting:** another program, or a previous Aaru Remote that just exited, is still
+  using port 6666. Wait a minute and start it again.
+- **A drive is missing from the list, or commands fail:** make sure the server runs as root or Administrator.
+- **The connection closes unexpectedly:** the server and Aaru must speak the same protocol. Update both to recent
+  versions.
+
+Building from source
+====================
+
+You need a C compiler. Aaru Remote is written in C90, so very old compilers work too.
+
+The resulting program is called `aaruremote` (`aaruremote.exe` on Windows). Its version is `1.0-<git commit>` when built
+from a git checkout, or `1.0-unknown` otherwise.
+
+With CMake
+----------
+
+CMake 2.8 or newer builds every supported platform:
+
+```
+cmake .
+make
+```
+
+On Linux, install the libudev development files first, if available, for better device listing.
+
+Without CMake
+-------------
+
+For systems where CMake is not available, there are ready-made makefiles in `projects/makefile`. They build into a
+`build` directory next to the makefile, and support `make install` (with `PREFIX` and `DESTDIR`) and `make clean`.
+
+| System  | Directory                    | Command |
+|---------|------------------------------|---------|
+| Linux   | `projects/makefile/linux`    | `make`  |
+| FreeBSD | `projects/makefile/freebsd`  | `make`  |
+| macOS   | `projects/makefile/darwin`   | `make`  |
+
+```
+cd projects/makefile/linux
+make
+sudo make install
+```
+
+By default, the binaries are built for the oldest CPU of each architecture, so they run on any machine of that
+architecture. Pass `BASELINE_ISA=no` to use the compiler's defaults instead. On Linux, `UDEV=no` builds without libudev.
+
+Windows
+-------
+
+Open the Visual Studio solution for your version from `projects/msvc2005`, `projects/msvc2017` or `projects/msvc2019`,
+or use CMake.
+
+Nintendo Wii
+------------
+
+Install [devkitPro](https://devkitpro.org/) with devkitPPC and libogc, then run `./build.sh`, which also builds the Wii
+version when devkitPro is found. Copy the result to your SD card and start it from the Homebrew Channel.
+
+For developers
+==============
+
+- The protocol, packet structures and the functions each platform must implement are in `aaruremote.h`.
+- `worker.c` contains the network loop and packet handling shared by all platforms. Each platform lives in its own
+  directory (`linux`, `freebsd`, `macos`, `win32`, `wii`), with code shared by Unix-like systems in `unix`.
+- [AGENTS.md](AGENTS.md) describes the architecture, coding conventions and how to add a new platform.
+
+Planned work:
+
 - Support PSP
 - Support Wii
 - Support Wii U
-- Support connections thru serial port
+- Support connections through serial port
 - Timing under Linux
 
-Licensed under the [GPLv3 license](LICENSE.md).
+License
+=======
+
+Aaru Remote is licensed under the [GNU General Public License v3](LICENSE).
