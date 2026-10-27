@@ -132,9 +132,9 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
                (camccb->csio.sense_len - camccb->csio.sense_resid) - 1);
     }
 
-    cam_freeccb(camccb);
-
     *buf_len = camccb->csio.dxfer_len;
+
+    cam_freeccb(camccb);
 
     return error;
 }

@@ -133,9 +133,9 @@ int32_t SendAtaChsCommand(void *device_ctx, AtaRegistersChs registers, AtaErrorR
     error_registers->sector_count  = camccb->ataio.res.sector_count;
     error_registers->status        = camccb->ataio.res.status;
 
-    cam_freeccb(camccb);
-
     *buf_len = camccb->ataio.dxfer_len;
+
+    cam_freeccb(camccb);
 
     *sense |= error_registers->error || (error_registers->status & 0xA5) || error;
 
@@ -230,9 +230,9 @@ int32_t SendAtaLba28Command(void *device_ctx, AtaRegistersLba28 registers, AtaEr
     error_registers->sector_count = camccb->ataio.res.sector_count;
     error_registers->status       = camccb->ataio.res.status;
 
-    cam_freeccb(camccb);
-
     *buf_len = camccb->ataio.dxfer_len;
+
+    cam_freeccb(camccb);
 
     *sense |= error_registers->error || (error_registers->status & 0xA5) || error;
 
@@ -337,9 +337,9 @@ int32_t SendAtaLba48Command(void *device_ctx, AtaRegistersLba48 registers, AtaEr
     error_registers->error         = camccb->ataio.res.error;
     error_registers->status        = camccb->ataio.res.status;
 
-    cam_freeccb(camccb);
-
     *buf_len = camccb->ataio.dxfer_len;
+
+    cam_freeccb(camccb);
 
     *sense |= error_registers->error || (error_registers->status & 0xA5) || error;
 
