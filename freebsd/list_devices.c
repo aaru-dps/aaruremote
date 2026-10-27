@@ -142,6 +142,8 @@ DeviceInfoList *ListDevices()
                 break;
             default:
                 dirent = readdir(dir);
+                cam_freeccb(camccb);
+                cam_close_device(camdev);
                 free(list_next);
                 continue;
         }
