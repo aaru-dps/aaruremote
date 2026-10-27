@@ -606,7 +606,17 @@ void *WorkingLoop(void *arguments)
 
                     pkt_cmd_scsi = (AaruPacketCmdScsi *)in_buf;
 
-                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketCmdScsi) ||
+                       (uint64_t)le32toh(pkt_cmd_scsi->cdb_len) + le32toh(pkt_cmd_scsi->buf_len) >
+                           le32toh(pkt_hdr->len) - sizeof(AaruPacketCmdScsi))
+                    {
+                        printf("Received SCSI packet does not fit its length, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
 
                     if(le32toh(pkt_cmd_scsi->cdb_len) > 0)
                     {
