@@ -108,6 +108,7 @@ void *WorkingLoop(void *arguments)
     void                           *cli_ctx    = NULL;
     long                            off;
     MmcSingleCommand               *multi_sdhci_commands;
+    uint64_t                        buf_total;
 
     if(!arguments)
     {
@@ -1361,9 +1362,41 @@ void *WorkingLoop(void *arguments)
 
                     pkt_cmd_multi_sdhci = (AaruPacketMultiCmdSdhci *)in_buf;
 
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketMultiCmdSdhci))
+                    {
+                        printf("Received SD/MMC multi-command packet is too small, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
+
                     pkt_cmd_multi_sdhci->cmd_count = le64toh(pkt_cmd_multi_sdhci->cmd_count);
 
-                    // TODO: Check size of buffers + size of packet is not bigger than size in header
+                    // The commands and then their data buffers, used in place, must all fit in the packet
+                    if(pkt_cmd_multi_sdhci->cmd_count >
+                       (le32toh(pkt_hdr->len) - sizeof(AaruPacketMultiCmdSdhci)) / sizeof(AaruCmdSdhci))
+                        buf_total = (uint64_t)le32toh(pkt_hdr->len) + 1;
+                    else
+                    {
+                        buf_total =
+                            sizeof(AaruPacketMultiCmdSdhci) + sizeof(AaruCmdSdhci) * pkt_cmd_multi_sdhci->cmd_count;
+
+                        for(n = 0; n < pkt_cmd_multi_sdhci->cmd_count; n++)
+                            buf_total += le32toh(pkt_cmd_multi_sdhci->commands[n].buf_len);
+                    }
+
+                    if(buf_total > le32toh(pkt_hdr->len))
+                    {
+                        printf("Received SD/MMC multi-command packet does not fit, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
+
                     multi_sdhci_commands = malloc(sizeof(MmcSingleCommand) * pkt_cmd_multi_sdhci->cmd_count);
 
                     if(!multi_sdhci_commands)
