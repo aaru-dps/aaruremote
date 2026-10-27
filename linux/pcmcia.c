@@ -86,16 +86,24 @@ uint8_t GetPcmciaData(void *device_ctx, uint16_t *cis_len, char *cis)
 
         } while(dent && dent->d_type != DT_DIR);
 
-        if(!dent) continue;
+        if(!dent)
+        {
+            closedir(dir);
+            continue;
+        }
 
         memset(tmp_path, 0, 4096);
         snprintf(tmp_path, 4096, "%s/pcmcia_socket/%s/cis", resolved_link, dent->d_name);
+        closedir(dir);
+
         if(access(tmp_path, R_OK) != 0) continue;
 
         file = fopen(tmp_path, "r");
         if(!file) return 0;
 
         *cis_len = fread(cis, 65536, 1, file);
+
+        fclose(file);
 
         return 1;
     }
