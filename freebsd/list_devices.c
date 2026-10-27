@@ -20,6 +20,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 
 #include "../aaruremote.h"
@@ -38,6 +39,71 @@ static void FillScsiDeviceInfo(DeviceInfo *info, union ccb *camccb, struct cam_d
 
     info->supported = true;
 }
+
+#ifdef HAS_ATA_IOCTL
+// Copies a string from ATA identify data, which is padded with spaces, without the padding
+static void CopyAtaString(char *dest, const u_int8_t *src, int len)
+{
+    strncpy(dest, (const char *)src, len);
+
+    while(len > 0 && (dest[len - 1] == ' ' || dest[len - 1] == 0)) dest[--len] = 0;
+}
+
+// Appends the ATA disks attached to ata(4) instead of CAM to the device list, returning the new last entry
+static DeviceInfoList *ListAtaDevices(DeviceInfoList **list_start, DeviceInfoList *list_current)
+{
+    struct ata_cmd  iocmd;
+    DeviceInfoList *list_next;
+    int             ata_fd, channel, max_channel, unit;
+
+    ata_fd = open("/dev/ata", O_RDWR);
+
+    if(ata_fd < 0) return list_current;
+
+    memset(&iocmd, 0, sizeof(struct ata_cmd));
+    iocmd.cmd = ATAGMAXCHANNEL;
+
+    max_channel = ioctl(ata_fd, IOCATA, &iocmd) < 0 ? 0 : iocmd.u.maxchan;
+
+    for(channel = 0; channel < max_channel; channel++)
+    {
+        memset(&iocmd, 0, sizeof(struct ata_cmd));
+        iocmd.channel = channel;
+        iocmd.cmd     = ATAGPARM;
+
+        if(ioctl(ata_fd, IOCATA, &iocmd) < 0) continue;
+
+        for(unit = 0; unit < 2; unit++)
+        {
+            // ATAPI devices are only supported through atapicam
+            if(!iocmd.u.param.type[unit] || iocmd.u.param.params[unit].config & ATA_PROTO_ATAPI_12) continue;
+
+            list_next = malloc(sizeof(DeviceInfoList));
+
+            if(!list_next) break;
+
+            memset(list_next, 0, sizeof(DeviceInfoList));
+
+            snprintf(list_next->this.path, 1024, "/dev/%s", iocmd.u.param.name[unit]);
+            strncpy(list_next->this.vendor, "ATA", 3);
+            CopyAtaString(list_next->this.model, iocmd.u.param.params[unit].model, 40);
+            CopyAtaString(list_next->this.serial, iocmd.u.param.params[unit].serial, 20);
+            strncpy(list_next->this.bus, "ATA", 4);
+            list_next->this.supported = true;
+
+            if(!*list_start) *list_start = list_next;
+
+            if(list_current) list_current->next = list_next;
+
+            list_current = list_next;
+        }
+    }
+
+    close(ata_fd);
+
+    return list_current;
+}
+#endif
 
 DeviceInfoList *ListDevices()
 {
@@ -172,6 +238,10 @@ DeviceInfoList *ListDevices()
     }
 
     closedir(dir);
+
+#ifdef HAS_ATA_IOCTL
+    list_current = ListAtaDevices(&list_start, list_current);
+#endif
 
     return list_start;
 }
