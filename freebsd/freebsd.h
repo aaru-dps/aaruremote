@@ -31,6 +31,10 @@
 #define CLOCK_REALTIME_PRECISE CLOCK_REALTIME
 #endif
 
+// Bidirectional CAM data transfers, called CAM_DIR_BOTH on current releases and CAM_DIR_RESV on old ones. It is an
+// enumeration value, so it cannot be tested for with the preprocessor.
+#define AARUREMOTE_CAM_DIR_BOTH 0x00000000
+
 typedef struct
 {
     char               device_path[4096];

@@ -56,7 +56,7 @@ int32_t SendScsiCommand(void *device_ctx, char *cdb, char *buffer, char **sense_
         case AARUREMOTE_SCSI_DIRECTION_INOUT:
         case AARUREMOTE_SCSI_DIRECTION_UNSPECIFIED:
         default:
-            flags = CAM_DIR_BOTH;
+            flags = AARUREMOTE_CAM_DIR_BOTH;
             break;
     }
 
