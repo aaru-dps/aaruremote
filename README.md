@@ -75,7 +75,7 @@ The part after the IP address in an `aaru://` path is the device path on the ser
 | Server OS    | Typical device paths                                                                       |
 |--------------|--------------------------------------------------------------------------------------------|
 | Linux        | `/dev/sr0` (optical), `/dev/sda` (disks), `/dev/sg0` (SCSI generic), `/dev/mmcblk0` (SD/MMC) |
-| FreeBSD      | `/dev/pass0`, or `/dev/ad0` for ATA disks on FreeBSD 8 and older                           |
+| FreeBSD      | `/dev/pass0`, or `/dev/ad0` and `/dev/acd0` on FreeBSD 8 and older                         |
 | macOS        | `/dev/rdisk2`                                                                              |
 | Windows      | `\\.\PhysicalDrive0`, `\\.\CdRom0`, `\\.\Tape0`                                            |
 | Nintendo Wii | `/dev/flash` (NAND), `/dev/sdio/slot0` (SD card)                                           |
@@ -112,7 +112,7 @@ Supported platforms
 5. As ATA device, not possible to retrieve special data.
 6. Only ATA devices, not linear memory devices.
 7. ATA passthrough on macOS is attempted through the IOKit storage stack and SAT-compatible bridges, but modern macOS may restrict raw low-level access depending on the device and OS version.
-8. Tested on FreeBSD 5.5, 8.4 and 12.4. Before FreeBSD 9, ATA disks are attached to the legacy ata(4) driver instead of CAM, which only allows LBA28 commands and does not return the status and error registers, and ATAPI drives need a kernel built with `atapicam`.
+8. Tested on FreeBSD 5.5, 8.4 and 12.4. Before FreeBSD 9, ATA and ATAPI devices are attached to the legacy ata(4) driver instead of CAM, which only allows LBA28 commands and does not return the status and error registers. ATAPI drives work through ata(4) from FreeBSD 6, and need a kernel built with `atapicam` on FreeBSD 5.
 
 Troubleshooting
 ===============
