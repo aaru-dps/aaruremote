@@ -87,7 +87,7 @@ int32_t GetSdhciRegisters(void *device_ctx, char **csd, char **cid, char **ocr, 
     *cid_len = 0;
     *ocr_len = 0;
     *scr_len = 0;
-    size_t n = 1026;
+    size_t n = 1024;
 
     if(!ctx) return -1;
 
