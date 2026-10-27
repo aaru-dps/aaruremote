@@ -62,13 +62,21 @@ void DeviceClose(void *device_ctx)
 int32_t GetDeviceType(void *device_ctx)
 {
     DeviceContext *ctx = device_ctx;
-    union ccb     *camccb;
-    int            ret;
-    int32_t        device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+#ifdef HAS_CAM_ATA
+    union ccb *camccb;
+    int        ret;
+    int32_t    device_type = AARUREMOTE_DEVICE_TYPE_UNKNOWN;
+#endif
 
     if(!ctx) return -1;
     if(!ctx->device) return -1;
 
+#ifndef HAS_CAM_ATA
+    // Before FreeBSD 8 CAM has no protocol information, and ATAPI devices can only be attached through atapicam
+    if(strncmp(ctx->device->sim_name, "ata", 3) == 0) return AARUREMOTE_DEVICE_TYPE_ATAPI;
+
+    return AARUREMOTE_DEVICE_TYPE_SCSI;
+#else
     camccb = cam_getccb(ctx->device);
 
     if(!camccb) return device_type;
@@ -111,6 +119,7 @@ int32_t GetDeviceType(void *device_ctx)
 
     cam_freeccb(camccb);
     return device_type;
+#endif
 }
 
 int32_t ReOpen(void *device_ctx, uint32_t *closeFailed)
