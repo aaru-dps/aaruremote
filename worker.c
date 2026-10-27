@@ -449,6 +449,8 @@ void *WorkingLoop(void *arguments)
 
                     NetRecv(cli_ctx, pkt_dev_open, le32toh(pkt_hdr->len), 0);
 
+                    // Close any device still open from a previous request
+                    DeviceClose(device_ctx);
                     device_ctx = DeviceOpen(pkt_dev_open->device_path);
 
                     pkt_nop->reason_code = device_ctx == NULL ? AARUREMOTE_PACKET_NOP_REASON_OPEN_ERROR
@@ -1347,6 +1349,10 @@ void *WorkingLoop(void *arguments)
                     continue;
             }
         }
+
+        // Do not keep the device open after the client is gone
+        DeviceClose(device_ctx);
+        device_ctx = NULL;
     }
 
     free(pkt_nop);
