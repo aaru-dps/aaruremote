@@ -188,5 +188,8 @@ DeviceInfoList* ListDevices()
         list_current = list_next;
     }
 
+    free(physical);
+    free(buf);
+
     return list_start;
 }
