@@ -49,7 +49,7 @@ static void CopyAtaString(char *dest, const u_int8_t *src, int len)
     while(len > 0 && (dest[len - 1] == ' ' || dest[len - 1] == 0)) dest[--len] = 0;
 }
 
-// Appends an ATA disk attached to ata(4) to the device list, returning the new last entry
+// Appends an ATA or ATAPI device attached to ata(4) to the device list, returning the new last entry
 static DeviceInfoList *AppendAtaDevice(DeviceInfoList **list_start, DeviceInfoList *list_current, const char *name,
                                        struct ata_params *params)
 {
@@ -65,7 +65,11 @@ static DeviceInfoList *AppendAtaDevice(DeviceInfoList **list_start, DeviceInfoLi
     strncpy(list_next->this.vendor, "ATA", 3);
     CopyAtaString(list_next->this.model, params->model, 40);
     CopyAtaString(list_next->this.serial, params->serial, 20);
-    strncpy(list_next->this.bus, "ATA", 4);
+    if(params->config & ATA_PROTO_ATAPI_12)
+        strncpy(list_next->this.bus, "ATAPI", 5);
+    else
+        strncpy(list_next->this.bus, "ATA", 4);
+
     list_next->this.supported = true;
 
     if(!*list_start) *list_start = list_next;
@@ -118,7 +122,7 @@ static DeviceInfoList *ListAtaDevices(DeviceInfoList **list_start, DeviceInfoLis
 #endif
 
 #ifdef HAS_ATA_DEVICE_IOCTL
-// Appends the ATA disks attached to ata(4) instead of CAM to the device list, returning the new last entry
+// Appends the ATA and ATAPI devices attached to ata(4) instead of CAM to the device list, returning the new last entry
 static DeviceInfoList *ListAtaDevices(DeviceInfoList **list_start, DeviceInfoList *list_current)
 {
     struct ata_ioc_devices devices;
@@ -139,8 +143,7 @@ static DeviceInfoList *ListAtaDevices(DeviceInfoList **list_start, DeviceInfoLis
 
         for(unit = 0; unit < 2; unit++)
         {
-            // ATAPI devices are only supported through atapicam
-            if(!devices.name[unit][0] || devices.params[unit].config & ATA_PROTO_ATAPI_12) continue;
+            if(!devices.name[unit][0]) continue;
 
             list_current = AppendAtaDevice(list_start, list_current, devices.name[unit], &devices.params[unit]);
         }
