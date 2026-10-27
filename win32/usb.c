@@ -540,7 +540,12 @@ UsbDevice_t* FindDeviceNumber(DWORD devNum, GUID diskGuid)
     UsbDevice_t*                     foundDevice = NULL; // TODO: Determine type
 
     didd = malloc(USB_BUFFER_SIZE + sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA));
-    if(instanceId) return NULL;
+    if(!instanceId || !didd)
+    {
+        free(instanceId);
+        free(didd);
+        return NULL;
+    }
 
     memset(instanceId, 0, N_BYTES);
 
@@ -592,6 +597,7 @@ UsbDevice_t* FindDeviceNumber(DWORD devNum, GUID diskGuid)
     // Did we find an InterfaceID of a USB device?
     if(strlen(instanceId) > 0 && strncmp(instanceId, "USB\\", 3) == 0) foundDevice = FindDeviceByInstanceId(instanceId);
 
+    free(instanceId);
     free(didd);
     return foundDevice;
 }
