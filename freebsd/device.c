@@ -87,11 +87,35 @@ static int OpenAtaDevice(DeviceContext *ctx)
 }
 #endif
 
+#ifdef HAS_ATA_DEVICE_IOCTL
+// Opens an ATA disk attached to ata(4) instead of CAM, which takes the raw ATA commands itself
+static int OpenAtaDevice(DeviceContext *ctx)
+{
+    struct ata_params params;
+
+    ctx->fd = open(ctx->device_path, O_RDWR);
+
+    if(ctx->fd < 0) return 0;
+
+    // ATAPI devices are only supported through atapicam
+    if(ioctl(ctx->fd, IOCATAGPARM, &params) == 0 && !(params.config & ATA_PROTO_ATAPI_12))
+    {
+        ctx->ata_fd = ctx->fd;
+        return 1;
+    }
+
+    close(ctx->fd);
+    ctx->fd = -1;
+
+    return 0;
+}
+#endif
+
 // Closes whichever of the CAM and ata(4) handles are open
 static void CloseDevice(DeviceContext *ctx)
 {
     if(ctx->device) cam_close_device(ctx->device);
-    if(ctx->ata_fd >= 0) close(ctx->ata_fd);
+    if(ctx->ata_fd >= 0 && ctx->ata_fd != ctx->fd) close(ctx->ata_fd);
     if(ctx->fd >= 0) close(ctx->fd);
 
     ctx->device = NULL;
@@ -108,7 +132,7 @@ static int OpenDevice(DeviceContext *ctx)
 
     if(ctx->device) return 1;
 
-#ifdef HAS_ATA_IOCTL
+#if defined(HAS_ATA_IOCTL) || defined(HAS_ATA_DEVICE_IOCTL)
     if(OpenAtaDevice(ctx)) return 1;
 #endif
 

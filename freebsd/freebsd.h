@@ -39,6 +39,11 @@
 #define HAS_ATA_IOCTL
 #endif
 
+// From FreeBSD 6 until ata(4) was replaced by CAM, the disks attached to ata(4) take raw ATA commands themselves
+#if !defined(HAS_ATA_IOCTL) && defined(IOCATAREQUEST) && defined(IOCATAGPARM)
+#define HAS_ATA_DEVICE_IOCTL
+#endif
+
 // Old releases, such as FreeBSD 5.5, have no precise clocks, so use the plain realtime clock there
 #ifndef CLOCK_REALTIME_PRECISE
 #define CLOCK_REALTIME_PRECISE CLOCK_REALTIME
@@ -52,7 +57,7 @@ typedef struct
 {
     char               device_path[4096];
     struct cam_device *device;
-    int                ata_fd;      // ata(4) control device, for ATA disks not attached to CAM
+    int                ata_fd;      // ata(4) device taking raw ATA commands, for ATA disks not attached to CAM
     int                ata_channel; // ata(4) channel of the disk
     int                ata_unit;    // ata(4) unit of the disk, 0 for master and 1 for slave
     int                fd;          // The disk itself, for operating system reads of ata(4) disks
