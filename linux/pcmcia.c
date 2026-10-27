@@ -54,9 +54,9 @@ uint8_t GetPcmciaData(void *device_ctx, uint16_t *cis_len, char *cis)
 
     if(stat(tmp_path, &sb) != 0 || !S_ISDIR(sb.st_mode)) { return 0; }
 
-    len = readlink(tmp_path, resolved_link, 4096);
+    len = readlink(tmp_path, resolved_link, 4095);
 
-    if(len == 0) return 0;
+    if(len <= 0) return 0;
 
     memset(tmp_path, 0, 4096);
     snprintf(tmp_path, 4096, "/sys%s", resolved_link + 2);
