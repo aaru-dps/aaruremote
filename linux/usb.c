@@ -37,7 +37,7 @@ uint8_t GetUsbData(void *device_ctx, uint16_t *desc_len, char *descriptors, uint
     int            found = 1;
     FILE          *file;
 
-    if(!ctx) return -1;
+    if(!ctx) return 0;
 
     *desc_len   = 0;
     *id_vendor  = 0;
