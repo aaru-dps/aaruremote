@@ -141,9 +141,18 @@ int32_t GetSdhciRegisters(void*     device_ctx,
     uint32_t       duration;
     uint32_t       sense;
 
-    if(!ctx) return -1;
+    *csd     = NULL;
+    *cid     = NULL;
+    *ocr     = NULL;
+    *scr     = NULL;
+    *csd_len = 0;
+    *cid_len = 0;
+    *ocr_len = 0;
+    *scr_len = 0;
 
-    if(!IsSdhci(ctx->handle)) return -1;
+    if(!ctx) return 0;
+
+    if(!IsSdhci(ctx->handle)) return 0;
 
     *csd = malloc(16);
     if(*csd)
