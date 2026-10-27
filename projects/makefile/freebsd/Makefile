@@ -36,7 +36,7 @@ VERSION=	${VERSION_BASE}-${GIT_COMMIT}
 # Old compilers, such as the gcc 2 of early FreeBSD releases, do not know -std
 STD_SUPPORTED!=	(echo 'int main(void){return 0;}' | \
 		    ${CC} -std=gnu89 -x c - -o /dev/null >/dev/null 2>&1 && echo yes) || true
-.if "${STD_SUPPORTED}" == "yes"
+.if !empty(STD_SUPPORTED:Myes)
 AARU_CFLAGS=	-std=gnu89
 .else
 AARU_CFLAGS=
@@ -49,7 +49,7 @@ AARU_LIBS=	-lcam
 AARU_CPPFLAGS+=	-DHAVE_ENDIAN_H
 .else
 BYTE_ORDER_VALUE!=	echo _BYTE_ORDER | ${CC} -E -include sys/endian.h -x c - 2>/dev/null | tail -n 1
-.if "${BYTE_ORDER_VALUE}" == "4321"
+.if !empty(BYTE_ORDER_VALUE:M4321)
 AARU_CPPFLAGS+=	-D__BYTE_ORDER=4321
 .else
 AARU_CPPFLAGS+=	-D__BYTE_ORDER=1234
@@ -57,29 +57,29 @@ AARU_CPPFLAGS+=	-D__BYTE_ORDER=1234
 .endif
 
 # Compile for the baseline instruction set of the target architecture, so binaries run on any CPU of it
-.if "${BASELINE_ISA}" == "yes"
-.if "${MACHINE_ARCH}" == "amd64"
+.if !empty(BASELINE_ISA:Myes)
+.if !empty(MACHINE_ARCH:Mamd64)
 ISA_FLAG=	-march=x86-64
-.elif "${MACHINE_ARCH}" == "i386"
+.elif !empty(MACHINE_ARCH:Mi386)
 ISA_FLAG=	-march=i386
-.elif "${MACHINE_ARCH}" == "aarch64"
+.elif !empty(MACHINE_ARCH:Maarch64)
 ISA_FLAG=	-march=armv8-a
-.elif "${MACHINE_ARCH:Marm*}" != ""
+.elif !empty(MACHINE_ARCH:Marm*)
 ISA_FLAG=	-march=armv6
-.elif "${MACHINE_ARCH:Mmips64*}" != ""
+.elif !empty(MACHINE_ARCH:Mmips64*)
 ISA_FLAG=	-march=mips3
-.elif "${MACHINE_ARCH:Mmips*}" != ""
+.elif !empty(MACHINE_ARCH:Mmips*)
 ISA_FLAG=	-march=mips2
-.elif "${MACHINE_ARCH:Mpowerpc64*}" != ""
+.elif !empty(MACHINE_ARCH:Mpowerpc64*)
 ISA_FLAG=	-mcpu=powerpc64
-.elif "${MACHINE_ARCH:Mpowerpc*}" != ""
+.elif !empty(MACHINE_ARCH:Mpowerpc*)
 ISA_FLAG=	-mcpu=powerpc
 .endif
 
 .if defined(ISA_FLAG)
 ISA_SUPPORTED!=	(echo 'int main(void){return 0;}' | \
 		    ${CC} ${ISA_FLAG} -x c - -o /dev/null >/dev/null 2>&1 && echo yes) || true
-.if "${ISA_SUPPORTED}" == "yes"
+.if !empty(ISA_SUPPORTED:Myes)
 AARU_CFLAGS+=	${ISA_FLAG}
 .endif
 .endif
