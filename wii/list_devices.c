@@ -58,13 +58,19 @@ DeviceInfoList *ListDevices()
 
         if(deviceId == AARUREMOTE_WII_SD_INSERTED)
         {
-            strncpy(list_next->this.path, "/dev/flash", 1024);
-            strncpy(list_next->this.vendor, "Nintendo", 256);
-            strncpy(list_next->this.model, "Wii SD", 256);
-            strncpy(list_next->this.bus, "MMC/SD", 256);
-            list_next->this.supported = false;  // TODO: Implement SD/MMC reading
-            list_current->next        = list_next;
-            list_current              = list_next;
+            list_next = malloc(sizeof(DeviceInfoList));
+
+            if(list_next)
+            {
+                memset(list_next, 0, sizeof(DeviceInfoList));
+                strncpy(list_next->this.path, AARUREMOTE_WII_DEVICE_PATH_SD, 1024);
+                strncpy(list_next->this.vendor, "Nintendo", 256);
+                strncpy(list_next->this.model, "Wii SD", 256);
+                strncpy(list_next->this.bus, "MMC/SD", 256);
+                list_next->this.supported = false;  // TODO: Implement SD/MMC reading
+                list_current->next        = list_next;
+                list_current              = list_next;
+            }
         }
 
         IOS_Close(sd_fd);
