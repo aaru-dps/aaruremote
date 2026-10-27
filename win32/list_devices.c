@@ -131,7 +131,7 @@ DeviceInfoList* ListDevices()
             case 16: strncpy(list_next->this.bus, "Spaces", 6); break;
             case 18: strncpy(list_next->this.bus, "SCM", 3); break;
             case 19: strncpy(list_next->this.bus, "UFS", 3); break;
-            default: strncpy(list_next->this.bus, "Unknown", 4); break;
+            default: strncpy(list_next->this.bus, "Unknown", 7); break;
         }
 
         switch(descriptor->BusType)
