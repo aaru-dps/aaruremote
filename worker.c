@@ -1561,6 +1561,18 @@ void *WorkingLoop(void *arguments)
 
                     pkt_cmd_osread = (AaruPacketCmdOsRead *)in_buf;
 
+                    // The response carries the data after its header and its length must fit in 32 bits
+                    if(le32toh(pkt_hdr->len) < sizeof(AaruPacketCmdOsRead) ||
+                       le32toh(pkt_cmd_osread->length) > 0xFFFFFFFFU - sizeof(AaruPacketResOsRead))
+                    {
+                        printf("Received OS read packet is not valid, closing connection...\n");
+                        free(in_buf);
+                        free(pkt_hdr);
+                        NetClose(cli_ctx);
+                        cli_ctx = NULL;
+                        continue;
+                    }
+
                     buffer = malloc(le32toh(pkt_cmd_osread->length));
 
                     if(!buffer)
