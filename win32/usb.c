@@ -87,7 +87,7 @@ UsbController_t* GetHostControllers(DWORD* length)
             da.cbSize = sizeof(SP_DEVINFO_DATA);
             // build a Device Interface Detail Data structure
             memset(didd, 0, USB_BUFFER_SIZE + sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA));
-            didd->cbSize = 4 + sizeof(TCHAR);
+            didd->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
             // now we can get some more detailed information
             nRequiredSize = 0;
@@ -570,7 +570,7 @@ UsbDevice_t* FindDeviceNumber(DWORD devNum, GUID diskGuid)
 
                 // build a Device Interface Detail Data structure
                 memset(didd, 0, USB_BUFFER_SIZE + sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA));
-                didd->cbSize = 4 + sizeof(TCHAR);
+                didd->cbSize = sizeof(SP_DEVICE_INTERFACE_DETAIL_DATA);
 
                 // now we can get some more detailed information
                 nRequiredSize = 0;
